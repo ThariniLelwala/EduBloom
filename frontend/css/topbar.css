@@ -1,0 +1,39 @@
+#topbar {
+  background-color: transparent;
+  color: var(--color-white);
+  padding: 12px;
+  height: 60px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.logo {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: 32px;
+  color: var(--color-white);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#profile {
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+}
+
+#sidebar-toggle-topbar {
+  display: none;
+  font-size: 24px;
+  color: var(--color-white);
+  cursor: pointer;
+  margin-right: 12px;
+  align-self: center;
+}
+
+/* Show toggle on medium and small screens */
+@media (max-width: 768px) {
+  #sidebar-toggle-topbar {
+    display: block;
+  }
+}

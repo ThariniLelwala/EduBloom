@@ -1,0 +1,80 @@
+/* Base reset */
+input[type="range"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* ===== Track styles ===== */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: 10% var(--color-white);
+}
+
+input[type="range"]::-ms-track {
+  height: 8px;
+  border-radius: 4px;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+
+/* ===== Progress (filled part) ===== */
+input[type="range"]::-moz-range-progress {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-white);
+}
+
+input[type="range"]::-ms-fill-lower {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-white);
+}
+input[type="range"]::-ms-fill-upper {
+  background: var(--color-white);
+  border-radius: 4px;
+}
+
+/* ===== Thumb styles ===== */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: var(--color-white);
+  margin-top: -5px; /* center with track */
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+input[type="range"]::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: var(--color-white);
+  cursor: pointer;
+}
+input[type="range"]::-ms-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: var(--color-white);
+  cursor: pointer;
+}
+
+/* ===== Dynamic fill trick for WebKit (Chrome, Safari, Edge) ===== */
+input[type="range"] {
+  --value: 50%; /* Default fill, updated via JS */
+}

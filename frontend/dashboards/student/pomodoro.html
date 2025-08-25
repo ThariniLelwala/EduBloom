@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pomodoro Timer</title>
+
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/dashboard/clock.css" />
+    <link rel="stylesheet" href="../../css/slider.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- topbar -->
+    <div id="topbar">
+      <div id="sidebar-toggle-topbar">
+        <i class="fas fa-bars"></i>
+      </div>
+      <div class="logo">
+        <img src="../../assets/icons/logo.svg" width="40px" alt="" />
+        <span>EduBloom</span>
+      </div>
+      <div id="profile">
+        <i class="fas fa-circle-user"></i>
+      </div>
+    </div>
+
+    <!-- sidebar + content -->
+    <div class="container">
+      <div id="sidebar-container"></div>
+
+      <main id="content">
+        <div class="clock-content">
+          <div class="card clock-container">
+            <div class="card-title">
+              <i class="fas fa-clock"></i>
+              <h3>Pomodoro Timer</h3>
+            </div>
+            <div class="timer">
+              <svg
+                class="circular-progress"
+                width="500"
+                height="500"
+                viewBox="0 0 500 500"
+              >
+                <circle class="background-circle" cx="250" cy="250" r="200" />
+                <circle class="progress-circle" cx="250" cy="250" r="200" />
+              </svg>
+              <div id="countdown">00:00</div>
+            </div>
+            <div class="timer-controls">
+              <button id="start" onclick="startTimer()">
+                <i class="fas fa-play"></i>
+              </button>
+              <!-- <button id="pause"><i class="fas fa-pause"></i></button> -->
+              <button id="reset" onclick="stopTimer()">
+                <i class="fas fa-stop"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="clock-sidebar">
+            <!-- new timer -->
+            <div class="card">
+              <div class="card-title">
+                <i class="fas fa-alarm-clock"></i>
+                <h3>New Timer</h3>
+              </div>
+
+              <div>
+                <!-- Toggle button group -->
+                <div class="toggle-buttons">
+                  <button id="freestyle-btn" class="active">Freestyle</button>
+                  <button id="custom-btn">Custom</button>
+                </div>
+
+                <!-- Freestyle Clock -->
+                <div class="freestyle visible" id="freestyle-section">
+                  <p>
+                    "Flow freely. Work until you're done, and let the progress
+                    guide you."
+                  </p>
+                  <button class="btn-primary">Start Clock</button>
+                </div>
+
+                <!-- Custom Clock -->
+                <div class="custom" id="custom-section">
+                  <p>
+                    "Plan your focus. Set your hours, then conquer them one
+                    session at a time."
+                  </p>
+                  <input
+                    type="range"
+                    step="30"
+                    value="0"
+                    min="0"
+                    max="240"
+                    id="custom-range"
+                  />
+                  <span id="custom-time">00:00</span>
+                  <br />
+                  <button class="btn-primary">Start Clock</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- sessions -->
+            <div class="card">
+              <div class="card-title">
+                <i class="fas fa-history"></i>
+                <h3>Sessions</h3>
+              </div>
+              <div id="session-list" class="session-list"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
+
+<script src="../../js/sidebar.js"></script>
+<script src="../../js/timer.js"></script>
+
+<script>
+  const freestyleBtn = document.getElementById("freestyle-btn");
+  const customBtn = document.getElementById("custom-btn");
+  const freestyleSection = document.getElementById("freestyle-section");
+  const customSection = document.getElementById("custom-section");
+
+  freestyleBtn.addEventListener("click", () => {
+    freestyleBtn.classList.add("active");
+    customBtn.classList.remove("active");
+
+    freestyleSection.classList.add("visible");
+    customSection.classList.remove("visible");
+  });
+
+  customBtn.addEventListener("click", () => {
+    customBtn.classList.add("active");
+    freestyleBtn.classList.remove("active");
+
+    customSection.classList.add("visible");
+    freestyleSection.classList.remove("visible");
+  });
+
+  // Optional: Update custom time display
+  document
+    .getElementById("custom-range")
+    .addEventListener("input", function () {
+      const minutes = parseInt(this.value, 10);
+      const hrs = String(Math.floor(minutes / 60)).padStart(2, "0");
+      const mins = String(minutes % 60).padStart(2, "0");
+      document.getElementById("custom-time").textContent = `${hrs}:${mins}`;
+    });
+</script>

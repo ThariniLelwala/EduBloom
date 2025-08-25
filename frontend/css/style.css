@@ -1,0 +1,240 @@
+:root {
+  /* Light Mode Colors */
+  --color-bg: #c7d9d6;
+  --color-primary: #0e2e24;
+  --color-hover: #032f30;
+
+  --color-card-bg: #ffffff;
+  --color-container: #ffffff;
+
+  --color-white: #ffffff;
+  --color-text: #181818;
+  --color-logo: #ffffff;
+
+  --color-topbar: #064734;
+  --color-sidebar: #064734;
+
+  --spacing-xs: 4px;
+  --spacing-s: 8px;
+  --spacing-md: 16px;
+  --spacing-lh: 24px;
+
+  --border-radius: 16px;
+}
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--color-text);
+  background-color: transparent;
+  overflow: hidden;
+}
+
+.bg-image {
+  filter: blur(8px);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  background-image: url(../assets/images/bg1.jpeg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  transform: scale(1.1);
+}
+
+a {
+  color: var(--color-white);
+}
+.container {
+  display: flex;
+  height: calc(100vh - 60px);
+}
+
+#content {
+  flex-grow: 1;
+  border-radius: 20px;
+  margin: 8px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  overflow-x: hidden;
+}
+
+.width-fill {
+  max-width: 100%;
+}
+
+/* buttons */
+.btn-primary {
+  display: inline-block;
+  border: none;
+  border-radius: 8px;
+  color: var(--color-text);
+  font-weight: 700;
+  width: 100%;
+  cursor: pointer;
+  background-color: var(--color-white);
+  padding: 12px 24px;
+  margin-top: 1rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Drop Down Menu */
+
+.dropdown {
+  display: none;
+  position: absolute;
+  top: 28px;
+  right: 0;
+  background: white;
+  color: black;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  min-width: 120px;
+  z-index: 10;
+}
+
+.dropdown.show {
+  display: block;
+}
+
+.dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.dropdown ul li {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.dropdown ul li:hover {
+  background: #f0f0f0;
+}
+
+/* =======================
+   Modal (Reusable)
+======================= */
+:root {
+  --modal-bg: var(--color-card-bg);
+  --modal-text: var(--color-text);
+  --modal-overlay: rgba(0, 0, 0, 0.5);
+  --modal-padding: var(--spacing-md);
+  --modal-radius: var(--border-radius);
+  --modal-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  inset: 0; /* top:0; right:0; bottom:0; left:0 */
+  z-index: 1000;
+  background: var(--modal-overlay);
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-md);
+  transition: opacity 0.3s ease;
+}
+
+.modal.show {
+  display: flex;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background: var(--modal-bg);
+  color: var(--modal-text);
+  padding: var(--modal-padding);
+  border-radius: var(--modal-radius);
+  box-shadow: var(--modal-shadow);
+  width: 100%;
+  max-width: 420px; /* responsive width */
+  animation: slideIn 0.3s ease;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.modal-header h2 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: inherit;
+}
+
+.modal-body input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-bottom: var(--spacing-md);
+  font-size: 1rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-s);
+}
+
+.modal-footer button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modal-footer .btn-cancel {
+  background: #eee;
+  color: #333;
+}
+
+.modal-footer .btn-confirm {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

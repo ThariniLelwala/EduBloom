@@ -1,0 +1,57 @@
+{
+  "student": [
+    { "title": "Dashboard", "icon": "fas fa-home", "link": "dashboard.html" },
+    {
+      "title": "Pomodoro Timer",
+      "icon": "fas fa-alarm-clock",
+      "link": "pomodoro.html"
+    },
+    {
+      "title": "Quiz",
+      "icon": "fas fa-clipboard-question",
+      "link": "quiz.html"
+    },
+    {
+      "title": "Flash Cards",
+      "icon": "fas fa-bolt",
+      "link": "flashcards.html"
+    },
+    {
+      "title": "Task",
+      "icon": "fas fa-clipboard-list",
+      "link": "task.html"
+    },
+    { "title": "Calendar", "icon": "fas fa-calendar", "link": "calendar.html" },
+    { "title": "Diary", "icon": "fas fa-book-open", "link": "diary.html" },
+    {
+      "title": "Progress",
+      "icon": "fas fa-chart-line",
+      "link": "progress.html"
+    }
+  ],
+  "teacher": [
+    { "title": "Dashboard", "icon": "fas fa-home", "link": "dashboard.html" },
+    {
+      "title": "Pomodoro Timer",
+      "icon": "fas fa-alarm-clock",
+      "link": "pomodoro.html"
+    },
+    {
+      "title": "Quiz",
+      "icon": "fas fa-clipboard-question",
+      "link": "quiz.html"
+    },
+    {
+      "title": "Flash Cards",
+      "icon": "fas fa-bolt",
+      "link": "flashcards.html"
+    },
+    { "title": "Calendar", "icon": "fas fa-calendar", "link": "calendar.html" },
+    { "title": "Diary", "icon": "fas fa-book-open", "link": "diary.html" },
+    {
+      "title": "Progress",
+      "icon": "fas fa-chart-line",
+      "link": "progress.html"
+    }
+  ]
+}
