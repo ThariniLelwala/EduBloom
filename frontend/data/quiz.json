@@ -1,0 +1,86 @@
+{
+  "subjects": [
+    {
+      "id": 1,
+      "name": "Mathematics",
+      "quizzes": [
+        {
+          "id": 101,
+          "name": "Geometry",
+          "questions": [
+            {
+              "id": 1,
+              "question": "What is the sum of angles in a triangle?",
+              "answers": ["90°", "180°", "360°", "270°"],
+              "correct": "180°"
+            },
+            {
+              "id": 2,
+              "question": "A square has how many sides?",
+              "answers": ["3", "4", "5", "6"],
+              "correct": "4"
+            }
+          ]
+        },
+        {
+          "id": 102,
+          "name": "Algebra",
+          "questions": [
+            {
+              "id": 1,
+              "question": "Solve: 2x + 3 = 7",
+              "answers": ["x=1", "x=2", "x=3", "x=4"],
+              "correct": "x=2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Science",
+      "quizzes": [
+        {
+          "id": 201,
+          "name": "Physics",
+          "questions": [
+            {
+              "id": 1,
+              "question": "What is the speed of light?",
+              "answers": [
+                "300 km/s",
+                "300,000 km/s",
+                "150,000 km/s",
+                "3,000 km/s"
+              ],
+              "correct": "300,000 km/s"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "History",
+      "quizzes": [
+        {
+          "id": 301,
+          "name": "World History",
+          "questions": [
+            {
+              "id": 1,
+              "question": "Who was the first President of the USA?",
+              "answers": [
+                "Abraham Lincoln",
+                "George Washington",
+                "Thomas Jefferson",
+                "John Adams"
+              ],
+              "correct": "George Washington"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

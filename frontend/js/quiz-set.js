@@ -1,32 +1,37 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const container = document.getElementById("subjects-container");
   const modal = document.getElementById("subject-modal");
   const modalTitle = document.getElementById("modal-title");
   const input = document.getElementById("subject-input");
   const saveBtn = document.getElementById("save-subject-btn");
   const closeBtn = document.querySelector(".close");
+  const subjectHeading = document.getElementById("subject-name");
 
-  let subjects = [];
+  const params = new URLSearchParams(window.location.search);
+  const subjectId = parseInt(params.get("subjectId"));
+  const subjectName = params.get("subjectName") || "Unknown Subject";
+
+  subjectHeading.textContent = subjectName;
+
+  let quizzes = [];
   let editId = null;
 
-  // Load subjects from JSON
-  async function loadSubjects() {
-    const res = await fetch("../../data/quiz.json");
-    const data = await res.json();
-    subjects = data.subjects;
-    renderSubjects();
-  }
+  // Load data from JSON
+  const res = await fetch("../../data/quiz.json");
+  const data = await res.json();
+  const subject = data.subjects.find((s) => s.id === subjectId);
+  if (subject) quizzes = subject.quizzes;
 
-  function renderSubjects() {
+  function renderQuizzes() {
     container.innerHTML = "";
 
-    subjects.forEach((subj) => {
+    quizzes.forEach((quiz) => {
       const card = document.createElement("div");
       card.classList.add("subject-card");
       card.innerHTML = `
         <div class="subject-header">
-          <i class="fas fa-folder"></i>
-          <span>${subj.name}</span>
+          <i class="fas fa-file-alt"></i>
+          <span>${quiz.name}</span>
         </div>
         <i class="fas fa-ellipsis-v dots"></i>
         <div class="dropdown">
@@ -48,39 +53,39 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       dropdown.querySelector(".edit").addEventListener("click", () => {
-        editId = subj.id;
-        modalTitle.textContent = "Edit Subject";
-        input.value = subj.name;
+        editId = quiz.id;
+        modalTitle.textContent = "Edit Quiz";
+        input.value = quiz.name;
         modal.style.display = "flex";
         dropdown.style.display = "none";
       });
 
       dropdown.querySelector(".delete").addEventListener("click", () => {
-        if (confirm(`Delete "${subj.name}" and all its quizzes?`)) {
-          subjects = subjects.filter((s) => s.id !== subj.id);
-          renderSubjects();
+        if (confirm(`Delete "${quiz.name}"?`)) {
+          quizzes = quizzes.filter((q) => q.id !== quiz.id);
+          renderQuizzes();
         }
         dropdown.style.display = "none";
       });
 
-      // Navigate to quiz set page
+      // Navigate to questions page
       card.addEventListener("click", (e) => {
         if (e.target.closest(".dots") || e.target.closest(".dropdown")) return;
-        window.location.href = `quiz-set.html?subjectId=${
-          subj.id
-        }&subjectName=${encodeURIComponent(subj.name)}`;
+        window.location.href = `questions.html?subjectId=${subjectId}&quizId=${
+          quiz.id
+        }&quizName=${encodeURIComponent(quiz.name)}&subjectName=${subjectName}`;
       });
     });
 
-    // Add card
+    // Add Quiz card
     const addCard = document.createElement("div");
     addCard.classList.add("subject-card", "add-card");
-    addCard.innerHTML = `<i class="fas fa-plus"></i><span>Add Subject</span>`;
+    addCard.innerHTML = `<i class="fas fa-plus"></i><span>Add Quiz</span>`;
     container.appendChild(addCard);
 
     addCard.addEventListener("click", () => {
       editId = null;
-      modalTitle.textContent = "Add Subject";
+      modalTitle.textContent = "Add Quiz";
       input.value = "";
       modal.style.display = "flex";
     });
@@ -91,14 +96,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!name) return;
 
     if (editId) {
-      const subj = subjects.find((s) => s.id === editId);
-      subj.name = name;
+      const quiz = quizzes.find((q) => q.id === editId);
+      quiz.name = name;
     } else {
-      subjects.push({ id: Date.now(), name, quizzes: [] });
+      quizzes.push({ id: Date.now(), name, questions: [] });
     }
 
     modal.style.display = "none";
-    renderSubjects();
+    renderQuizzes();
   });
 
   closeBtn.addEventListener("click", () => (modal.style.display = "none"));
@@ -109,5 +114,5 @@ document.addEventListener("DOMContentLoaded", () => {
       .forEach((dd) => (dd.style.display = "none"));
   });
 
-  loadSubjects();
+  renderQuizzes();
 });
