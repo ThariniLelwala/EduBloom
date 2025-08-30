@@ -11,6 +11,7 @@ const quizName = params.get("quizName") || "Quiz";
 subjectHeading.textContent = quizName;
 
 let currentQuestions = [];
+let editingId = null; // Track which question is being edited
 
 async function loadQuestions() {
   const res = await fetch("../../data/quiz.json");
@@ -28,13 +29,19 @@ async function loadQuestions() {
 
 function renderQuestions() {
   container.innerHTML = "";
-  currentQuestions.forEach((q) => {
+  currentQuestions.forEach((q, i) => {
     const card = document.createElement("div");
     card.classList.add("question-card");
     card.innerHTML = `
-      <div class="question-text"><i class="fas fa-question"></i> ${
-        q.question
-      }</div>
+    <div class="question-header">
+      <div class="question-text">
+      ${i + 1}.
+      ${q.question}
+      </div>
+      <div class="question-actions">
+        <i class="edit-btn fas fa-edit icon-btn"></i>
+        <i class="delete-btn fas fa-trash icon-btn "></i>
+      </div></div>
       <ul class="answers">
         ${q.answers
           .map(
@@ -43,7 +50,20 @@ function renderQuestions() {
           )
           .join("")}
       </ul>
+      
     `;
+
+    // Edit button
+    card.querySelector(".edit-btn").addEventListener("click", () => {
+      openEditModal(q.id);
+    });
+
+    // Delete button
+    card.querySelector(".delete-btn").addEventListener("click", () => {
+      currentQuestions = currentQuestions.filter((ques) => ques.id !== q.id);
+      renderQuestions();
+    });
+
     container.appendChild(card);
   });
 }
@@ -66,17 +86,18 @@ const saveBtn = document.getElementById("save-btn");
 const saveNextBtn = document.getElementById("save-next-btn");
 
 function resetModal() {
+  editingId = null; // Reset editing state
   questionInput.value = "";
   answersContainer.innerHTML = "";
   addAnswerField();
   addAnswerField();
 }
 
-function addAnswerField(value = "") {
+function addAnswerField(value = "", checked = false) {
   const wrapper = document.createElement("div");
   wrapper.classList.add("answer-field");
   wrapper.innerHTML = `
-    <input type="radio" name="correct" />
+    <input type="radio" name="correct" ${checked ? "checked" : ""}/>
     <input type="text" class="answer-input" value="${value}" placeholder="Answer option" />
     <button class="remove-answer">&times;</button>
   `;
@@ -112,14 +133,29 @@ function saveQuestion(closeAfter = true) {
     return;
   }
 
-  const newQuestion = {
-    id: Date.now(),
-    question: questionText,
-    answers,
-    correct: answers[correctIndex],
-  };
+  if (editingId) {
+    // Update existing question
+    const qIndex = currentQuestions.findIndex((q) => q.id === editingId);
+    if (qIndex !== -1) {
+      currentQuestions[qIndex] = {
+        id: editingId,
+        question: questionText,
+        answers,
+        correct: answers[correctIndex],
+      };
+    }
+    editingId = null; // clear editing state
+  } else {
+    // Create new question
+    const newQuestion = {
+      id: Date.now(),
+      question: questionText,
+      answers,
+      correct: answers[correctIndex],
+    };
+    currentQuestions.push(newQuestion);
+  }
 
-  currentQuestions.push(newQuestion);
   renderQuestions();
 
   if (closeAfter) {
@@ -131,5 +167,21 @@ function saveQuestion(closeAfter = true) {
 
 saveBtn.addEventListener("click", () => saveQuestion(true));
 saveNextBtn.addEventListener("click", () => saveQuestion(false));
+
+// Load question into modal for editing
+function openEditModal(id) {
+  const q = currentQuestions.find((ques) => ques.id === id);
+  if (!q) return;
+
+  editingId = id;
+  questionInput.value = q.question;
+  answersContainer.innerHTML = "";
+
+  q.answers.forEach((ans) => {
+    addAnswerField(ans, ans === q.correct);
+  });
+
+  modal.style.display = "flex";
+}
 
 loadQuestions();

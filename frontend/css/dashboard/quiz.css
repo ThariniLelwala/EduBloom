@@ -144,6 +144,11 @@
   gap: 6px;
 }
 
+.question-header {
+  display: flex;
+  justify-content: space-between;
+}
+
 .question-card ul.answers {
   list-style: none;
   padding: 0;

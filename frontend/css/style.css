@@ -102,6 +102,16 @@ a {
   -webkit-backdrop-filter: blur(5px);
 }
 
+.icon-btn {
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s ease, color 0.3s ease;
+}
+
+.icon-btn:hover {
+  transform: translateY(-2px);
+}
+
 /* Drop Down Menu */
 
 .dropdown {
