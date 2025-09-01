@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (editId) {
       const subj = subjects.find((s) => s.id === editId);
-      subj.name = name;
+      if (subj) subj.name = name; // Fixed: ensure subj exists
     } else {
       subjects.push({ id: Date.now(), name, quizzes: [] });
     }

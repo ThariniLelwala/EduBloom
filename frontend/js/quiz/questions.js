@@ -35,12 +35,11 @@ function renderQuestions() {
     card.innerHTML = `
     <div class="question-header">
       <div class="question-text">
-      ${i + 1}.
-      ${q.question}
+      ${i + 1}. ${q.question}
       </div>
       <div class="question-actions">
         <i class="edit-btn fas fa-edit icon-btn"></i>
-        <i class="delete-btn fas fa-trash icon-btn "></i>
+        <i class="delete-btn fas fa-trash icon-btn"></i>
       </div></div>
       <ul class="answers">
         ${q.answers
@@ -50,7 +49,6 @@ function renderQuestions() {
           )
           .join("")}
       </ul>
-      
     `;
 
     // Edit button
@@ -58,10 +56,16 @@ function renderQuestions() {
       openEditModal(q.id);
     });
 
-    // Delete button
+    // Delete button with confirmation showing question text
     card.querySelector(".delete-btn").addEventListener("click", () => {
-      currentQuestions = currentQuestions.filter((ques) => ques.id !== q.id);
-      renderQuestions();
+      if (
+        confirm(
+          `Are you sure you want to delete this question?\n\n"${q.question}"`
+        )
+      ) {
+        currentQuestions = currentQuestions.filter((ques) => ques.id !== q.id);
+        renderQuestions();
+      }
     });
 
     container.appendChild(card);

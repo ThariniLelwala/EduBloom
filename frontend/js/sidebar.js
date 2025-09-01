@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const userRole = localStorage.getItem("role") || "student";
+  const userRole = localStorage.getItem("userRole") || "student";
   const container = document.getElementById("sidebar-container");
 
   // Inject sidebar HTML

@@ -73,7 +73,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (e.target.closest(".dots") || e.target.closest(".dropdown")) return;
         window.location.href = `questions.html?subjectId=${subjectId}&quizId=${
           quiz.id
-        }&quizName=${encodeURIComponent(quiz.name)}&subjectName=${subjectName}`;
+        }&quizName=${encodeURIComponent(
+          quiz.name
+        )}&subjectName=${encodeURIComponent(subjectName)}`;
       });
     });
 
@@ -97,7 +99,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (editId) {
       const quiz = quizzes.find((q) => q.id === editId);
-      quiz.name = name;
+      if (quiz) quiz.name = name; // Safety check
     } else {
       quizzes.push({ id: Date.now(), name, questions: [] });
     }
