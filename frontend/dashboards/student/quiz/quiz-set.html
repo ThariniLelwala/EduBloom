@@ -35,13 +35,24 @@
     <div class="container">
       <div id="sidebar-container"></div>
       <main id="content">
-        <h2 class="card-title">
-          <i
-            class="fas fa-chevron-left"
-            id="back-btn"
-            onclick="window.location.href = './quiz.html';"
-          ></i>
-          <span id="subject-name">Quizzes</span>
+        <h2 class="header-row">
+          <div class="card-title">
+            <i
+              class="fas fa-chevron-left"
+              id="back-btn"
+              onclick="window.location.href = './quiz.html';"
+            ></i>
+            <span id="subject-name">Quizzes</span>
+          </div>
+
+          <!-- Take Quiz button (top-right) -->
+          <button
+            id="take-quiz-btn"
+            class="btn-primary"
+            style="width: fit-content"
+          >
+            <i class="fas fa-play"></i> Take Quiz
+          </button>
         </h2>
 
         <div id="subjects-container" class="subjects-grid">
@@ -57,6 +68,19 @@
         <h2 id="modal-title">Add Quiz</h2>
         <input type="text" id="subject-input" placeholder="Enter quiz title" />
         <button id="save-subject-btn" class="btn-primary">Save</button>
+      </div>
+    </div>
+
+    <!-- Modal for taking quiz -->
+    <div id="take-quiz-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Select Topics</h2>
+        <div id="quiz-options"></div>
+        <div class="modal-actions">
+          <button id="confirm-take-quiz" class="btn-primary">Take Quiz</button>
+          <button id="cancel-take-quiz" class="btn-secondary">Cancel</button>
+        </div>
       </div>
     </div>
 

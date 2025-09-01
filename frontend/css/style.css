@@ -81,7 +81,6 @@ a {
   cursor: pointer;
   background-color: var(--color-white);
   padding: 12px 24px;
-  margin-top: 1rem;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 

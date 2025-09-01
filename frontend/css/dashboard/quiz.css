@@ -257,6 +257,17 @@ input[type="radio"]:checked {
   flex-direction: column;
 }
 
+.quiz-nav {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.answer-btn.selected {
+  background: rgba(0, 128, 255, 0.2);
+  border: 1px solid #007bff;
+}
+
 @media (max-width: 1024px) {
   #question-modal .modal-content {
     margin-left: 200px !important;

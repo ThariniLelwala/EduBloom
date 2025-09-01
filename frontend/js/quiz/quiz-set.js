@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const modalTitle = document.getElementById("modal-title");
   const input = document.getElementById("subject-input");
   const saveBtn = document.getElementById("save-subject-btn");
-  const closeBtn = document.querySelector(".close");
+  const closeBtn = modal.querySelector(".close");
   const subjectHeading = document.getElementById("subject-name");
 
   const params = new URLSearchParams(window.location.search);
@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (editId) {
       const quiz = quizzes.find((q) => q.id === editId);
-      if (quiz) quiz.name = name; // Safety check
+      if (quiz) quiz.name = name;
     } else {
       quizzes.push({ id: Date.now(), name, questions: [] });
     }
@@ -117,4 +117,74 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   renderQuizzes();
+
+  // ---------------- Take Quiz Logic ----------------
+  const takeQuizBtn = document.getElementById("take-quiz-btn");
+  const takeQuizModal = document.getElementById("take-quiz-modal");
+  const closeTakeQuiz = takeQuizModal.querySelector(".close");
+  const quizOptionsContainer = document.getElementById("quiz-options");
+  const confirmTakeQuiz = document.getElementById("confirm-take-quiz");
+  const cancelTakeQuiz = document.getElementById("cancel-take-quiz");
+
+  takeQuizBtn.addEventListener("click", () => {
+    quizOptionsContainer.innerHTML = "";
+    quizzes.forEach((quiz) => {
+      const option = document.createElement("div");
+      option.innerHTML = `
+        <label>
+          <input type="checkbox" value="${quiz.id}" />
+          ${quiz.name}
+        </label>
+      `;
+      quizOptionsContainer.appendChild(option);
+    });
+    takeQuizModal.style.display = "flex";
+  });
+
+  closeTakeQuiz.addEventListener(
+    "click",
+    () => (takeQuizModal.style.display = "none")
+  );
+  cancelTakeQuiz.addEventListener(
+    "click",
+    () => (takeQuizModal.style.display = "none")
+  );
+
+  confirmTakeQuiz.addEventListener("click", () => {
+    const selectedIds = [
+      ...quizOptionsContainer.querySelectorAll("input:checked"),
+    ].map((c) => parseInt(c.value));
+
+    if (!selectedIds.length) {
+      alert("Please select at least one topic to take the quiz.");
+      return;
+    }
+
+    // Gather questions from selected quizzes
+    let selectedQuestions = [];
+    selectedIds.forEach((id) => {
+      const quiz = quizzes.find((q) => q.id === id);
+      if (quiz) selectedQuestions = selectedQuestions.concat(quiz.questions);
+    });
+
+    // Shuffle questions
+    selectedQuestions = selectedQuestions
+      .map((q) => ({ ...q }))
+      .sort(() => Math.random() - 0.5);
+
+    // Store in localStorage
+    localStorage.setItem(
+      "currentQuiz",
+      JSON.stringify({
+        subjectId,
+        subjectName,
+        questions: selectedQuestions,
+      })
+    );
+
+    // Navigate to take quiz page
+    window.location.href = `take-quiz.html?subjectId=${subjectId}&subjectName=${encodeURIComponent(
+      subjectName
+    )}`;
+  });
 });
