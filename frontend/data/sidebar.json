@@ -9,7 +9,7 @@
     {
       "title": "Quiz",
       "icon": "fas fa-clipboard-question",
-      "link": "quiz.html"
+      "link": "quiz/quiz.html"
     },
     {
       "title": "Flash Cards",
@@ -39,7 +39,7 @@
     {
       "title": "Quiz",
       "icon": "fas fa-clipboard-question",
-      "link": "quiz.html"
+      "link": "quiz/quiz.html"
     },
     {
       "title": "Flash Cards",

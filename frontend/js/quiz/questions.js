@@ -14,7 +14,7 @@ let currentQuestions = [];
 let editingId = null; // Track which question is being edited
 
 async function loadQuestions() {
-  const res = await fetch("../../data/quiz.json");
+  const res = await fetch("/data/quiz.json");
   const data = await res.json();
 
   const subject = data.subjects.find((s) => s.id === subjectId);
