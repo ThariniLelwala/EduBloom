@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registration - EduBloom</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/login.css" />
+    <link rel="stylesheet" href="css/custom-select.css" />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <div id="registerForm">
+      <div class="loginImg">
+        <img
+          src="assets/images/bg1.jpeg"
+          width="100%"
+          height="100%"
+          alt="student"
+          class=""
+        />
+      </div>
+
+      <form id="registrationForm">
+        <h2 class="signText">Sign Up</h2>
+        <input type="text" name="username" placeholder="Username" required />
+        <input type="email" name="email" placeholder="Email" required />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          required
+        />
+        <select name="role" class="custom-select" required id="roleSelect">
+          <option value="">Select Role</option>
+          <option value="student_school">School Student</option>
+          <option value="student_university">University Student</option>
+          <option value="teacher">Teacher</option>
+          <option value="parent">Parent</option>
+        </select>
+
+        <!-- Parent-specific field (shown only for parents) -->
+        <input
+          type="text"
+          name="student_identifier"
+          placeholder="Student ID or Username (optional)"
+          id="studentIdentifierInput"
+          style="display: none"
+        />
+
+        <button type="submit" class="btn-primary">Sign Up</button>
+        <div class="message" id="message"></div>
+        <div style="margin-top: 10px">
+          Already have an account? <a href="login.html">Sign In</a>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      const form = document.getElementById("registrationForm");
+      const messageDiv = document.getElementById("message");
+      const roleSelect = document.getElementById("roleSelect");
+      const studentIdentifierInput = document.getElementById(
+        "studentIdentifierInput"
+      );
+
+      // Show/hide fields based on role selection
+      roleSelect.addEventListener("change", (e) => {
+        const role = e.target.value;
+
+        // Reset and hide parent identifier field
+        studentIdentifierInput.style.display = "none";
+        studentIdentifierInput.value = "";
+
+        // Show parent identifier field only for parents
+        if (role === "parent") {
+          studentIdentifierInput.style.display = "block";
+        }
+      });
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        // Parse combined role and student_type from single select
+        const selectedRole = data.role;
+        if (selectedRole.startsWith("student_")) {
+          data.role = "student";
+          data.student_type = selectedRole.split("_")[1]; // "school" or "university"
+        }
+
+        // Remove empty fields
+        Object.keys(data).forEach((key) => {
+          if (data[key] === "") {
+            delete data[key];
+          }
+        });
+
+        try {
+          const res = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          const result = await res.json();
+
+          if (res.ok) {
+            messageDiv.textContent = result.message;
+            messageDiv.style.color = "green";
+            form.reset();
+            // Reset conditional fields
+            studentIdentifierInput.style.display = "none";
+            window.location.href = "/login.html";
+          } else {
+            messageDiv.textContent = result.error;
+            messageDiv.style.color = "red";
+          }
+        } catch (err) {
+          messageDiv.textContent = "Error: " + err.message;
+          messageDiv.style.color = "red";
+        }
+      });
+    </script>
+    <script src="js/custom-select.js"></script>
+  </body>
+</html>

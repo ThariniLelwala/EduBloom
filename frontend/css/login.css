@@ -1,0 +1,90 @@
+/*  */
+body {
+  height: 100vh;
+  overflow: hidden;
+  margin: 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+form {
+  padding: 20px;
+  border-radius: 8px;
+  margin: auto;
+  width: 100%;
+  max-width: 360px;
+}
+
+.signText {
+  text-align: center;
+  margin: 40px;
+}
+
+#registerForm {
+  display: flex !important;
+  flex-direction: row !important;
+  color: var(--color-white);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--border-radius);
+  max-width: 800px;
+  min-height: 400px;
+  overflow: hidden;
+  margin: auto 24px !important;
+}
+
+#registrationForm {
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  transition: all 0.2s ease;
+  flex-grow: 1;
+}
+
+#loginForm {
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  transition: all 0.2s ease;
+  flex-grow: 1;
+}
+
+.loginImg {
+  flex-grow: 1;
+  object-fit: cover;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 768px) {
+  .loginImg {
+    display: none;
+  }
+  #registerForm {
+    width: 100%;
+    max-width: 360px;
+    margin: 80px;
+  }
+}
+
+/* input,
+select {
+  display: flex;
+  margin-bottom: 15px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+} */
+/* 
+input[text]{
+
+} */
+.message {
+  margin-top: 15px;
+  text-align: center;
+}

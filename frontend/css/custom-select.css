@@ -1,0 +1,74 @@
+/* Container for custom select */
+.custom-select-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: visible;
+}
+
+/* Hidden original select */
+.custom-select-wrapper select {
+  display: none;
+}
+
+/* Styled visible box */
+.custom-select-display {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: var(--color-white);
+  padding: 10px 40px 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  user-select: none;
+  position: relative;
+}
+
+/* Dropdown arrow */
+.custom-select-display::after {
+  content: "▼";
+  position: absolute;
+  right: 12px;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+/* Options container */
+.custom-select-options {
+  position: absolute;
+  top: 100%; /* directly below */
+  left: 0;
+  right: 0;
+  background: rgb(13, 12, 12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  max-height: 250px; /* show a good chunk */
+  overflow-y: auto; /* scroll if too many */
+  display: none;
+  z-index: 1000 !important;
+}
+
+/* Show dropdown */
+.custom-select-options.show {
+  display: block;
+  animation: fadeIn 0.2s ease;
+}
+
+/* Option items */
+.custom-select-option {
+  padding: 10px 14px;
+  cursor: pointer;
+  color: var(--color-white);
+  transition: background 0.2s;
+}
+
+.custom-select-option:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Selected option style */
+.custom-select-option.selected {
+  background: var(--color-primary);
+  font-weight: bold;
+  border-radius: 12px;
+}

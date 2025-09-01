@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Profile - EduBloom</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="profile-container">
+      <h1>User Profile</h1>
+      <div id="profile-info">
+        <!-- User info will be displayed here -->
+      </div>
+      <button id="logoutButton">Logout</button>
+    </div>
+
+    <script>
+      // Function to fetch the user's profile
+      async function fetchProfile() {
+        const token = localStorage.getItem("authToken"); // Get the token from localStorage
+
+        if (!token) {
+          // If no token is available, redirect to login page
+          window.location.href = "/login.html";
+          return;
+        }
+
+        try {
+          const res = await fetch("/api/auth/profile", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`, // Include token in the Authorization header
+            },
+          });
+
+          const result = await res.json();
+
+          if (res.ok) {
+            // Profile fetched successfully, display the profile info
+            const profileInfo = document.getElementById("profile-info");
+            profileInfo.innerHTML = `
+                        <p><strong>Username:</strong> ${
+                          result.user.username
+                        }</p>
+                        <p><strong>Email:</strong> ${result.user.email}</p>
+                        <p><strong>Role:</strong> ${result.user.role}</p>
+                        <p><strong>Student Type:</strong> ${
+                          result.user.student_type || "N/A"
+                        }</p>
+                    `;
+          } else {
+            // Handle any errors (e.g., token expired or invalid)
+            alert(result.error || "Error fetching profile.");
+          }
+        } catch (err) {
+          console.error("Error fetching profile:", err.message);
+          alert("An error occurred while fetching your profile.");
+        }
+      }
+
+      // Function to handle logout
+      function logout() {
+        localStorage.removeItem("authToken"); // Clear the token from localStorage
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("username");
+        window.location.href = "/login.html"; // Redirect to login page
+      }
+
+      // Fetch profile on page load
+      fetchProfile();
+
+      // Add event listener to logout button
+      document.getElementById("logoutButton").addEventListener("click", logout);
+    </script>
+  </body>
+</html>

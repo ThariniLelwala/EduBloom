@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EduBloom Dashboard</title>
     <script src="../../js/sidebar.js"></script>
+    <script src="../../js/topbar.js"></script>
 
     <link rel="stylesheet" href="../../css/style.css" />
     <link rel="stylesheet" href="../../css/topbar.css" />
@@ -23,19 +24,9 @@
     <div class="bg-image"></div>
 
     <!-- topbar -->
-    <div id="topbar">
-      <div id="sidebar-toggle-topbar">
-        <i class="fas fa-bars"></i>
-      </div>
-      <div class="logo">
-        <!-- <i class="fas fa-bars" style="font-size: 20px;"></i> -->
-        <img src="../../assets/icons/logo.svg" width="40px" alt="" />
-        <span>EduBloom</span>
-      </div>
-      <div id="profile">
-        <i class="fas fa-circle-user"></i>
-      </div>
-    </div>
+    <script>
+      createTopbar();
+    </script>
 
     <!-- sidebar + content -->
     <div class="container">
