@@ -130,8 +130,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     quizOptionsContainer.innerHTML = "";
     quizzes.forEach((quiz) => {
       const option = document.createElement("div");
+
       option.innerHTML = `
-        <label>
+        <label class="checkbox-container">
           <input type="checkbox" value="${quiz.id}" />
           ${quiz.name}
         </label>

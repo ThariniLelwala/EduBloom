@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EduBloom - Quizzes</title>
+    <script src="../../../js/topbar.js"></script>
     <script src="../../../js/sidebar.js"></script>
 
     <link rel="stylesheet" href="../../../css/style.css" />
@@ -22,14 +23,9 @@
     <div class="bg-image"></div>
 
     <!-- topbar -->
-    <div id="topbar">
-      <div id="sidebar-toggle-topbar"><i class="fas fa-bars"></i></div>
-      <div class="logo">
-        <img src="../../../assets/icons/logo.svg" width="40px" alt="" />
-        <span>EduBloom</span>
-      </div>
-      <div id="profile"><i class="fas fa-circle-user"></i></div>
-    </div>
+    <script>
+      createTopbar();
+    </script>
 
     <!-- sidebar + content -->
     <div class="container">
@@ -79,7 +75,9 @@
         <div id="quiz-options"></div>
         <div class="modal-actions">
           <button id="confirm-take-quiz" class="btn-primary">Take Quiz</button>
-          <button id="cancel-take-quiz" class="btn-secondary">Cancel</button>
+          <button id="cancel-take-quiz" class="btn-secondary cancel-btn">
+            Cancel
+          </button>
         </div>
       </div>
     </div>

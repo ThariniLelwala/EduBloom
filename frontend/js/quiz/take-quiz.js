@@ -19,9 +19,9 @@ document.addEventListener("DOMContentLoaded", () => {
       currentIndex + pageSize,
       quizData.questions.length
     );
-    const title = document.createElement("h3");
-    title.textContent = `Questions ${currentIndex + 1} – ${endIndex}`;
-    container.appendChild(title);
+    document.getElementById("quiz-title").textContent = `Questions ${
+      currentIndex + 1
+    } – ${endIndex}`;
 
     for (let i = currentIndex; i < endIndex; i++) {
       const q = quizData.questions[i];
@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentIndex > 0) {
       const backBtn = document.createElement("button");
       backBtn.textContent = "Back";
-      backBtn.classList.add("btn-secondary");
+      backBtn.classList.add("btn-secondary", "cancel-btn");
       backBtn.addEventListener("click", () => {
         currentIndex -= pageSize;
         renderQuestions();
