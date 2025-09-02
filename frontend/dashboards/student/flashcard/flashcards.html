@@ -3,14 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EduBloom - Take Quiz</title>
-    <script src="../../../js/sidebar.js" defer></script>
+    <title>EduBloom - Flashcard Subjects</title>
+    <script src="../../../js/sidebar.js"></script>
 
     <link rel="stylesheet" href="../../../css/style.css" />
     <link rel="stylesheet" href="../../../css/topbar.css" />
     <link rel="stylesheet" href="../../../css/sidebar.css" />
     <link rel="stylesheet" href="../../../css/cards.css" />
     <link rel="stylesheet" href="../../../css/dashboard/quiz.css" />
+    <!-- <link rel="stylesheet" href="../../../css/dashboard/flashcards.css" /> -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
@@ -21,20 +22,38 @@
   <body>
     <div class="bg-image"></div>
 
+    <!-- topbar
+    <script>
+      createTopbar();
+    </script> -->
+
     <!-- sidebar + content -->
     <div class="container">
       <div id="sidebar-container"></div>
       <main id="content">
         <h2 class="card-title">
-          <i class="fas fa-question-circle"></i>
-          <span id="quiz-title"></span>
+          <i class="fas fa-sticky-note"></i> Flashcard Subjects
         </h2>
-
-        <div id="quiz-container"></div>
+        <div id="subjects-container" class="subjects-grid">
+          <!-- Cards rendered dynamically -->
+        </div>
       </main>
     </div>
 
+    <!-- Modal -->
+    <div id="subject-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="modal-title">Add Subject</h2>
+        <input
+          type="text"
+          id="subject-input"
+          placeholder="Enter subject name"
+        />
+        <button id="save-subject-btn" class="btn-primary">Save</button>
+      </div>
+    </div>
     <script src="../../../js/topbar.js"></script>
-    <script src="../../../js/quiz/take-quiz.js"></script>
+    <script src="../../../js/flashcards/flashcards.js"></script>
   </body>
 </html>

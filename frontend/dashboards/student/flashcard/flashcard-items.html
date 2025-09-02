@@ -3,14 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EduBloom - Quizzes</title>
+    <title>EduBloom - Flashcards</title>
     <script src="../../../js/sidebar.js"></script>
 
     <link rel="stylesheet" href="../../../css/style.css" />
     <link rel="stylesheet" href="../../../css/topbar.css" />
     <link rel="stylesheet" href="../../../css/sidebar.css" />
     <link rel="stylesheet" href="../../../css/cards.css" />
-    <link rel="stylesheet" href="../../../css/dashboard/quiz.css" />
+    <link rel="stylesheet" href="../../../css/dashboard/flashcards.css" />
+    <link rel="stylesheet" href="../../../css/dashboard/flashcards.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
@@ -21,8 +22,8 @@
   <body>
     <div class="bg-image"></div>
 
-    <!-- topbar
-    <script>
+    <!-- topbar -->
+    <!-- <script>
       createTopbar();
     </script> -->
 
@@ -33,33 +34,36 @@
         <div class="header-row">
           <h2 class="card-title">
             <i class="fas fa-chevron-left" id="back-btn"></i>
-            <span id="subject-name">Quiz</span>
+            <span id="subject-name">Flashcard Set</span>
           </h2>
-          <button id="add-question-btn" class="btn-primary">
-            <i class="fas fa-plus"></i> Add Question
+          <button id="add-flashcard-btn" class="btn-primary">
+            <i class="fas fa-plus"></i> Add Flashcard
           </button>
         </div>
 
-        <div id="subjects-container" class="questions-list"></div>
+        <div id="subjects-container" class="flashcards-list"></div>
       </main>
     </div>
 
     <!-- Modal -->
-    <div id="question-modal" class="modal">
+    <div id="flashcard-modal" class="modal">
       <div class="modal-content">
         <div>
           <span class="close">&times;</span>
-          <h2 id="modal-title">Add Question</h2>
+          <h2 id="modal-title">Add Flashcard</h2>
         </div>
 
         <input
           type="text"
           id="question-input"
-          placeholder="Enter question text"
+          placeholder="Enter term/question"
         />
 
-        <div id="answers-container"></div>
-        <button id="add-answer-btn" class="btn-secondary">+ Add Option</button>
+        <textarea
+          id="answer-input"
+          placeholder="Enter definition/answer"
+          rows="4"
+        ></textarea>
 
         <div class="modal-actions">
           <button id="save-btn" class="btn-primary">Save</button>
@@ -69,6 +73,6 @@
     </div>
 
     <script src="../../../js/topbar.js"></script>
-    <script src="../../../js/quiz/questions.js"></script>
+    <script src="../../../js/flashcards/flasshcard-itmes.js"></script>
   </body>
 </html>

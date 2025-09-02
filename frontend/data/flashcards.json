@@ -1,0 +1,31 @@
+{
+  "subjects": [
+    {
+      "id": 1,
+      "name": "Mathematics",
+      "sets": [
+        {
+          "id": 1,
+          "name": "Algebra Basics",
+          "cards": [
+            {
+              "id": 1,
+              "question": "What is the quadratic formula?",
+              "answer": "x = [-b ± √(b² - 4ac)] / (2a)"
+            },
+            {
+              "id": 2,
+              "question": "What is the slope-intercept form of a linear equation?",
+              "answer": "y = mx + b, where m is the slope and b is the y-intercept"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "History",
+      "sets": []
+    }
+  ]
+}

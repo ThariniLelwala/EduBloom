@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Study Flashcards</title>
+    <script src="../../../js/sidebar.js" defer></script>
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/topbar.css" />
+    <link rel="stylesheet" href="../../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/cards.css" />
+    <link rel="stylesheet" href="../../../css/dashboard/quiz.css" />
+    <!-- <link rel="stylesheet" href="../../../css/dashboard/flashcards.css" /> -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- sidebar + content -->
+    <div class="container">
+      <div id="sidebar-container"></div>
+      <main id="content">
+        <h2 class="card-title">
+          <i class="fas fa-sticky-note"></i>
+          <span id="flashcard-title"></span>
+        </h2>
+
+        <div id="flashcard-container">
+          <div class="flashcard-card" id="flashcard">
+            <div class="flashcard-front">
+              <div class="flashcard-content" id="flashcard-question"></div>
+            </div>
+            <div class="flashcard-back">
+              <div class="flashcard-content" id="flashcard-answer"></div>
+            </div>
+          </div>
+
+          <div class="flashcard-controls">
+            <button id="prev-btn" class="btn-secondary">
+              <i class="fas fa-chevron-left"></i> Previous
+            </button>
+            <button id="flip-btn" class="btn-primary">
+              <i class="fas fa-sync-alt"></i> Flip
+            </button>
+            <button id="next-btn" class="btn-secondary">
+              Next <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <span id="progress-text">0/0</span>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="../../../js/topbar.js"></script>
+    <script src="../../../js/flashcards/study-flashcards.js"></script>
+  </body>
+</html>

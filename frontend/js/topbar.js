@@ -8,7 +8,7 @@ async function createTopbar() {
         <i class="fas fa-bars"></i>
       </div>
       <div class="logo">
-        <img src="../../assets/icons/logo.svg" width="40px" alt="" />
+        <img src="/assets/icons/logo.svg" width="40px" alt="EduBloom Logo" />
         <span>EduBloom</span>
       </div>
       <div id="profile" onclick="toggleDropdown()">
@@ -30,7 +30,7 @@ async function createTopbar() {
   const body = document.querySelector("body");
   const topbarContainer = document.createElement("div");
   topbarContainer.innerHTML = topbarHTML;
-  body.insertBefore(topbarContainer, body.firstChild);
+  body.prepend(topbarContainer); // safer than insertBefore
 
   // Fetch profile data
   await fetchProfileData();

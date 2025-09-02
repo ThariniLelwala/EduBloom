@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EduBloom - Quizzes</title>
+    <title>EduBloom - Flashcard Sets</title>
     <script src="../../../js/sidebar.js"></script>
 
     <link rel="stylesheet" href="../../../css/style.css" />
@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="../../../css/sidebar.css" />
     <link rel="stylesheet" href="../../../css/cards.css" />
     <link rel="stylesheet" href="../../../css/dashboard/quiz.css" />
+    <!-- <link rel="stylesheet" href="../../../css/dashboard/flashcards.css" /> -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
@@ -35,46 +36,48 @@
             <i
               class="fas fa-chevron-left"
               id="back-btn"
-              onclick="window.location.href = './quiz.html';"
+              onclick="window.location.href = './flashcards.html';"
             ></i>
-            <span id="subject-name">Quizzes</span>
+            <span id="subject-name">Flashcard Sets</span>
           </div>
 
-          <!-- Take Quiz button (top-right) -->
+          <!-- Study Flashcards button (top-right) -->
           <button
-            id="take-quiz-btn"
+            id="study-flashcards-btn"
             class="btn-primary"
             style="width: fit-content"
           >
-            <i class="fas fa-play"></i> Take Quiz
+            <i class="fas fa-play"></i> Study Flashcards
           </button>
         </h2>
 
         <div id="subjects-container" class="subjects-grid">
-          <!-- Quiz cards rendered dynamically -->
+          <!-- Flashcard set cards rendered dynamically -->
         </div>
       </main>
     </div>
 
-    <!-- Modal for creating/editing quiz -->
+    <!-- Modal for creating/editing flashcard set -->
     <div id="subject-modal" class="modal">
       <div class="modal-content">
         <span class="close">&times;</span>
-        <h2 id="modal-title">Add Quiz</h2>
-        <input type="text" id="subject-input" placeholder="Enter quiz title" />
+        <h2 id="modal-title">Add Flashcard Set</h2>
+        <input type="text" id="subject-input" placeholder="Enter set title" />
         <button id="save-subject-btn" class="btn-primary">Save</button>
       </div>
     </div>
 
-    <!-- Modal for taking quiz -->
-    <div id="take-quiz-modal" class="modal">
+    <!-- Modal for studying flashcards -->
+    <div id="study-flashcards-modal" class="modal">
       <div class="modal-content">
         <span class="close">&times;</span>
-        <h2>Select Topics</h2>
-        <div id="quiz-options"></div>
+        <h2>Select Sets to Study</h2>
+        <div id="flashcard-options"></div>
         <div class="modal-actions">
-          <button id="confirm-take-quiz" class="btn-primary">Take Quiz</button>
-          <button id="cancel-take-quiz" class="btn-secondary cancel-btn">
+          <button id="confirm-study-flashcards" class="btn-primary">
+            Study Now
+          </button>
+          <button id="cancel-study-flashcards" class="btn-secondary cancel-btn">
             Cancel
           </button>
         </div>
@@ -82,6 +85,6 @@
     </div>
 
     <script src="../../../js/topbar.js"></script>
-    <script src="../../../js/quiz/quiz-set.js"></script>
+    <script src="../../../js/flashcards/flashcard-set.js"></script>
   </body>
 </html>

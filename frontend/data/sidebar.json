@@ -13,8 +13,8 @@
     },
     {
       "title": "Flash Cards",
-      "icon": "fas fa-bolt",
-      "link": "flashcards.html"
+      "icon": "fas fa-sticky-note",
+      "link": "flashcard/flashcards.html"
     },
     {
       "title": "Task",
