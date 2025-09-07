@@ -1,8 +1,5 @@
 .card {
-  /* background-color: var(--color-white); */
-  /* background-color: rgba(255, 255, 255, 0.4); */
   border-radius: var(--border-radius);
-  /* box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2); */
   padding: 24px;
   transition: all 0.2s ease;
   color: var(--color-white);
@@ -24,21 +21,18 @@
 .card h2 h3 {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
 }
+
 .card:hover {
   transform: translateY(-2px);
 }
+
 .card.welcome {
-  /* position: relative; */
   border: none;
-  /* background-color: var(--color-primary); */
   background-color: transparent;
   color: var(--color-white);
   font-weight: 400 !important;
-  /* margin-top: 40px; */
   overflow: hidden;
-  /* height: 200px; */
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.2);
-  /* border: 1px solid rgba(255, 255, 255, 0.3); */
 }
 
 .card.welcome:hover {
@@ -46,7 +40,6 @@
 }
 
 .welcome-content {
-  /* position: relative; */
   z-index: 10 !important;
 }
 
@@ -63,18 +56,18 @@
   transform: scale(1.1);
   z-index: -1;
 }
+
+/* General Grid layout */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(300px, 1fr)
-  ); /* slightly smaller min */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 16px;
   width: 100%;
   box-sizing: border-box;
   margin-bottom: 16px;
 }
 
+/* Specific card spans */
 .card.w1 {
   grid-column: span 1;
 }
@@ -96,16 +89,62 @@
 }
 
 .card.full {
-  grid-column: 1 / -1; /* span all available columns */
+  grid-column: 1 / -1;
+}
+
+/* Summary cards styling */
+.small-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 100px;
+}
+
+.small-card h4 {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.small-card p {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Card header for main cards */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.card-header small {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* Text */
-
 .card .heading {
   font-weight: 700;
   margin-bottom: 12px;
 }
 
+/* ===============================
+   Summary cards grid fix
+   Force top summary cards in one row
+=============================== */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 16px;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .card.w2,
   .card.w3,
@@ -114,8 +153,10 @@
   }
 }
 
+/* Responsive */
 @media (max-width: 500px) {
-  .card-grid {
-    grid-template-columns: 1fr;
+  .card-grid,
+  .summary-grid {
+    grid-template-columns: 1fr; /* Stack all cards in single column */
   }
 }

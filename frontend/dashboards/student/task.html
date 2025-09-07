@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom Tasks</title>
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- Topbar -->
+    <div id="topbar-container"></div>
+
+    <div class="container">
+      <!-- Sidebar -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main content -->
+      <main id="content">
+        <!-- ===== Summary Cards (Top Row) ===== -->
+        <div class="summary-grid">
+          <div class="card w1 small-card">
+            <h4>To-Do Completed</h4>
+            <p id="todo-completed">0</p>
+          </div>
+
+          <div class="card w1 small-card">
+            <h4>Weekly Goals Achieved</h4>
+            <p id="weekly-completed">0</p>
+          </div>
+
+          <div class="card w1 small-card">
+            <h4>Monthly Goals Achieved</h4>
+            <p id="monthly-completed">0</p>
+          </div>
+        </div>
+
+        <!-- ===== Main Cards (Bottom Row) ===== -->
+        <div class="card-grid">
+          <div class="card w1 h2">
+            <div class="card-header">
+              <h3>To-Do</h3>
+              <small id="todo-date"></small>
+            </div>
+            <ul id="todo-list"></ul>
+          </div>
+
+          <div class="card w1 h2">
+            <div class="card-header">
+              <h3>Weekly Goals</h3>
+              <small id="weekly-date"></small>
+            </div>
+            <ul id="weekly-list"></ul>
+          </div>
+
+          <div class="card w1 h2">
+            <div class="card-header">
+              <h3>Monthly Goals</h3>
+              <small id="monthly-date"></small>
+            </div>
+            <ul id="monthly-list"></ul>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- JS Files -->
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/sidebar.js"></script>
+    <script src="../../js/tasks.js"></script>
+  </body>
+</html>

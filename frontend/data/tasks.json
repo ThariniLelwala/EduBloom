@@ -1,0 +1,15 @@
+{
+  "todo": [
+    { "task": "Finish Math Assignment", "done": false },
+    { "task": "Read Chapter 4", "done": true },
+    { "task": "Email project report", "done": false }
+  ],
+  "weeklyGoals": [
+    { "goal": "Exercise 3 times", "done": false },
+    { "goal": "Complete coding module", "done": true }
+  ],
+  "monthlyGoals": [
+    { "goal": "Finish Book", "done": false },
+    { "goal": "Submit Project Draft", "done": true }
+  ]
+}

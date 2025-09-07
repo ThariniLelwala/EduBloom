@@ -3,15 +3,14 @@
   --color-bg: #c7d9d6;
   --color-primary: #0e2e24;
   --color-hover: #032f30;
-
   --color-card-bg: #ffffff;
   --color-container: #ffffff;
-
   --color-white: #ffffff;
   --color-text: #181818;
   --color-logo: #ffffff;
-
   --border-radius: 16px;
+  --spacing-s: 8px;
+  --spacing-md: 16px;
 }
 
 /* Reset */
@@ -66,11 +65,7 @@ a {
   overflow-x: hidden;
 }
 
-.width-fill {
-  max-width: 100%;
-}
-
-/* buttons */
+/* Buttons */
 .btn-primary {
   display: inline-block;
   border: none;
@@ -99,28 +94,15 @@ a {
   margin-bottom: 8px;
 }
 
-/* .btn-secondary.cancel-btn {
-  background: transparent;
-  border: 1px dashed rgba(255, 255, 255, 0.5);
-  padding: 8px;
-  margin: 0px;
-  margin-right: 0px !important;
-  color: var(--color-white);
-  cursor: pointer;
-  flex-grow: 1;
-} */
-
 #back-btn {
   cursor: pointer;
   font-size: 20px;
   border-radius: 8px;
   padding: 4px;
-  /* border: 1px solid rgba(255, 255, 255, 0.3); */
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #back-btn:hover {
-  /* background-color: var(--color-card-bg); */
   color: var(--color-white);
   background: rgba(255, 255, 255, 0.05);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
@@ -139,7 +121,6 @@ a {
 }
 
 /* Drop Down Menu */
-
 .dropdown {
   display: none;
   position: absolute;
@@ -176,15 +157,6 @@ a {
 /* =======================
    Modal (Reusable)
 ======================= */
-:root {
-  --modal-bg: var(--color-card-bg);
-  --modal-text: var(--color-text);
-  --modal-overlay: rgba(0, 0, 0, 0.2);
-  --modal-padding: var(--spacing-md);
-  --modal-radius: var(--border-radius);
-  --modal-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-}
-
 .modal {
   display: none; /* Hidden by default */
   position: fixed;
@@ -233,6 +205,7 @@ a {
 .modal-content input::placeholder {
   color: var(--color-white);
 }
+
 .modal-content input:focus {
   outline: none !important;
   background-color: rgba(255, 255, 255, 0.1);
@@ -311,7 +284,24 @@ a {
   }
 }
 
-/* checkboxbutton style */
+/* Input & Textarea */
+input,
+textarea {
+  width: 100%;
+  padding: 8px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  background: transparent;
+  color: var(--color-white);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Checkbox button */
 input[type="checkbox"] {
   -webkit-appearance: none;
   appearance: none;
@@ -322,37 +312,10 @@ input[type="checkbox"] {
   height: 16px;
   border-radius: 4px;
   margin-right: 8px;
-  margin-bottom: 0px;
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 input[type="checkbox"]:checked {
   background-color: var(--color-white);
   border: 1px solid var(--color-white);
-}
-
-input {
-  width: 100%;
-  padding: 8px;
-  border-radius: 12px;
-  margin-bottom: 12px;
-  background: transparent;
-  color: var(--color-white);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-input::placeholder {
-  color: rgba(255, 255, 255, 0.3);
-}
-*/
-
-/* textarea */
-textarea {
-  max-width: 100%;
-  padding: 8px;
-  border-radius: 12px;
-  margin-bottom: 12px;
-  background: transparent;
-  color: var(--color-white);
-  border: 2px solid rgba(255, 255, 255, 0.3);
 }
