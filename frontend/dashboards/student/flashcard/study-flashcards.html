@@ -10,8 +10,7 @@
     <link rel="stylesheet" href="../../../css/topbar.css" />
     <link rel="stylesheet" href="../../../css/sidebar.css" />
     <link rel="stylesheet" href="../../../css/cards.css" />
-    <link rel="stylesheet" href="../../../css/dashboard/quiz.css" />
-    <!-- <link rel="stylesheet" href="../../../css/dashboard/flashcards.css" /> -->
+    <link rel="stylesheet" href="../../../css/dashboard/flashcards.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
@@ -33,26 +32,28 @@
 
         <div id="flashcard-container">
           <div class="flashcard-card" id="flashcard">
-            <div class="flashcard-front">
-              <div class="flashcard-content" id="flashcard-question"></div>
+            <div class="flashcard-inner">
+              <div class="flashcard-front">
+                <div class="flashcard-content" id="flashcard-question"></div>
+              </div>
+              <div class="flashcard-back">
+                <div class="flashcard-content" id="flashcard-answer"></div>
+              </div>
             </div>
-            <div class="flashcard-back">
-              <div class="flashcard-content" id="flashcard-answer"></div>
-            </div>
+
+            <!-- Navigation arrows -->
+            <button id="prev-btn" class="nav-arrow">&lt;</button>
+            <button id="next-btn" class="nav-arrow">&gt;</button>
           </div>
 
+          <!-- Flip button -->
           <div class="flashcard-controls">
-            <button id="prev-btn" class="btn-secondary">
-              <i class="fas fa-chevron-left"></i> Previous
-            </button>
             <button id="flip-btn" class="btn-primary">
               <i class="fas fa-sync-alt"></i> Flip
             </button>
-            <button id="next-btn" class="btn-secondary">
-              Next <i class="fas fa-chevron-right"></i>
-            </button>
           </div>
 
+          <!-- Progress -->
           <div class="progress-container">
             <div class="progress-bar">
               <div class="progress-fill" id="progress-fill"></div>

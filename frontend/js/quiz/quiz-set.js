@@ -161,17 +161,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // Gather questions from selected quizzes
+    // Gather questions from selected quizzes and stamp quizId
     let selectedQuestions = [];
     selectedIds.forEach((id) => {
       const quiz = quizzes.find((q) => q.id === id);
-      if (quiz) selectedQuestions = selectedQuestions.concat(quiz.questions);
+      if (quiz) {
+        quiz.questions.forEach((q) => {
+          selectedQuestions.push({
+            ...q,
+            quizId: quiz.id, // 👈 stamp parent quizId
+          });
+        });
+      }
     });
 
     // Shuffle questions
-    selectedQuestions = selectedQuestions
-      .map((q) => ({ ...q }))
-      .sort(() => Math.random() - 0.5);
+    selectedQuestions = selectedQuestions.sort(() => Math.random() - 0.5);
 
     // Store in localStorage
     localStorage.setItem(

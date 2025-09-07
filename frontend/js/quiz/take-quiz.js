@@ -10,7 +10,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentIndex = 0; // index of first question on page
   let score = 0;
   const pageSize = 2; // number of questions per page
-  const userAnswers = {}; // track answers by question id
+  const userAnswers = {}; // track answers
+
+  // Create a globally unique key per question
+  function getKey(q) {
+    const quizId = q.quizId || quizData.id; // prefer per-question quizId
+    return `${quizId}-${q.id}`;
+  }
 
   function renderQuestions() {
     container.innerHTML = "";
@@ -28,6 +34,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const card = document.createElement("div");
       card.classList.add("question-card");
 
+      const qKey = getKey(q);
+
       card.innerHTML = `
         <div class="question-header">
           <div class="question-text">${i + 1}. ${q.question}</div>
@@ -38,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
               (ans) => `
               <li>
                 <button class="answer-btn ${
-                  userAnswers[q.id] === ans ? "selected" : ""
+                  userAnswers[qKey] === ans ? "selected" : ""
                 }">${ans}</button>
               </li>`
             )
@@ -49,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Add event listeners for answers
       card.querySelectorAll(".answer-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
-          userAnswers[q.id] = btn.textContent;
+          userAnswers[qKey] = btn.textContent;
 
           // reset styles in this question
           card
@@ -100,7 +108,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderResult() {
     score = 0;
     quizData.questions.forEach((q) => {
-      if (userAnswers[q.id] === q.correct) score++;
+      const qKey = getKey(q);
+      if (userAnswers[qKey] === q.correct) score++;
     });
 
     container.innerHTML = `
@@ -108,9 +117,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <h2>Quiz Completed!</h2>
         <p>Your score: ${score} / ${quizData.questions.length}</p>
         <button class="btn-primary" onclick="window.location.href='quiz-set.html?subjectId=${
-          quizData.subjectId
+          quizData.subjectId || ""
         }&subjectName=${encodeURIComponent(
-      quizData.subjectName
+      quizData.subjectName || "Quizzes"
     )}'">Back to Quizzes</button>
       </div>
     `;

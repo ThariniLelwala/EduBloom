@@ -181,7 +181,7 @@
   width: max-content;
 }
 
-.btn-secondary {
+#add-answer-btn {
   margin-top: 10px;
   margin-left: 24px;
   margin-right: 22px !important;
@@ -199,10 +199,12 @@
   background: transparent;
   border: 1px dashed rgba(255, 255, 255, 0.5);
   padding: 8px;
-  margin: 0px;
+  margin-top: 8px;
+  margin-bottom: 8px;
   margin-right: 0px !important;
   color: var(--color-white);
   cursor: pointer;
+  width: 100%;
   flex-grow: 1;
 }
 
