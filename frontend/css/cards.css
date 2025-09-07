@@ -26,6 +26,7 @@
   transform: translateY(-2px);
 }
 
+/* Welcome card */
 .card.welcome {
   border: none;
   background-color: transparent;
@@ -71,15 +72,12 @@
 .card.w1 {
   grid-column: span 1;
 }
-
 .card.w2 {
   grid-column: span 2;
 }
-
 .card.w3 {
   grid-column: span 3;
 }
-
 .card.w4 {
   grid-column: span 4;
 }
@@ -87,7 +85,6 @@
 .card.h2 {
   grid-row: span 2 !important;
 }
-
 .card.full {
   grid-column: 1 / -1;
 }
@@ -121,21 +118,19 @@
 }
 
 .card-header small {
-  font-size: 14px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.7);
 }
 
 /* Text */
 .card .heading {
-  font-weight: 700;
+  font-weight: 600;
   margin-bottom: 12px;
 }
 
-/* ===============================
-   Summary cards grid fix
-   Force top summary cards in one row
-=============================== */
+/* Summary grid */
 .summary-grid {
+  margin-top: 16px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
@@ -153,10 +148,9 @@
   }
 }
 
-/* Responsive */
 @media (max-width: 500px) {
   .card-grid,
   .summary-grid {
-    grid-template-columns: 1fr; /* Stack all cards in single column */
+    grid-template-columns: 1fr;
   }
 }

@@ -10,12 +10,12 @@
     <link rel="stylesheet" href="../../css/cards.css" />
     <link rel="stylesheet" href="../../css/topbar.css" />
     <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/task.css" />
 
     <!-- Font Awesome -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
-      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
@@ -33,6 +33,15 @@
 
       <!-- Main content -->
       <main id="content">
+        <div class="card welcome full">
+          <div class="welcome-content">
+            <h1 class="heading">
+              <i class="fas fa-clipboard-list"></i>Tasks and Goals
+            </h1>
+            <div>"Your goals, one checkmark at a time."</div>
+          </div>
+          <div class="welcome-image"></div>
+        </div>
         <!-- ===== Summary Cards (Top Row) ===== -->
         <div class="summary-grid">
           <div class="card w1 small-card">
@@ -53,31 +62,109 @@
 
         <!-- ===== Main Cards (Bottom Row) ===== -->
         <div class="card-grid">
+          <!-- To-Do Card -->
           <div class="card w1 h2">
             <div class="card-header">
               <h3>To-Do</h3>
               <small id="todo-date"></small>
             </div>
             <ul id="todo-list"></ul>
+            <button class="btn-secondary add-btn" data-type="todo">
+              + Add Task
+            </button>
+            <div class="card-actions">
+              <i class="fa fa-pencil edit-btn" data-type="todo"></i>
+              <i class="fa fa-trash delete-btn" data-type="todo"></i>
+            </div>
           </div>
 
+          <!-- Weekly Goals Card -->
           <div class="card w1 h2">
             <div class="card-header">
               <h3>Weekly Goals</h3>
               <small id="weekly-date"></small>
             </div>
             <ul id="weekly-list"></ul>
+            <button class="btn-secondary add-btn" data-type="weekly">
+              + Add Goal
+            </button>
+            <div class="card-actions">
+              <i class="fa fa-pencil edit-btn" data-type="weekly"></i>
+              <i class="fa fa-trash delete-btn" data-type="weekly"></i>
+            </div>
           </div>
 
+          <!-- Monthly Goals Card -->
           <div class="card w1 h2">
             <div class="card-header">
               <h3>Monthly Goals</h3>
               <small id="monthly-date"></small>
             </div>
             <ul id="monthly-list"></ul>
+            <button class="btn-secondary add-btn" data-type="monthly">
+              + Add Goal
+            </button>
+            <div class="card-actions">
+              <i class="fa fa-pencil edit-btn" data-type="monthly"></i>
+              <i class="fa fa-trash delete-btn" data-type="monthly"></i>
+            </div>
           </div>
         </div>
       </main>
+    </div>
+
+    <!-- ===== Modal for Adding Task/Goal ===== -->
+    <div id="task-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Add Item</h2>
+          <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="task-input" placeholder="Enter task/goal..." />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="modal-cancel">Cancel</button>
+          <button class="btn-primary" id="modal-save">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Modal for Editing Task ===== -->
+    <div id="edit-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="edit-modal-title">Edit Task/Goal</h2>
+          <button class="modal-close" id="edit-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <select id="edit-select"></select>
+          <input type="text" id="edit-input" placeholder="Edit text..." />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="edit-cancel">Cancel</button>
+          <button class="btn-primary" id="edit-save">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Modal for Deleting Tasks ===== -->
+    <div class="modal" id="delete-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Select Tasks to Delete</h2>
+          <button class="modal-close" id="delete-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <ul id="delete-list" class="task-list">
+            <!-- Tasks will be loaded here dynamically -->
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="delete-cancel">Cancel</button>
+          <button class="btn-primary" id="delete-confirm">Delete</button>
+        </div>
+      </div>
     </div>
 
     <!-- JS Files -->

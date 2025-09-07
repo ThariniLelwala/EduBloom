@@ -1,0 +1,137 @@
+/* ../../css/task.css */
+
+/* Task lists: no bullets */
+#todo-list,
+#weekly-list,
+#monthly-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Each task item is positioned so the ::after line can span across checkbox + label */
+#todo-list li,
+#weekly-list li,
+#monthly-list li {
+  display: flex;
+  gap: 8px;
+  padding: 6px 0;
+  position: relative; /* required for li::after */
+}
+
+/* Checkbox */
+input[type="checkbox"].task-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--color-white);
+  z-index: 3; /* above the strike line so the line passes behind it */
+  flex: 0 0 auto;
+}
+
+/* Label */
+#todo-list li label,
+#weekly-list li label,
+#monthly-list li label {
+  cursor: pointer;
+  flex: 1 1 auto;
+  color: inherit;
+  transition: color 0.25s ease;
+  z-index: 3; /* above the strike line */
+  position: relative;
+}
+
+/* strike-through line spanning the whole li */
+#todo-list li::after,
+#weekly-list li::after,
+#monthly-list li::after {
+  content: "";
+  position: absolute;
+  left: -8px;
+  right: 12px;
+  top: 34%;
+  height: 2px;
+  background-color: var(--color-white);
+  transform: translateY(-50%) scaleX(0);
+  transform-origin: left center;
+  transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+  z-index: 2;
+}
+
+#todo-list li.completed::after,
+#weekly-list li.completed::after,
+#monthly-list li.completed::after {
+  transform: translateY(-50%) scaleX(1);
+}
+
+#todo-list li.completed label,
+#weekly-list li.completed label,
+#monthly-list li.completed label {
+  color: rgba(255, 255, 255, 0.55);
+  transition: color 220ms ease 120ms;
+}
+
+@media (max-width: 500px) {
+  #todo-list li,
+  #weekly-list li,
+  #monthly-list li {
+    gap: 10px;
+  }
+}
+
+/* Card action icons */
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.card-actions i {
+  cursor: pointer;
+  font-size: 16px;
+  opacity: 0.8;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.card-actions i:hover {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+/* =======================
+   Delete Modal Task List
+======================= */
+#delete-list {
+  max-height: 200px;
+  overflow-y: auto;
+  text-align: left;
+  padding: 0;
+  margin: 0;
+  scrollbar-width: none; /* Firefox */
+}
+
+#delete-list::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+#delete-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  transition: background 0.2s ease;
+}
+
+#delete-list li:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+#delete-list label {
+  flex-grow: 1;
+  color: var(--color-white);
+  cursor: pointer;
+}
