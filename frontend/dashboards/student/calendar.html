@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom Calendar</title>
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/calendar.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <div class="container">
+      <div id="sidebar-container"></div>
+      <main id="content">
+        <div class="card-grid">
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">
+                <i class="fas fa-clock"></i> Pomodoro Timer
+              </h1>
+              <div>
+                "Choose your pace — set a target or just flow. The focus starts
+                now."
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+          <!-- Calendar Card -->
+          <div class="card calendar-card w2">
+            <div class="calendar-header">
+              <button class="cal-nav" id="prevMonth">&lt;</button>
+              <h3 id="monthYear"></h3>
+              <button class="cal-nav" id="nextMonth">&gt;</button>
+            </div>
+            <div class="calendar-grid">
+              <div class="calendar-day">Sun</div>
+              <div class="calendar-day">Mon</div>
+              <div class="calendar-day">Tue</div>
+              <div class="calendar-day">Wed</div>
+              <div class="calendar-day">Thu</div>
+              <div class="calendar-day">Fri</div>
+              <div class="calendar-day">Sat</div>
+              <div id="calendarDays"></div>
+            </div>
+          </div>
+
+          <!-- Placeholder for your other cards -->
+          <div class="card w1">
+            <h3>Upcoming Events</h3>
+          </div>
+
+          <div class="card w1">
+            <h3>To-do List</h3>
+          </div>
+
+          <div class="card w1">
+            <h3>Diary Entry</h3>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="../../js/calendar.js"></script>
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/sidebar.js"></script>
+  </body>
+</html>
