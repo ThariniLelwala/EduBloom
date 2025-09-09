@@ -2,7 +2,7 @@
 let taskData = null;
 let currentType = null;
 let editContext = { type: null, index: null };
-let deleteContext = { type: null };
+let deleteContext = { type: null, index: null };
 
 async function loadTasks() {
   try {
@@ -20,40 +20,30 @@ async function loadTasks() {
 function renderAll() {
   if (!taskData) return;
 
-  if (document.getElementById("todo-list")) {
-    populateList("todo-list", taskData.todo, "todo");
-  }
-  if (document.getElementById("weekly-list")) {
-    populateList("weekly-list", taskData.weeklyGoals, "weekly");
-  }
-  if (document.getElementById("monthly-list")) {
-    populateList("monthly-list", taskData.monthlyGoals, "monthly");
-  }
+  populateList("todo-list", taskData.todo, "todo");
+  populateList("weekly-list", taskData.weeklyGoals, "weekly");
+  populateList("monthly-list", taskData.monthlyGoals, "monthly");
 
-  if (document.getElementById("todo-completed")) updateSummary();
-  if (document.getElementById("todo-date")) updateDates();
+  updateSummary();
+  updateDates();
 }
 
 function updateSummary() {
+  if (!taskData) return;
+
   const todoCompleted = taskData.todo.filter((t) => t.done).length;
   const weeklyCompleted = taskData.weeklyGoals.filter((g) => g.done).length;
   const monthlyCompleted = taskData.monthlyGoals.filter((g) => g.done).length;
 
-  if (document.getElementById("todo-completed")) {
-    document.getElementById(
-      "todo-completed"
-    ).textContent = `${todoCompleted}/${taskData.todo.length}`;
-  }
-  if (document.getElementById("weekly-completed")) {
-    document.getElementById(
-      "weekly-completed"
-    ).textContent = `${weeklyCompleted}/${taskData.weeklyGoals.length}`;
-  }
-  if (document.getElementById("monthly-completed")) {
-    document.getElementById(
-      "monthly-completed"
-    ).textContent = `${monthlyCompleted}/${taskData.monthlyGoals.length}`;
-  }
+  document.getElementById(
+    "todo-completed"
+  ).textContent = `${todoCompleted}/${taskData.todo.length}`;
+  document.getElementById(
+    "weekly-completed"
+  ).textContent = `${weeklyCompleted}/${taskData.weeklyGoals.length}`;
+  document.getElementById(
+    "monthly-completed"
+  ).textContent = `${monthlyCompleted}/${taskData.monthlyGoals.length}`;
 }
 
 function populateList(listId, items, prefix) {
@@ -82,15 +72,31 @@ function populateList(listId, items, prefix) {
       updateSummary();
     });
 
+    // Task item actions (Edit/Delete)
+    const actions = document.createElement("div");
+    actions.className = "task-item-actions";
+
+    const editBtn = document.createElement("i");
+    editBtn.className = "fa fa-pencil";
+    editBtn.title = "Edit";
+    editBtn.addEventListener("click", () => openEditModal(prefix, index));
+
+    const deleteBtn = document.createElement("i");
+    deleteBtn.className = "fa fa-trash";
+    deleteBtn.title = "Delete";
+    deleteBtn.addEventListener("click", () => openDeleteModal(prefix, index));
+
+    actions.appendChild(editBtn);
+    actions.appendChild(deleteBtn);
+
     li.appendChild(checkbox);
     li.appendChild(label);
+    li.appendChild(actions);
     list.appendChild(li);
   });
 }
 
 function updateDates() {
-  if (!document.getElementById("todo-date")) return;
-
   const now = new Date();
   document.getElementById("todo-date").textContent = now.toLocaleDateString(
     undefined,
@@ -101,21 +107,16 @@ function updateDates() {
     ((now - new Date(now.getFullYear(), 0, 1)) / 86400000 + now.getDay() + 1) /
       7
   );
-  if (document.getElementById("weekly-date"))
-    document.getElementById("weekly-date").textContent = "Week " + weekNumber;
+  document.getElementById("weekly-date").textContent = "Week " + weekNumber;
 
-  if (document.getElementById("monthly-date"))
-    document.getElementById("monthly-date").textContent = now.toLocaleString(
-      "default",
-      { month: "long" }
-    );
+  document.getElementById("monthly-date").textContent = now.toLocaleString(
+    "default",
+    { month: "long" }
+  );
 }
 
 function bindGlobalEvents() {
-  // Only bind modals if they exist (so calendar page won't break)
   const modal = document.getElementById("task-modal");
-  if (!modal) return;
-
   const modalClose = document.getElementById("modal-close");
   const modalCancel = document.getElementById("modal-cancel");
   const modalSave = document.getElementById("modal-save");
@@ -123,14 +124,12 @@ function bindGlobalEvents() {
   const modalTitle = document.getElementById("modal-title");
 
   const editModal = document.getElementById("edit-modal");
-  const editSelect = document.getElementById("edit-select");
   const editInput = document.getElementById("edit-input");
-  const editSave = document.getElementById("edit-save");
   const editCancel = document.getElementById("edit-cancel");
   const editClose = document.getElementById("edit-modal-close");
+  const editSave = document.getElementById("edit-save");
 
   const deleteModal = document.getElementById("delete-modal");
-  const deleteList = document.getElementById("delete-list");
   const deleteConfirm = document.getElementById("delete-confirm");
   const deleteCancel = document.getElementById("delete-cancel");
   const deleteClose = document.getElementById("delete-modal-close");
@@ -142,7 +141,7 @@ function bindGlobalEvents() {
     m.classList.remove("show");
   }
 
-  // --- Add Task ---
+  // Add task buttons
   document.querySelectorAll(".add-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       currentType = btn.dataset.type;
@@ -172,136 +171,78 @@ function bindGlobalEvents() {
     closeModal(modal);
   });
 
-  // --- Edit, Delete bindings (only run if elements exist) ---
-  if (editModal) {
-    document.querySelectorAll(".edit-btn").forEach((icon) => {
-      icon.addEventListener("click", () => {
-        const type = icon.dataset.type;
-        const list =
-          type === "todo"
-            ? taskData.todo
-            : type === "weekly"
-            ? taskData.weeklyGoals
-            : taskData.monthlyGoals;
+  // Edit modal close
+  [editCancel, editClose].forEach((btn) =>
+    btn.addEventListener("click", () => closeModal(editModal))
+  );
 
-        if (list.length === 0) return;
+  // Edit modal save (bound once)
+  editSave.addEventListener("click", () => {
+    if (!editContext) return;
 
-        editContext.type = type;
-        editSelect.innerHTML = "";
+    const { type, index } = editContext;
+    const list =
+      type === "todo"
+        ? taskData.todo
+        : type === "weekly"
+        ? taskData.weeklyGoals
+        : taskData.monthlyGoals;
 
-        list.forEach((item, idx) => {
-          const option = document.createElement("option");
-          option.value = idx;
-          option.textContent = item.task || item.goal;
-          editSelect.appendChild(option);
-        });
+    const newText = editInput.value.trim();
+    if (!newText) return;
 
-        editSelect.selectedIndex = 0;
-        editInput.value = list[0].task || list[0].goal;
+    if (type === "todo") list[index].task = newText;
+    else list[index].goal = newText;
 
-        openModal(editModal);
-        editInput.focus();
-      });
-    });
+    renderAll();
+    closeModal(editModal);
+    editContext = { type: null, index: null };
+  });
 
-    editSelect.addEventListener("change", () => {
-      const index = editSelect.value;
-      const list =
-        editContext.type === "todo"
-          ? taskData.todo
-          : editContext.type === "weekly"
-          ? taskData.weeklyGoals
-          : taskData.monthlyGoals;
-      editInput.value = list[index].task || list[index].goal;
-      editContext.index = parseInt(index);
-    });
+  // Delete modal close
+  [deleteCancel, deleteClose].forEach((btn) =>
+    btn.addEventListener("click", () => closeModal(deleteModal))
+  );
 
-    editSave.addEventListener("click", () => {
-      const { type } = editContext;
-      const index = editSelect.value;
-      const newText = editInput.value.trim();
-      if (!newText) return;
+  // Delete confirm
+  deleteConfirm.addEventListener("click", () => {
+    const { type, index } = deleteContext;
+    const list =
+      type === "todo"
+        ? taskData.todo
+        : type === "weekly"
+        ? taskData.weeklyGoals
+        : taskData.monthlyGoals;
 
-      const list =
-        type === "todo"
-          ? taskData.todo
-          : type === "weekly"
-          ? taskData.weeklyGoals
-          : taskData.monthlyGoals;
+    list.splice(index, 1);
+    renderAll();
+    closeModal(deleteModal);
+  });
+}
 
-      if (type === "todo") list[index].task = newText;
-      else list[index].goal = newText;
+// Open edit modal
+function openEditModal(type, index) {
+  const editModal = document.getElementById("edit-modal");
+  const editInput = document.getElementById("edit-input");
 
-      renderAll();
-      closeModal(editModal);
-    });
+  const list =
+    type === "todo"
+      ? taskData.todo
+      : type === "weekly"
+      ? taskData.weeklyGoals
+      : taskData.monthlyGoals;
 
-    [editCancel, editClose].forEach((btn) =>
-      btn.addEventListener("click", () => closeModal(editModal))
-    );
-  }
+  editContext = { type, index };
+  editInput.value = list[index].task || list[index].goal;
 
-  if (deleteModal) {
-    document.querySelectorAll(".delete-btn").forEach((icon) => {
-      icon.addEventListener("click", () => {
-        const type = icon.dataset.type;
-        const list =
-          type === "todo"
-            ? taskData.todo
-            : type === "weekly"
-            ? taskData.weeklyGoals
-            : taskData.monthlyGoals;
+  editModal.classList.add("show");
+}
 
-        if (list.length === 0) return;
-
-        deleteContext.type = type;
-        deleteList.innerHTML = "";
-
-        list.forEach((item, idx) => {
-          const li = document.createElement("li");
-          const checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.value = idx;
-          checkbox.id = `delete-${type}-${idx}`;
-
-          const label = document.createElement("label");
-          label.htmlFor = checkbox.id;
-          label.textContent = item.task || item.goal;
-
-          li.appendChild(checkbox);
-          li.appendChild(label);
-          deleteList.appendChild(li);
-        });
-
-        openModal(deleteModal);
-      });
-    });
-
-    deleteConfirm.addEventListener("click", () => {
-      const { type } = deleteContext;
-      const list =
-        type === "todo"
-          ? taskData.todo
-          : type === "weekly"
-          ? taskData.weeklyGoals
-          : taskData.monthlyGoals;
-
-      const checkboxes = deleteList.querySelectorAll("input[type=checkbox]");
-      const toDelete = [];
-      checkboxes.forEach((cb) => {
-        if (cb.checked) toDelete.push(parseInt(cb.value));
-      });
-
-      toDelete.sort((a, b) => b - a).forEach((idx) => list.splice(idx, 1));
-
-      renderAll();
-      closeModal(deleteModal);
-    });
-
-    [deleteCancel, deleteClose].forEach((btn) =>
-      btn.addEventListener("click", () => closeModal(deleteModal))
-    );
-  }
+// Open delete modal
+function openDeleteModal(type, index) {
+  deleteContext = { type, index };
+  const deleteModal = document.getElementById("delete-modal");
+  deleteModal.classList.add("show");
 }
 
 loadTasks();

@@ -72,10 +72,6 @@
             <button class="btn-secondary add-btn" data-type="todo">
               + Add Task
             </button>
-            <div class="card-actions">
-              <i class="fa fa-pencil edit-btn" data-type="todo"></i>
-              <i class="fa fa-trash delete-btn" data-type="todo"></i>
-            </div>
           </div>
 
           <!-- Weekly Goals Card -->
@@ -88,10 +84,6 @@
             <button class="btn-secondary add-btn" data-type="weekly">
               + Add Goal
             </button>
-            <div class="card-actions">
-              <i class="fa fa-pencil edit-btn" data-type="weekly"></i>
-              <i class="fa fa-trash delete-btn" data-type="weekly"></i>
-            </div>
           </div>
 
           <!-- Monthly Goals Card -->
@@ -104,10 +96,6 @@
             <button class="btn-secondary add-btn" data-type="monthly">
               + Add Goal
             </button>
-            <div class="card-actions">
-              <i class="fa fa-pencil edit-btn" data-type="monthly"></i>
-              <i class="fa fa-trash delete-btn" data-type="monthly"></i>
-            </div>
           </div>
         </div>
       </main>
@@ -138,7 +126,6 @@
           <button class="modal-close" id="edit-modal-close">&times;</button>
         </div>
         <div class="modal-body">
-          <select id="edit-select"></select>
           <input type="text" id="edit-input" placeholder="Edit text..." />
         </div>
         <div class="modal-footer">
@@ -152,13 +139,11 @@
     <div class="modal" id="delete-modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Select Tasks to Delete</h2>
+          <h2>Delete Tasks</h2>
           <button class="modal-close" id="delete-modal-close">&times;</button>
         </div>
         <div class="modal-body">
-          <ul id="delete-list" class="task-list">
-            <!-- Tasks will be loaded here dynamically -->
-          </ul>
+          <p>Are you sure you want to delete these task/goal?</p>
         </div>
         <div class="modal-footer">
           <button class="btn-secondary" id="delete-cancel">Cancel</button>
