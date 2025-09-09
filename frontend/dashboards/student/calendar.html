@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../../css/topbar.css" />
     <link rel="stylesheet" href="../../css/sidebar.css" />
     <link rel="stylesheet" href="../../css/calendar.css" />
+    <link rel="stylesheet" href="../../css/dashboard/task.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
@@ -36,6 +37,7 @@
             </div>
             <div class="welcome-image"></div>
           </div>
+
           <!-- Calendar Card -->
           <div class="card calendar-card w2">
             <div class="calendar-header">
@@ -55,13 +57,14 @@
             </div>
           </div>
 
-          <!-- Placeholder for your other cards -->
+          <!-- To-do List synced from tasks.json -->
           <div class="card w1">
-            <h3>Upcoming Events</h3>
+            <h3>To-do List</h3>
+            <ul id="todo-list"></ul>
           </div>
 
           <div class="card w1">
-            <h3>To-do List</h3>
+            <h3>Upcoming Events</h3>
           </div>
 
           <div class="card w1">
@@ -72,6 +75,7 @@
     </div>
 
     <script src="../../js/calendar.js"></script>
+    <script src="../../js/tasks.js"></script>
     <script src="../../js/topbar.js"></script>
     <script src="../../js/sidebar.js"></script>
   </body>

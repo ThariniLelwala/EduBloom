@@ -2,7 +2,8 @@
   "todo": [
     { "task": "Finish Math Assignment", "done": false },
     { "task": "Read Chapter 4", "done": true },
-    { "task": "Email project report", "done": false }
+    { "task": "Email project report", "done": false },
+    { "task": "Read Chapter 5", "done": true }
   ],
   "weeklyGoals": [
     { "goal": "Exercise 3 times", "done": false },
