@@ -14,7 +14,7 @@
 #weekly-list li,
 #monthly-list li {
   display: flex;
-  align-items: center;
+  /* align-items: center; */
   gap: 8px;
   padding: 6px 8px;
   position: relative;

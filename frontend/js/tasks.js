@@ -4,6 +4,7 @@ let currentType = null;
 let editContext = { type: null, index: null };
 let deleteContext = { type: null, index: null };
 
+// Load tasks from JSON
 async function loadTasks() {
   try {
     const response = await fetch("../../data/tasks.json");
@@ -17,6 +18,7 @@ async function loadTasks() {
   }
 }
 
+// Render all lists
 function renderAll() {
   if (!taskData) return;
 
@@ -25,30 +27,35 @@ function renderAll() {
   populateList("monthly-list", taskData.monthlyGoals, "monthly");
 
   updateSummary();
-  updateDates();
 }
 
+// Update summary (safe for pages with/without elements)
 function updateSummary() {
   if (!taskData) return;
 
-  const todoCompleted = taskData.todo.filter((t) => t.done).length;
-  const weeklyCompleted = taskData.weeklyGoals.filter((g) => g.done).length;
-  const monthlyCompleted = taskData.monthlyGoals.filter((g) => g.done).length;
+  const todoCompleted = taskData.todo?.filter((t) => t.done).length || 0;
+  const weeklyCompleted =
+    taskData.weeklyGoals?.filter((g) => g.done).length || 0;
+  const monthlyCompleted =
+    taskData.monthlyGoals?.filter((g) => g.done).length || 0;
 
-  document.getElementById(
-    "todo-completed"
-  ).textContent = `${todoCompleted}/${taskData.todo.length}`;
-  document.getElementById(
-    "weekly-completed"
-  ).textContent = `${weeklyCompleted}/${taskData.weeklyGoals.length}`;
-  document.getElementById(
-    "monthly-completed"
-  ).textContent = `${monthlyCompleted}/${taskData.monthlyGoals.length}`;
+  const todoEl = document.getElementById("todo-completed");
+  if (todoEl) todoEl.textContent = `${todoCompleted}/${taskData.todo.length}`;
+
+  const weeklyEl = document.getElementById("weekly-completed");
+  if (weeklyEl)
+    weeklyEl.textContent = `${weeklyCompleted}/${taskData.weeklyGoals.length}`;
+
+  const monthlyEl = document.getElementById("monthly-completed");
+  if (monthlyEl)
+    monthlyEl.textContent = `${monthlyCompleted}/${taskData.monthlyGoals.length}`;
 }
 
+// Populate a list
 function populateList(listId, items, prefix) {
   const list = document.getElementById(listId);
-  if (!list) return;
+  if (!list || !items) return;
+
   list.innerHTML = "";
 
   items.forEach((item, index) => {
@@ -72,7 +79,7 @@ function populateList(listId, items, prefix) {
       updateSummary();
     });
 
-    // Task item actions (Edit/Delete)
+    // Actions: Edit / Delete
     const actions = document.createElement("div");
     actions.className = "task-item-actions";
 
@@ -96,25 +103,7 @@ function populateList(listId, items, prefix) {
   });
 }
 
-function updateDates() {
-  const now = new Date();
-  document.getElementById("todo-date").textContent = now.toLocaleDateString(
-    undefined,
-    { year: "numeric", month: "long", day: "numeric" }
-  );
-
-  const weekNumber = Math.ceil(
-    ((now - new Date(now.getFullYear(), 0, 1)) / 86400000 + now.getDay() + 1) /
-      7
-  );
-  document.getElementById("weekly-date").textContent = "Week " + weekNumber;
-
-  document.getElementById("monthly-date").textContent = now.toLocaleString(
-    "default",
-    { month: "long" }
-  );
-}
-
+// Bind global buttons and modals
 function bindGlobalEvents() {
   const modal = document.getElementById("task-modal");
   const modalClose = document.getElementById("modal-close");
@@ -141,12 +130,11 @@ function bindGlobalEvents() {
     m.classList.remove("show");
   }
 
-  // Add task buttons
+  // Add task/goal button
   document.querySelectorAll(".add-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      currentType = btn.dataset.type;
-      modalTitle.textContent =
-        "Add " + (currentType === "todo" ? "Task" : "Goal");
+      currentType = btn.dataset.type || "todo";
+      modalTitle.textContent = currentType === "todo" ? "Add Task" : "Add Goal";
       modalInput.value = "";
       openModal(modal);
       modalInput.focus();
@@ -161,11 +149,16 @@ function bindGlobalEvents() {
     const text = modalInput.value.trim();
     if (!text) return;
 
-    if (currentType === "todo") taskData.todo.push({ task: text, done: false });
-    if (currentType === "weekly")
+    if (currentType === "todo") {
+      if (!taskData.todo) taskData.todo = [];
+      taskData.todo.push({ task: text, done: false });
+    } else if (currentType === "weekly") {
+      if (!taskData.weeklyGoals) taskData.weeklyGoals = [];
       taskData.weeklyGoals.push({ goal: text, done: false });
-    if (currentType === "monthly")
+    } else if (currentType === "monthly") {
+      if (!taskData.monthlyGoals) taskData.monthlyGoals = [];
       taskData.monthlyGoals.push({ goal: text, done: false });
+    }
 
     renderAll();
     closeModal(modal);
@@ -176,7 +169,7 @@ function bindGlobalEvents() {
     btn.addEventListener("click", () => closeModal(editModal))
   );
 
-  // Edit modal save (bound once)
+  // Edit modal save
   editSave.addEventListener("click", () => {
     if (!editContext) return;
 
@@ -225,6 +218,7 @@ function openEditModal(type, index) {
   const editModal = document.getElementById("edit-modal");
   const editInput = document.getElementById("edit-input");
 
+  editContext = { type, index };
   const list =
     type === "todo"
       ? taskData.todo
@@ -232,9 +226,7 @@ function openEditModal(type, index) {
       ? taskData.weeklyGoals
       : taskData.monthlyGoals;
 
-  editContext = { type, index };
   editInput.value = list[index].task || list[index].goal;
-
   editModal.classList.add("show");
 }
 
@@ -245,4 +237,5 @@ function openDeleteModal(type, index) {
   deleteModal.classList.add("show");
 }
 
+// Initialize
 loadTasks();

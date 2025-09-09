@@ -186,6 +186,13 @@ a {
   animation: fadeIn 0.3s ease;
 }
 
+.modal-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .modal-content {
   background: rgba(255, 255, 255, 0.05);
   padding: 20px;
