@@ -22,7 +22,11 @@
       "link": "task.html"
     },
     { "title": "Calendar", "icon": "fas fa-calendar", "link": "calendar.html" },
-    { "title": "Diary", "icon": "fas fa-book-open", "link": "diary.html" },
+    {
+      "title": "Diary",
+      "icon": "fas fa-book-open",
+      "link": "diary/diary.html"
+    },
     {
       "title": "Progress",
       "icon": "fas fa-chart-line",

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Diary Entries</title>
+    <script src="../../../js/sidebar.js"></script>
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/topbar.css" />
+    <link rel="stylesheet" href="../../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/cards.css" />
+    <link rel="stylesheet" href="../../../css/dashboard/diary.css" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Patrick+Hand&family=Roboto&family=Courgette&family=Kalam&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- sidebar + content -->
+    <div class="container">
+      <div id="sidebar-container"></div>
+      <main id="content">
+        <!-- Main Diary Layout -->
+        <div class="diary-grid">
+          <!-- Diary Page -->
+          <div class="diary-page-card card">
+            <span class="diary-date" id="diary-date"></span>
+            <textarea
+              class="diary-page"
+              placeholder="Write your thoughts here..."
+            ></textarea>
+          </div>
+
+          <!-- Font Selector -->
+          <div class="card settings-card">
+            <h3>Choose Font</h3>
+            <select id="font-select">
+              <option value="'Indie Flower', cursive">Indie Flower</option>
+              <option value="'Patrick Hand', cursive">Patrick Hand</option>
+              <option value="'Roboto', sans-serif">Roboto</option>
+              <option value="'Courgette', cursive">Courgette</option>
+              <option value="'Kalam', cursive">Kalam</option>
+            </select>
+          </div>
+
+          <!-- Theme Selector -->
+          <div class="card settings-card">
+            <h3>Choose Theme</h3>
+            <div class="theme-options">
+              <button data-theme="default">Default</button>
+              <button data-theme="vintage">Vintage</button>
+              <button data-theme="dark">Dark</button>
+              <button data-theme="floral">Floral</button>
+              <button data-theme="pastel">Pastel</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="../../../js/topbar.js"></script>
+    <script>
+      // Auto date stamp
+      const dateEl = document.getElementById("diary-date");
+      const today = new Date();
+      dateEl.textContent = today.toLocaleDateString(undefined, {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
+      // Font selector logic
+      const fontSelect = document.getElementById("font-select");
+      fontSelect.addEventListener("change", (e) => {
+        document.documentElement.style.setProperty(
+          "--diary-font",
+          e.target.value
+        );
+      });
+
+      // Theme selector logic
+      const themeButtons = document.querySelectorAll(".theme-options button");
+      themeButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.body.setAttribute("data-diary-theme", btn.dataset.theme);
+        });
+      });
+    </script>
+  </body>
+</html>

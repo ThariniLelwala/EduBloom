@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Diary</title>
+    <script src="../../../js/sidebar.js"></script>
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/topbar.css" />
+    <link rel="stylesheet" href="../../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/cards.css" />
+    <link rel="stylesheet" href="../../../css/dashboard/diary.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- sidebar + content -->
+    <div class="container">
+      <div id="sidebar-container"></div>
+      <main id="content">
+        <!-- Welcome Card -->
+        <div class="card welcome full">
+          <div class="welcome-content">
+            <h1 class="heading"><i class="fas fa-sticky-note"></i> Diary</h1>
+            <div>"Something cheesy"</div>
+          </div>
+          <div class="welcome-image"></div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-grid">
+          <div class="card w1 small-card">
+            <h4>Total Entries</h4>
+            <p id="todo-completed">0</p>
+          </div>
+
+          <div class="card w1 small-card">
+            <h4>Day Streak</h4>
+            <p id="weekly-completed">0</p>
+          </div>
+
+          <div class="card w1 small-card">
+            <h4>Average Mood</h4>
+            <p id="monthly-completed">0</p>
+          </div>
+        </div>
+
+        <!-- Main Cards -->
+        <div class="card-grid">
+          <!-- Quick Actions -->
+          <div class="card w1">
+            <h3>Quick Actions</h3>
+            <ul class="quick-actions">
+              <li>
+                <a href="diary-entries.html">
+                  <i class="fas fa-plus"></i> New Journal Entry
+                </a>
+              </li>
+              <li>
+                <a href="mood-entries.html">
+                  <i class="fas fa-face-laugh-beam"></i> Add Today's Mood
+                </a>
+              </li>
+              <li>
+                <a href="past-logs.html">
+                  <i class="fas fa-book-open-reader"></i> View Previous Entries
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Recent Logs -->
+          <div class="card w2">
+            <h3>Recent Logs</h3>
+            <!-- Add dynamic content here later -->
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="../../../js/topbar.js"></script>
+  </body>
+</html>
