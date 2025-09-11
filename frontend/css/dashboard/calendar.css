@@ -70,11 +70,58 @@
 }
 
 .calendar-date.today {
-  background: var(--color-primary);
+  background: var(--color-white);
+  color: var(--color-text);
   font-weight: bold;
 }
 
 .calendar-date.inactive {
   opacity: 0.3;
   cursor: default;
+}
+
+/* Highlight calendar dates with deadlines */
+.calendar-date.deadline {
+  border: 2px solid var(--color-primary);
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+/* Upcoming Events: Tile Style */
+#events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+}
+
+.event-tile {
+  background: rgba(255, 255, 255, 0.138);
+  padding: 12px;
+  border-radius: 12px;
+  color: var(--color-white);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+  list-style: none;
+}
+
+.event-tile:hover {
+  transform: translateY(-2px);
+}
+
+.event-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.event-date {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: var(--color-white);
+  color: var(--color-text);
 }

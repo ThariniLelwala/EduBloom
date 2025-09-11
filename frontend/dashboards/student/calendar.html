@@ -4,25 +4,32 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EduBloom Calendar</title>
+
+    <!-- Styles -->
     <link rel="stylesheet" href="../../css/style.css" />
     <link rel="stylesheet" href="../../css/cards.css" />
     <link rel="stylesheet" href="../../css/topbar.css" />
     <link rel="stylesheet" href="../../css/sidebar.css" />
     <link rel="stylesheet" href="../../css/dashboard/calendar.css" />
     <link rel="stylesheet" href="../../css/dashboard/task.css" />
+
+    <!-- Font Awesome -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
       crossorigin="anonymous"
     />
   </head>
+
   <body>
     <div class="bg-image"></div>
-
     <div class="container">
+      <!-- Sidebar -->
       <div id="sidebar-container"></div>
+
       <main id="content">
         <div class="card-grid">
+          <!-- Welcome Card -->
           <div class="card welcome full">
             <div class="welcome-content">
               <h1 class="heading">
@@ -55,7 +62,7 @@
             </div>
           </div>
 
-          <!-- To-do List synced from tasks.json -->
+          <!-- To-do synced -->
           <div class="card w1">
             <h3>To-do List</h3>
             <ul id="todo-list"></ul>
@@ -64,10 +71,14 @@
             </button>
           </div>
 
-          <div class="card w1">
+          <!-- Upcoming Events Card -->
+          <div class="card w1" id="upcoming-events">
             <h3>Upcoming Events</h3>
+            <ul id="events-list"></ul>
+            <button class="btn-secondary add-deadline-btn">+ Add Event</button>
           </div>
 
+          <!-- Diary Entry -->
           <div class="card w1">
             <h3>Diary Entry</h3>
           </div>
@@ -75,14 +86,32 @@
       </main>
     </div>
 
-    <!-- Modals (same as tasks page) -->
+    <!-- Deadline Modal -->
+    <div id="deadline-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Add Event</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="deadline-input" placeholder="Event title" />
+          <input type="date" id="deadline-date" />
+        </div>
+        <div class="modal-footer">
+          <button id="modal-save-deadline" class="btn-primary">Save</button>
+          <button class="modal-cancel btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Modal -->
     <div id="task-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h2 id="modal-title">Add Task</h2>
+          <h2 id="modal-title">Add Task/Event</h2>
           <span id="modal-close" class="modal-close">&times;</span>
         </div>
-        <input type="text" id="task-input" placeholder="Enter task..." />
+        <input type="text" id="task-input" placeholder="Enter task/event..." />
         <div class="modal-actions">
           <button id="modal-save" class="btn-primary">Save</button>
           <button id="modal-cancel" class="btn-secondary">Cancel</button>
@@ -90,14 +119,15 @@
       </div>
     </div>
 
+    <!-- Edit Modal -->
     <div id="edit-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h3>Edit Task</h3>
+          <h3>Edit Task/Event</h3>
           <span id="edit-modal-close" class="modal-close">&times;</span>
         </div>
-
         <input type="text" id="edit-input" />
+        <input type="date" id="edit-date" />
         <div class="modal-actions">
           <button id="edit-save" class="btn-primary">Save</button>
           <button id="edit-cancel" class="btn-secondary">Cancel</button>
@@ -105,13 +135,14 @@
       </div>
     </div>
 
+    <!-- Delete Modal -->
     <div id="delete-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h3>Delete Task</h3>
+          <h3>Delete Task/Event</h3>
           <span id="delete-modal-close" class="modal-close">&times;</span>
         </div>
-        <div class="modal-body">Are you sure you want to delete this task?</div>
+        <div class="modal-body">Are you sure you want to delete this?</div>
         <div class="modal-actions">
           <button id="delete-confirm" class="btn-primary">Delete</button>
           <button id="delete-cancel" class="btn-secondary">Cancel</button>
@@ -119,6 +150,7 @@
       </div>
     </div>
 
+    <!-- Scripts -->
     <script src="../../js/calendar.js"></script>
     <script src="../../js/tasks.js"></script>
     <script src="../../js/topbar.js"></script>

@@ -12,5 +12,11 @@
   "monthlyGoals": [
     { "goal": "Finish Book", "done": false },
     { "goal": "Submit Project Draft", "done": true }
+  ],
+
+  "deadlines": [
+    { "title": "Submit Assignment 1", "date": "2025-09-15" },
+    { "title": "Project Proposal Due", "date": "2025-09-25" },
+    { "title": "Midterm Exam", "date": "2025-10-20" }
   ]
 }
