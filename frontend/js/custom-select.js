@@ -10,6 +10,9 @@ document.addEventListener("DOMContentLoaded", () => {
       select.parentNode.insertBefore(wrapper, select);
       wrapper.appendChild(select);
 
+      // Hide native select
+      select.style.display = "none";
+
       // Create display box
       const display = document.createElement("div");
       display.classList.add("custom-select-display");
@@ -20,21 +23,17 @@ document.addEventListener("DOMContentLoaded", () => {
       // Create options container
       const optionsContainer = document.createElement("div");
       optionsContainer.classList.add("custom-select-options");
-      optionsContainer.style.position = "absolute"; // will attach to body
-      optionsContainer.style.display = "none"; // start hidden
-      optionsContainer.style.zIndex = "9999";
-      document.body.appendChild(optionsContainer); // append outside
+      optionsContainer.style.display = "none"; // hidden by default
+      wrapper.appendChild(optionsContainer);
 
       // Build options
       Array.from(select.options).forEach((option, idx) => {
         const optionDiv = document.createElement("div");
         optionDiv.classList.add("custom-select-option");
         optionDiv.textContent = option.text;
-        if (option.disabled) optionDiv.style.opacity = "0.5";
 
-        if (idx === select.selectedIndex) {
-          optionDiv.classList.add("selected");
-        }
+        if (option.disabled) optionDiv.classList.add("disabled");
+        if (idx === select.selectedIndex) optionDiv.classList.add("selected");
 
         optionDiv.addEventListener("click", () => {
           if (option.disabled) return;
@@ -49,66 +48,25 @@ document.addEventListener("DOMContentLoaded", () => {
             .forEach((el) => el.classList.remove("selected"));
           optionDiv.classList.add("selected");
 
-          optionsContainer.classList.remove("show");
           optionsContainer.style.display = "none";
         });
 
         optionsContainer.appendChild(optionDiv);
       });
 
-      // Show/hide logic
+      // Toggle dropdown
       display.addEventListener("click", () => {
-        // Close other open dropdowns
+        const isOpen = optionsContainer.style.display === "block";
         document
-          .querySelectorAll(".custom-select-options.show")
-          .forEach((open) => {
-            if (open !== optionsContainer) {
-              open.classList.remove("show");
-              open.style.display = "none";
-            }
-          });
-
-        const rect = display.getBoundingClientRect();
-
-        optionsContainer.style.top = `${rect.bottom + window.scrollY}px`;
-        optionsContainer.style.left = `${rect.left + window.scrollX}px`;
-        optionsContainer.style.width = `${rect.width}px`;
-        optionsContainer.style.display = "block";
-
-        optionsContainer.classList.toggle("show");
-
-        // Toggle visibility
-        if (!optionsContainer.classList.contains("show")) {
-          optionsContainer.style.display = "none";
-        }
+          .querySelectorAll(".custom-select-options")
+          .forEach((el) => (el.style.display = "none"));
+        optionsContainer.style.display = isOpen ? "none" : "block";
       });
 
       // Close on outside click
       document.addEventListener("click", (e) => {
-        if (
-          !wrapper.contains(e.target) &&
-          !optionsContainer.contains(e.target)
-        ) {
-          optionsContainer.classList.remove("show");
+        if (!wrapper.contains(e.target)) {
           optionsContainer.style.display = "none";
-        }
-      });
-
-      // Reposition on window resize or scroll
-      window.addEventListener("scroll", () => {
-        if (optionsContainer.classList.contains("show")) {
-          const rect = display.getBoundingClientRect();
-          optionsContainer.style.top = `${rect.bottom + window.scrollY}px`;
-          optionsContainer.style.left = `${rect.left + window.scrollX}px`;
-        }
-      });
-
-      window.addEventListener("resize", () => {
-        if (optionsContainer.classList.contains("show")) {
-          const rect = display.getBoundingClientRect();
-          optionsContainer.style.top = `${rect.bottom + window.scrollY}px`;
-          optionsContainer.style.left = `${rect.left + window.scrollX}px`;
-          optionsContainer.style.width = `${rect.width}px`;
         }
       });
     });

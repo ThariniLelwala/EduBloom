@@ -19,7 +19,7 @@ async function createTopbar() {
           <li id="dropdown-username">Loading...</li>
           <li id="dropdown-email">Loading...</li>
           <li id="dropdown-role">Loading...</li>
-          <li><a href="/settings.html">Settings</a></li>
+          <li><a href="/dashboards/student/settings.html">Settings</a></li>
           <li><a href="#" onclick="logout()">Logout</a></li>
         </ul>
       </div>

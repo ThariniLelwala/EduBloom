@@ -17,6 +17,26 @@
               "id": 2,
               "question": "What is the slope-intercept form of a linear equation?",
               "answer": "y = mx + b, where m is the slope and b is the y-intercept"
+            },
+            {
+              "id": 3,
+              "question": "What is the standard form of a quadratic equation?",
+              "answer": "ax² + bx + c = 0, where a, b, and c are coefficients"
+            },
+            {
+              "id": 4,
+              "question": "What is the quadratic formula?",
+              "answer": "x = [-b ± √(b² - 4ac)] / (2a)"
+            },
+            {
+              "id": 5,
+              "question": "What is the slope-intercept form of a linear equation?",
+              "answer": "y = mx + b, where m is the slope and b is the y-intercept"
+            },
+            {
+              "id": 6,
+              "question": "What is the standard form of a quadratic equation?",
+              "answer": "ax² + bx + c = 0, where a, b, and c are coefficients"
             }
           ]
         }

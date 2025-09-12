@@ -4,17 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EduBloom - Diary Entries</title>
-    <script src="../../../js/sidebar.js"></script>
 
+    <script src="../../../js/sidebar.js"></script>
     <link rel="stylesheet" href="../../../css/style.css" />
     <link rel="stylesheet" href="../../../css/topbar.css" />
     <link rel="stylesheet" href="../../../css/sidebar.css" />
     <link rel="stylesheet" href="../../../css/cards.css" />
     <link rel="stylesheet" href="../../../css/dashboard/diary.css" />
-
     <link
-      href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Patrick+Hand&family=Roboto&family=Courgette&family=Kalam&display=swap"
       rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
     />
   </head>
   <body>
@@ -38,7 +39,7 @@
           <!-- Font Selector -->
           <div class="card settings-card">
             <h3>Choose Font</h3>
-            <select id="font-select">
+            <select id="font-select" class="custom-select">
               <option value="'Indie Flower', cursive">Indie Flower</option>
               <option value="'Patrick Hand', cursive">Patrick Hand</option>
               <option value="'Roboto', sans-serif">Roboto</option>
@@ -63,33 +64,8 @@
     </div>
 
     <script src="../../../js/topbar.js"></script>
-    <script>
-      // Auto date stamp
-      const dateEl = document.getElementById("diary-date");
-      const today = new Date();
-      dateEl.textContent = today.toLocaleDateString(undefined, {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-
-      // Font selector logic
-      const fontSelect = document.getElementById("font-select");
-      fontSelect.addEventListener("change", (e) => {
-        document.documentElement.style.setProperty(
-          "--diary-font",
-          e.target.value
-        );
-      });
-
-      // Theme selector logic
-      const themeButtons = document.querySelectorAll(".theme-options button");
-      themeButtons.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          document.body.setAttribute("data-diary-theme", btn.dataset.theme);
-        });
-      });
-    </script>
+    <script src="../../../js/custom-select.js"></script>
+    <script src="../../../js/diary.js"></script>
+    <script src="../../../js/bg-manager.js"></script>
   </body>
 </html>

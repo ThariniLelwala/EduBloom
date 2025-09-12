@@ -338,70 +338,64 @@ input[type="checkbox"]:checked {
   border: 1px solid var(--color-white);
 }
 
-/* Edit Modal Select Dropdown */
-#edit-select {
-  width: 100%;
-  padding: 10px;
-  border-radius: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+/* Hide native select but keep it accessible */
+.custom-select-wrapper select {
+  display: none;
+}
+
+/* Display box */
+.custom-select-display {
   background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 8px 12px;
   color: var(--color-white);
-  font-size: 1rem;
-  margin-bottom: var(--spacing-md);
-  appearance: none; /* remove default arrow */
   cursor: pointer;
+  position: relative;
 }
 
-#edit-select option {
-  background: var(--color-card-bg);
-  color: var(--color-text);
+/* Dropdown arrow */
+.custom-select-display::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  border: 6px solid transparent;
+  border-top-color: var(--color-white);
+  transform: translateY(-50%);
+  pointer-events: none;
 }
 
-/* Delete Modal Task List */
-/* #delete-list {
-  max-height: 200px;
-  overflow-y: auto;
-  text-align: left;
-  padding: 0;
-  margin: 0;
-}
-
-#delete-list div {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  border-radius: 8px;
-  margin-bottom: 4px;
-  transition: background 0.2s ease;
-}
-
-#delete-list div:hover {
+/* Dropdown container */
+.custom-select-options {
   background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  margin-top: 4px;
+  z-index: 999;
+  width: 100%;
+  position: absolute;
 }
 
-#delete-list label {
-  flex-grow: 1;
+.custom-select-option {
+  padding: 8px 12px;
+  cursor: pointer;
   color: var(--color-white);
-  cursor: pointer;
-} */
-
-/* Custom dropdown arrow for edit modal */
-#edit-select {
-  -webkit-appearance: none; /* remove default arrow in Safari/Chrome */
-  -moz-appearance: none; /* remove default arrow in Firefox */
-  appearance: none; /* remove default arrow in other browsers */
-  background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 16px 16px;
-  padding-right: 36px; /* make space for arrow */
-  cursor: pointer;
+  transition: background 0.2s;
 }
 
-/* Optional: hover/focus effect */
-#edit-select:focus {
-  outline: none;
-  border-color: var(--color-white);
-  background-color: rgba(255, 255, 255, 0.1);
+.custom-select-option:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+
+.custom-select-option.selected {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+}
+
+.custom-select-option.disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
