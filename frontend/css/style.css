@@ -20,7 +20,7 @@ h3,
 h4,
 h5,
 h6 {
-  color: var(--color-white) !important ;
+  color: var(--color-white) !important;
   padding: 4px;
 }
 
@@ -338,9 +338,16 @@ input[type="checkbox"]:checked {
   border: 1px solid var(--color-white);
 }
 
-/* Hide native select but keep it accessible */
+/* =======================
+   Custom Select (Fixed)
+======================= */
+.custom-select-wrapper {
+  position: relative;
+  width: 100%; /* wrapper matches container */
+}
+
 .custom-select-wrapper select {
-  display: none;
+  display: none; /* hide native select */
 }
 
 /* Display box */
@@ -368,14 +375,19 @@ input[type="checkbox"]:checked {
 
 /* Dropdown container */
 .custom-select-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%; /* lock width to wrapper */
+  max-height: 200px; /* vertical expansion allowed */
+  overflow-y: auto; /* scroll inside if too tall */
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;
   margin-top: 4px;
   z-index: 999;
-  width: 100%;
-  position: absolute;
+  box-sizing: border-box;
 }
 
 .custom-select-option {
@@ -383,6 +395,9 @@ input[type="checkbox"]:checked {
   cursor: pointer;
   color: var(--color-white);
   transition: background 0.2s;
+  white-space: nowrap; /* prevent text wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis; /* cut off long text neatly */
 }
 
 .custom-select-option:hover {
