@@ -41,43 +41,65 @@ ul.quick-actions li a i {
 
 /* === Diary Grid Layout === */
 .diary-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  grid-template-rows: auto auto;
+  display: flex;
+  flex-wrap: wrap;
   gap: 20px;
-  min-height: calc(100vh - 60px); /* full height minus topbar */
+  height: calc(100vh - 112px); /* slightly reduced to eliminate tiny overflow */
 }
 
 .diary-page-card {
-  grid-row: span 4; /* takes full height */
-  grid-column: 1;
+  flex: 0 0 calc((100vh - 112px) * 3 / 4);
+  height: 100%;
   display: flex;
   flex-direction: column;
   position: relative; /* so date stamp can be positioned */
 }
 
+.settings-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: max-content;
+}
+
 .settings-card {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  grid-row: span 1;
+  height: auto; /* dynamic height based on content */
+}
+
+/* Theme options in row */
+.theme-options {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.theme-options button {
+  width: auto; /* override btn-primary width for better fit in row */
 }
 
 /* === Diary Page Styling === */
 .diary-page-card {
-  grid-row: span 4;
   grid-column: 1;
+  grid-row: 1 / -1;
   display: flex;
   flex-direction: column;
   position: relative;
   align-items: center; /* center page horizontally */
   justify-content: flex-start;
+  aspect-ratio: 3 / 4;
+  height: 100%;
 }
 
 .diary-page {
-  width: 700px; /* fixed width for page */
-  height: 900px; /* fixed height for page */
+  width: calc(100% - 80px); /* fit within card minus horizontal padding */
+  height: calc(100% - 100px); /* fit within card minus vertical padding */
   border: none;
   outline: none;
   resize: none;
@@ -125,7 +147,6 @@ ul.quick-actions li a i {
   z-index: 3;
 }
 
-/* === Theme Definitions === */
 body[data-diary-theme="default"] {
   --diary-theme-img: url("../../../assets/diary-themes/diary1.jpg");
 }
@@ -133,11 +154,36 @@ body[data-diary-theme="vintage"] {
   --diary-theme-img: url("../../../assets/diary-themes/diary2.jpg");
 }
 body[data-diary-theme="dark"] {
-  --diary-theme-img: url("../../../assets/diary-themes/blank-dark.jpg");
+  --diary-theme-img: url("../../../assets/diary-themes/diary3.jpg");
 }
 body[data-diary-theme="floral"] {
-  --diary-theme-img: url("../../../assets/diary-themes/blank-floral.jpg");
+  --diary-theme-img: url("../../../assets/diary-themes/diary4.jpg");
 }
 body[data-diary-theme="pastel"] {
-  --diary-theme-img: url("../../../assets/diary-themes/blank-pastel.jpg");
+  --diary-theme-img: url("../../../assets/diary-themes/diary5.jpg");
+}
+body[data-diary-theme="none"] {
+  --diary-theme-img: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .diary-grid {
+    flex-direction: column;
+    height: auto; /* allow natural height on mobile */
+  }
+
+  .diary-page-card {
+    flex: none;
+    max-height: none; /* remove height constraint for aspect-ratio to work */
+  }
+
+  .settings-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .settings-card {
+    flex: 1 1 45%; /* allow wrapping */
+  }
 }

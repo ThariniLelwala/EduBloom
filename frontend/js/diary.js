@@ -18,6 +18,26 @@ fontSelect.addEventListener("change", (e) => {
 const themeButtons = document.querySelectorAll(".theme-options button");
 themeButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
+    // Set all buttons to secondary
+    themeButtons.forEach((b) => {
+      b.classList.remove("btn-primary");
+      b.classList.add("btn-secondary");
+    });
+    // Set clicked button to primary
+    btn.classList.remove("btn-secondary");
+    btn.classList.add("btn-primary");
+    // Set the theme
     document.body.setAttribute("data-diary-theme", btn.dataset.theme);
   });
 });
+
+// On load, set the current theme button to primary
+const currentTheme =
+  document.body.getAttribute("data-diary-theme") || "default";
+const currentButton = document.querySelector(
+  `.theme-options button[data-theme="${currentTheme}"]`
+);
+if (currentButton) {
+  currentButton.classList.remove("btn-secondary");
+  currentButton.classList.add("btn-primary");
+}
