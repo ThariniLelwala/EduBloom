@@ -34,7 +34,6 @@ ul.quick-actions li a:hover {
   cursor: pointer;
 }
 
-/* Optional: style icons */
 ul.quick-actions li a i {
   font-size: 18px;
 }
@@ -44,7 +43,7 @@ ul.quick-actions li a i {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  height: calc(100vh - 112px); /* slightly reduced to eliminate tiny overflow */
+  height: calc(100vh - 112px);
 }
 
 .diary-page-card {
@@ -52,7 +51,7 @@ ul.quick-actions li a i {
   height: 100%;
   display: flex;
   flex-direction: column;
-  position: relative; /* so date stamp can be positioned */
+  position: relative;
 }
 
 .settings-container {
@@ -69,10 +68,68 @@ ul.quick-actions li a i {
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  height: auto; /* dynamic height based on content */
+  height: auto;
 }
 
-/* Theme options in row */
+/* Mood Cards */
+.mood-container {
+  display: flex;
+  gap: 16px;
+}
+
+.mood-card {
+  flex: 1 1 50%;
+  max-width: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  height: auto;
+  min-width: 240px;
+}
+
+/* Mood & Energy Options Grid (Emojis in row) */
+.mood-options,
+.energy-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+  gap: 10px;
+  text-align: center;
+}
+
+.mood-option,
+.energy-option {
+  display: flex;
+  flex-direction: column; /* emoji on top, label below */
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mood-option:hover,
+.energy-option:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
+}
+
+.mood-option .emoji,
+.energy-option .emoji {
+  font-size: 28px;
+}
+
+.mood-option .label,
+.energy-option .label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-white);
+}
+
+/* Theme options */
 .theme-options {
   display: flex;
   flex-direction: row;
@@ -81,10 +138,9 @@ ul.quick-actions li a i {
 }
 
 .theme-options button {
-  width: auto; /* override btn-primary width for better fit in row */
+  width: auto;
 }
 
-/* Theme images preview */
 .theme-options {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
@@ -166,30 +222,30 @@ ul.quick-actions li a i {
   box-shadow: 0 0 0 2px var(--color-white);
 }
 
-/* === Diary Page Styling === */
+/* Diary Page */
 .diary-page-card {
   grid-column: 1;
   grid-row: 1 / -1;
   display: flex;
   flex-direction: column;
   position: relative;
-  align-items: center; /* center page horizontally */
+  align-items: center;
   justify-content: flex-start;
   aspect-ratio: 3 / 4;
   height: 100%;
 }
 
 .diary-page {
-  width: calc(100% - 80px); /* fit within card minus horizontal padding */
-  height: calc(100% - 100px); /* fit within card minus vertical padding */
+  width: calc(100% - 80px);
+  height: calc(100% - 100px);
   border: none;
   outline: none;
   resize: none;
-  padding: 60px 40px 40px 40px; /* room for text + date */
+  padding: 60px 40px 40px 40px;
   font-family: var(--diary-font, "Indie Flower", cursive);
   font-size: 18px;
   line-height: 28px;
-  background: transparent; /* let theme show through */
+  background: transparent;
   color: var(--color-text);
   box-sizing: border-box;
   background-image: repeating-linear-gradient(
@@ -197,10 +253,10 @@ ul.quick-actions li a i {
     transparent 0px,
     transparent 27px,
     rgba(0, 0, 0, 0.2) 28px
-  ); /* line grid overlay */
+  );
   background-size: 100% 28px;
   border-radius: 10px;
-  z-index: 2; /* on top of theme */
+  z-index: 2;
   position: relative;
 }
 
@@ -209,7 +265,6 @@ ul.quick-actions li a i {
   opacity: 0.5;
 }
 
-/* Background page image goes on card */
 .diary-page-card::before {
   content: "";
   position: absolute;
@@ -219,10 +274,10 @@ ul.quick-actions li a i {
   bottom: 0;
   border-radius: 10px;
   background: var(--diary-theme-img) center/cover no-repeat;
-  z-index: 1; /* behind the text area */
+  z-index: 1;
 }
 
-/* === Date Stamp === */
+/* Date Stamp */
 .diary-date {
   position: absolute;
   top: 20px;
@@ -257,12 +312,12 @@ body[data-diary-theme="none"] {
 @media (max-width: 768px) {
   .diary-grid {
     flex-direction: column;
-    height: auto; /* allow natural height on mobile */
+    height: auto;
   }
 
   .diary-page-card {
     flex: none;
-    max-height: none; /* remove height constraint for aspect-ratio to work */
+    max-height: none;
   }
 
   .settings-container {
@@ -271,6 +326,16 @@ body[data-diary-theme="none"] {
   }
 
   .settings-card {
-    flex: 1 1 45%; /* allow wrapping */
+    flex: 1 1 45%;
+  }
+
+  .mood-container {
+    width: 100%;
+    display: flex;
+  }
+
+  .mood-card {
+    flex: 1; /* match settings cards on minimized screen */
+    /* max-width: 45%; */
   }
 }

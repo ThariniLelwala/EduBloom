@@ -5,17 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EduBloom - Diary Entries</title>
 
+    <!-- Sidebar and layout scripts -->
     <script src="../../../js/sidebar.js"></script>
+
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="../../../css/style.css" />
     <link rel="stylesheet" href="../../../css/topbar.css" />
     <link rel="stylesheet" href="../../../css/sidebar.css" />
     <link rel="stylesheet" href="../../../css/cards.css" />
     <link rel="stylesheet" href="../../../css/dashboard/diary.css" />
+
+    <!-- Font Awesome Icons -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
+    />
+
+    <!-- Google Fonts for Diary -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Pacifico&family=Caveat&family=Dancing+Script&family=Roboto&display=swap"
+      rel="stylesheet"
     />
   </head>
   <body>
@@ -40,7 +51,7 @@
             <div class="card settings-card">
               <h3>Choose Theme</h3>
               <div class="theme-options" id="theme-options">
-                <!-- Theme images will be injected by JS -->
+                <!-- Theme images injected by JS -->
               </div>
             </div>
 
@@ -48,7 +59,64 @@
             <div class="card settings-card">
               <h3>Choose Font</h3>
               <div class="font-options" id="font-options">
-                <!-- Font previews will be injected by JS -->
+                <!-- Font previews injected by JS -->
+              </div>
+            </div>
+
+            <!-- Mood + Energy Grid -->
+            <div class="mood-container">
+              <!-- Mood Card -->
+              <div class="card mood-card">
+                <h3>Current Mood</h3>
+                <div class="mood-options">
+                  <div class="mood-option">
+                    <span class="emoji">😞</span>
+                    <span class="label">Sad</span>
+                  </div>
+                  <div class="mood-option">
+                    <span class="emoji">😐</span>
+                    <span class="label">Neutral</span>
+                  </div>
+                  <div class="mood-option">
+                    <span class="emoji">🙂</span>
+                    <span class="label">Calm</span>
+                  </div>
+                  <div class="mood-option">
+                    <span class="emoji">😊</span>
+                    <span class="label">Happy</span>
+                  </div>
+                  <div class="mood-option">
+                    <span class="emoji">🤩</span>
+                    <span class="label">Excited</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Energy Card -->
+              <div class="card mood-card">
+                <h3>Energy Level</h3>
+                <div class="energy-options">
+                  <div class="energy-option">
+                    <span class="emoji">😴</span>
+                    <span class="label">Low</span>
+                  </div>
+                  <div class="energy-option">
+                    <span class="emoji">😌</span>
+                    <span class="label">Relaxed</span>
+                  </div>
+                  <div class="energy-option">
+                    <span class="emoji">😃</span>
+                    <span class="label">Normal</span>
+                  </div>
+                  <div class="energy-option">
+                    <span class="emoji">⚡</span>
+                    <span class="label">High</span>
+                  </div>
+                  <div class="energy-option">
+                    <span class="emoji">🔥</span>
+                    <span class="label">Max</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -56,6 +124,7 @@
       </main>
     </div>
 
+    <!-- Scripts -->
     <script src="../../../js/topbar.js"></script>
     <script src="../../../js/custom-select.js"></script>
     <script src="../../../js/diary.js"></script>
