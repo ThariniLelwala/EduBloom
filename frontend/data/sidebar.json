@@ -7,6 +7,11 @@
       "link": "pomodoro.html"
     },
     {
+      "title": "Module Space",
+      "icon": "fas fa-cloud-arrow-up",
+      "link": "modulespace.html"
+    },
+    {
       "title": "Quiz",
       "icon": "fas fa-clipboard-question",
       "link": "quiz/quiz.html"
