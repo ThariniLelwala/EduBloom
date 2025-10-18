@@ -6,6 +6,7 @@
     <title>EduBloom Dashboard</title>
     <script src="../../js/sidebar.js"></script>
 
+    <!-- CSS -->
     <link rel="stylesheet" href="../../css/style.css" />
     <link rel="stylesheet" href="../../css/topbar.css" />
     <link rel="stylesheet" href="../../css/sidebar.css" />
@@ -19,19 +20,18 @@
       referrerpolicy="no-referrer"
     />
   </head>
+
   <body>
     <div class="bg-image"></div>
 
-    <!-- topbar
-    <script>
-      createTopbar();
-    </script> -->
-
-    <!-- sidebar + content -->
     <div class="container">
+      <!-- Sidebar -->
       <div id="sidebar-container"></div>
+
+      <!-- Main content -->
       <main id="content">
         <div class="card-grid">
+          <!-- Welcome Card -->
           <div class="card welcome full">
             <div class="welcome-content">
               <h1 class="heading">Welcome USER</h1>
@@ -72,32 +72,89 @@
             </div>
           </div>
 
-          <!-- Tasks -->
-          <div class="card w1 h2">
-            <h3>Tasks</h3>
+          <!-- Tasks Card -->
+          <div class="card w1">
+            <div class="card-header">
+              <h3>Today's Tasks</h3>
+            </div>
+            <ul id="dashboard-tasks-list"></ul>
+            <button class="btn-secondary" id="dashboard-add-btn">
+              + Add Task
+            </button>
           </div>
 
-          <!-- Reports -->
+          <!-- Reports Card -->
           <div class="card w2">
             <h3>Reports</h3>
           </div>
 
-          <!-- Progress -->
+          <!-- Progress Card -->
           <div class="card w2">
             <h3>Progress</h3>
             <div style="height: 200px">progress</div>
           </div>
 
-          <!-- Calendar -->
+          <!-- Calendar Card -->
           <div class="card w1">
             <h3>Calendar</h3>
           </div>
         </div>
       </main>
     </div>
+
+    <!-- ===== Add/Edit/Delete Modals ===== -->
+    <div id="task-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Add Task</h2>
+          <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="task-input" placeholder="Enter task..." />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="modal-cancel">Cancel</button>
+          <button class="btn-primary" id="modal-save">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="edit-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Edit Task</h2>
+          <button class="modal-close" id="edit-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="edit-input" placeholder="Edit text..." />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="edit-cancel">Cancel</button>
+          <button class="btn-primary" id="edit-save">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="delete-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Delete Task</h2>
+          <button class="modal-close" id="delete-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete this task?</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="delete-cancel">Cancel</button>
+          <button class="btn-primary" id="delete-confirm">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JS -->
     <script src="../../js/timer.js"></script>
     <script src="../../js/topbar.js"></script>
+    <script src="../../js/studentdashboard.js"></script>
+    <script src="../../js/bg-manager.js"></script>
   </body>
 </html>
-
-<script src="../../js/bg-manager.js"></script>

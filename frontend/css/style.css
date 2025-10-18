@@ -89,13 +89,14 @@ a {
   padding: 12px 24px;
   margin-top: 8px;
   margin-bottom: 8px;
+  text-wrap: nowrap;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .btn-secondary {
   background: transparent;
   border: 1px dashed rgba(255, 255, 255, 0.5) !important;
-  padding: 8px;
+  padding: 12px 24px;
   border-radius: 8px;
   color: var(--color-white);
   cursor: pointer;
@@ -103,6 +104,7 @@ a {
   flex-grow: 1;
   margin-top: 8px;
   margin-bottom: 8px;
+  text-wrap: nowrap;
 }
 
 #back-btn {
