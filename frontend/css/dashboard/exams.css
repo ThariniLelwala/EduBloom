@@ -66,8 +66,9 @@
 .btn-small {
   padding: 4px 8px;
   font-size: 0.8em;
-  background: var(--color-primary);
-  color: var(--color-white);
+  font-weight: bold;
+  background: var(--color-white);
+  color: var(--color-primary);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -137,6 +138,70 @@
   box-sizing: border-box;
 }
 
+.subject-grade-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.subject-grade-row .subject-input {
+  flex: 4;
+  margin-bottom: 0;
+  height: 36px;
+  padding: 8px;
+  border: 1px solid var(--color-white);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-white);
+}
+
+.subject-grade-row .credits-select,
+.subject-grade-row .credits-input,
+.subject-grade-row .grade-select {
+  flex: 0 0 100px;
+}
+
+/* Hide number input arrows and ensure proper alignment */
+.subject-grade-row .credits-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  height: 36px;
+  padding: 8px;
+  border: 1px solid var(--color-white);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-white);
+  box-sizing: border-box;
+  text-align: center;
+  margin-bottom: 0;
+}
+
+/* Remove spinner arrows for Firefox */
+.subject-grade-row .credits-input::-webkit-outer-spin-button,
+.subject-grade-row .credits-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Custom select styling for GPA tracker */
+.subject-grade-row .custom-select-wrapper {
+  flex: 0 0 100px;
+}
+
+.subject-grade-row .custom-select-display {
+  height: 36px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.subject-grade-row .custom-select-options {
+  background: rgba(13, 12, 12, 0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 #add-subject-btn {
   margin-bottom: 8px;
 }
@@ -147,4 +212,82 @@
   color: var(--color-white);
   font-size: 1rem;
   padding: 16px 0;
+}
+
+/* GPA Tracker specific styles */
+.credits-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.credits-actions button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+}
+
+/* Semesters list: no bullets */
+#semesters-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Each semester item as a card */
+.semester-card {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 12px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.semester-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.credits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.credits-grid .credit-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.credits-grid .credit-item .grade-label {
+  font-weight: bold;
+  color: var(--color-white);
+  margin-bottom: 8px;
+}
+
+.credits-grid .credit-item .credit-value {
+  font-size: 1.2rem;
+  color: var(--color-primary);
+  font-weight: bold;
+}
+
+.credits-grid .credit-item input {
+  width: 60px;
+  text-align: center;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-white);
+  font-size: 1rem;
 }

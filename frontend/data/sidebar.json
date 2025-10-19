@@ -43,6 +43,11 @@
       "link": "marks/mark-tracker.html"
     },
     {
+      "title": "GPA Tracker",
+      "icon": "fas fa-graduation-cap",
+      "link": "gpa-tracker.html"
+    },
+    {
       "title": "Progress",
       "icon": "fas fa-chart-line",
       "link": "progress.html"
