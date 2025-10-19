@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const userRole = localStorage.getItem("userRole") || "student";
+  const studentType = localStorage.getItem("studentType"); // Get student type for students
   const container = document.getElementById("sidebar-container");
 
   // Inject sidebar HTML
@@ -24,7 +25,24 @@ document.addEventListener("DOMContentLoaded", () => {
   fetch("/data/sidebar.json")
     .then((res) => res.json())
     .then((data) => {
-      const items = data[userRole];
+      // Determine which menu to use
+      let menuKey = userRole;
+
+      // For students, use student_type specific menu if available
+      if (userRole === "student" && studentType) {
+        const specificKey = `student_${studentType}`;
+        if (data[specificKey]) {
+          menuKey = specificKey;
+        }
+      }
+
+      console.log("Loading sidebar for:", menuKey);
+      const items = data[menuKey];
+
+      if (!items) {
+        console.error("Sidebar items not found for:", menuKey);
+        return;
+      }
 
       items.forEach((item) => {
         const li = document.createElement("li");

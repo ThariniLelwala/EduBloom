@@ -1,4 +1,107 @@
 {
+  "student_school": [
+    { "title": "Dashboard", "icon": "fas fa-home", "link": "dashboard.html" },
+    {
+      "title": "Pomodoro Timer",
+      "icon": "fas fa-alarm-clock",
+      "link": "pomodoro.html"
+    },
+    {
+      "title": "Module Space",
+      "icon": "fas fa-cloud-arrow-up",
+      "link": "modulespace/modulespace.html"
+    },
+    {
+      "title": "Quiz",
+      "icon": "fas fa-clipboard-question",
+      "link": "quiz/quiz.html"
+    },
+    {
+      "title": "Flash Cards",
+      "icon": "fas fa-sticky-note",
+      "link": "flashcard/flashcards.html"
+    },
+    {
+      "title": "Task",
+      "icon": "fas fa-clipboard-list",
+      "link": "task.html"
+    },
+    { "title": "Calendar", "icon": "fas fa-calendar", "link": "calendar.html" },
+    {
+      "title": "Diary",
+      "icon": "fas fa-book-open",
+      "link": "diary/diary.html"
+    },
+    {
+      "title": "Exams",
+      "icon": "fas fa-file-pen",
+      "link": "exams.html"
+    },
+    {
+      "title": "Mark Tracker",
+      "icon": "fa-solid fa-chart-simple",
+      "link": "marks/mark-tracker.html"
+    },
+    {
+      "title": "Progress",
+      "icon": "fas fa-chart-line",
+      "link": "progress.html"
+    },
+    {
+      "title": "Settings",
+      "icon": "fas fa-cog",
+      "link": "settings.html"
+    }
+  ],
+  "student_university": [
+    { "title": "Dashboard", "icon": "fas fa-home", "link": "dashboard.html" },
+    {
+      "title": "Pomodoro Timer",
+      "icon": "fas fa-alarm-clock",
+      "link": "pomodoro.html"
+    },
+    {
+      "title": "Module Space",
+      "icon": "fas fa-cloud-arrow-up",
+      "link": "modulespace/modulespace.html"
+    },
+    {
+      "title": "Quiz",
+      "icon": "fas fa-clipboard-question",
+      "link": "quiz/quiz.html"
+    },
+    {
+      "title": "Flash Cards",
+      "icon": "fas fa-sticky-note",
+      "link": "flashcard/flashcards.html"
+    },
+    {
+      "title": "Task",
+      "icon": "fas fa-clipboard-list",
+      "link": "task.html"
+    },
+    { "title": "Calendar", "icon": "fas fa-calendar", "link": "calendar.html" },
+    {
+      "title": "Diary",
+      "icon": "fas fa-book-open",
+      "link": "diary/diary.html"
+    },
+    {
+      "title": "GPA Tracker",
+      "icon": "fas fa-graduation-cap",
+      "link": "gpa-tracker.html"
+    },
+    {
+      "title": "Progress",
+      "icon": "fas fa-chart-line",
+      "link": "progress.html"
+    },
+    {
+      "title": "Settings",
+      "icon": "fas fa-cog",
+      "link": "settings.html"
+    }
+  ],
   "student": [
     { "title": "Dashboard", "icon": "fas fa-home", "link": "dashboard.html" },
     {
