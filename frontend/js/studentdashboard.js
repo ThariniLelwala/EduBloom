@@ -15,9 +15,56 @@ async function loadDashboardTasks() {
       window.taskData = await response.json();
     }
     renderDashboardTasks();
+    updateProgressBars();
     bindDashboardEvents();
   } catch (err) {
     console.error("Error loading dashboard tasks:", err);
+  }
+}
+
+// -------------------- Update Progress Bars --------------------
+function updateProgressBars() {
+  try {
+    const todoTasks = window.taskData?.todo || [];
+    const weeklyGoals = window.taskData?.weeklyGoals || [];
+    const monthlyGoals = window.taskData?.monthlyGoals || [];
+
+    // Calculate todo progress
+    const todoCompleted = todoTasks.filter((task) => task.done).length;
+    const todoTotal = todoTasks.length;
+    const todoPercentage =
+      todoTotal > 0 ? (todoCompleted / todoTotal) * 100 : 0;
+
+    // Calculate weekly progress
+    const weeklyCompleted = weeklyGoals.filter((goal) => goal.done).length;
+    const weeklyTotal = weeklyGoals.length;
+    const weeklyPercentage =
+      weeklyTotal > 0 ? (weeklyCompleted / weeklyTotal) * 100 : 0;
+
+    // Calculate monthly progress
+    const monthlyCompleted = monthlyGoals.filter((goal) => goal.done).length;
+    const monthlyTotal = monthlyGoals.length;
+    const monthlyPercentage =
+      monthlyTotal > 0 ? (monthlyCompleted / monthlyTotal) * 100 : 0;
+
+    // Update DOM
+    const todoBar = document.getElementById("todo-progress-bar");
+    const weeklyBar = document.getElementById("weekly-progress-bar");
+    const monthlyBar = document.getElementById("monthly-progress-bar");
+    const todoText = document.getElementById("todo-progress-text");
+    const weeklyText = document.getElementById("weekly-progress-text");
+    const monthlyText = document.getElementById("monthly-progress-text");
+
+    if (todoBar) todoBar.style.width = todoPercentage + "%";
+    if (weeklyBar) weeklyBar.style.width = weeklyPercentage + "%";
+    if (monthlyBar) monthlyBar.style.width = monthlyPercentage + "%";
+    if (todoText) todoText.textContent = `${todoCompleted}/${todoTotal}`;
+    if (weeklyText)
+      weeklyText.textContent = `${weeklyCompleted}/${weeklyTotal}`;
+    if (monthlyText)
+      monthlyText.textContent = `${monthlyCompleted}/${monthlyTotal}`;
+  } catch (err) {
+    console.error("Error updating progress bars:", err);
   }
 }
 
@@ -52,6 +99,7 @@ function renderDashboardTasks() {
     checkbox.addEventListener("change", () => {
       task.done = checkbox.checked;
       li.classList.toggle("completed", checkbox.checked);
+      updateProgressBars();
       if (typeof updateSummary === "function") updateSummary();
     });
 
@@ -131,6 +179,7 @@ function bindDashboardEvents() {
     window.taskData.todo.push({ task: text, done: false });
 
     renderDashboardTasks();
+    updateProgressBars();
     closeModal(modal);
   });
 
@@ -150,6 +199,7 @@ function bindDashboardEvents() {
     list[index].task = newText;
 
     renderDashboardTasks();
+    updateProgressBars();
     closeModal(editModal);
     editContext = { type: null, index: null };
   });
@@ -164,6 +214,7 @@ function bindDashboardEvents() {
     const list = type === "todo" ? window.taskData.todo : [];
     list.splice(index, 1);
     renderDashboardTasks();
+    updateProgressBars();
     closeModal(deleteModal);
   });
 }
