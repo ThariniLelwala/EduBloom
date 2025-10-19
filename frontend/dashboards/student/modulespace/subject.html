@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Subject</title>
+    <script src="../../../js/sidebar.js"></script>
+    <script src="../../../config/googleDrive.config.js"></script>
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/topbar.css" />
+    <link rel="stylesheet" href="../../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/cards.css" />
+    <link rel="stylesheet" href="../../../css/dashboard/quiz.css" />
+    <link rel="stylesheet" href="../../../css/dashboard/clock.css" />
+    <link rel="stylesheet" href="../../../css/dashboard/subject.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- sidebar + content -->
+    <div class="container">
+      <div id="sidebar-container"></div>
+      <main id="content">
+        <!-- Header with back button and subject name -->
+        <h2 class="header-row">
+          <div class="card-title">
+            <i
+              class="fas fa-chevron-left"
+              id="back-btn"
+              onclick="window.location.href = './modulespace.html';"
+            ></i>
+            <span id="subject-name">Subject</span>
+          </div>
+        </h2>
+
+        <!-- Topics container -->
+        <div id="topics-container" class="subjects-grid">
+          <!-- Topics will be rendered here -->
+        </div>
+      </main>
+    </div>
+
+    <!-- Create Topic Modal -->
+    <div id="topic-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="topic-modal-title">Add Topic</h2>
+        <input
+          type="text"
+          id="topic-name"
+          placeholder="Enter topic name"
+          maxlength="50"
+        />
+        <button id="save-topic" class="btn-primary">Save</button>
+      </div>
+    </div>
+
+    <!-- Topic Menu Modal (for viewing/managing topic files) -->
+    <div id="topic-menu-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="topic-menu-title">
+            Topic: <span id="topic-menu-name"></span>
+          </h2>
+          <span class="close">&times;</span>
+        </div>
+
+        <!-- Drag and drop area for PDF files inside modal -->
+        <div id="drag-drop-area" class="upload-area">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Drag & drop PDF files here</p>
+          <p style="font-size: 0.9em; color: #999">or click to browse</p>
+          <input
+            type="file"
+            id="file-input"
+            accept=".pdf"
+            multiple
+            style="display: none"
+          />
+          <button
+            class="btn-secondary"
+            onclick="document.getElementById('file-input').click()"
+          >
+            Browse Files
+          </button>
+
+          <!-- Upload loading indicator -->
+          <div
+            id="upload-indicator"
+            class="upload-loading"
+            style="display: none"
+          >
+            <div class="spinner"></div>
+            <p>Uploading files...</p>
+          </div>
+        </div>
+
+        <!-- Files list -->
+        <div id="topic-files-list" class="files-list">
+          <!-- Files for this topic -->
+        </div>
+
+        <div class="modal-actions">
+          <button id="close-topic-menu" class="btn-primary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../../js/topbar.js"></script>
+    <script src="../../../js/subject.js"></script>
+    <script src="../../../js/bg-manager.js"></script>
+
+    <!-- Google APIs -->
+    <script async defer src="https://apis.google.com/js/platform.js"></script>
+    <script async src="https://accounts.google.com/gsi/client"></script>
+  </body>
+</html>

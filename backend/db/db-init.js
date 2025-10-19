@@ -50,6 +50,57 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_parent_student_links_status ON parent_student_links(status);
     `);
 
+    // Subjects table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS module_subjects (
+        id SERIAL PRIMARY KEY,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Topics table (sub-categories within subjects)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS module_topics (
+        id SERIAL PRIMARY KEY,
+        subject_id INT NOT NULL REFERENCES module_subjects(id) ON DELETE CASCADE,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Module Notes table (PDF files from Google Drive)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS module_notes (
+        id SERIAL PRIMARY KEY,
+        topic_id INT NOT NULL REFERENCES module_topics(id) ON DELETE CASCADE,
+        title VARCHAR(150) NOT NULL,
+        file_name VARCHAR(255) NOT NULL,
+        file_url VARCHAR(500),
+        google_drive_file_id VARCHAR(255),
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Create indexes for better performance
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_module_subjects_student_id ON module_subjects(student_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_module_topics_subject_id ON module_topics(subject_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_module_notes_topic_id ON module_notes(topic_id);
+    `);
+
     console.log("✅ Database tables and indexes created successfully");
 
     // Check if admin user exists, if not create one

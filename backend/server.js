@@ -4,6 +4,7 @@ const url = require("url");
 const fs = require("fs");
 const path = require("path");
 const handleAuthRoutes = require("./routes/authRoutes");
+const handleStudentRoutes = require("./routes/studentRoutes");
 
 // Frontend path
 const frontendPath = path.join(__dirname, "../frontend");
@@ -43,6 +44,13 @@ const server = http.createServer((req, res) => {
 
   // API routes
   if (pathname.startsWith("/api/")) {
+    // Try student routes first
+    const studentResult = handleStudentRoutes(req, res);
+    if (studentResult !== null) {
+      return studentResult;
+    }
+
+    // Fall back to auth routes
     return handleAuthRoutes(req, res);
   }
 

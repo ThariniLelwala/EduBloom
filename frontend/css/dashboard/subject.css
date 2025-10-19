@@ -1,0 +1,251 @@
+/* Subject Page Styles */
+
+/* Drag and drop section - removed as upload is now in modal */
+
+/* Upload area */
+.upload-area {
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.02);
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.upload-area:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.upload-area.dragover {
+  border-color: var(--color-primary);
+  background: rgba(33, 150, 243, 0.1);
+  transform: scale(1.01);
+}
+
+.upload-area i {
+  font-size: 40px;
+  color: var(--color-primary);
+  margin-bottom: 12px;
+  display: block;
+}
+
+.upload-area p {
+  margin: 6px 0;
+  color: #ccc;
+  font-size: 14px;
+}
+
+/* Upload loading indicator */
+.upload-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  z-index: 10;
+}
+
+.upload-loading p {
+  margin: 10px 0 0 0;
+  color: #fff;
+  font-size: 14px;
+}
+
+/* Inside modal - make upload area smaller */
+#topic-menu-modal .upload-area {
+  padding: 20px;
+  margin-bottom: 15px;
+}
+
+#topic-menu-modal .upload-area i {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+/* Make topic menu modal larger */
+#topic-menu-modal .modal-content {
+  width: 90%;
+  max-width: none;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+#topic-menu-modal .upload-area p {
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+/* Files list */
+.files-list {
+  margin-top: 20px;
+}
+
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+
+.file-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.file-info i {
+  font-size: 24px;
+  color: #ff6b6b;
+}
+
+.file-name {
+  margin: 0;
+  font-weight: 600;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 500px;
+}
+
+.file-size {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: #999;
+}
+
+.file-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-icon.delete:hover {
+  background: #ff6b6b;
+  color: #fff;
+}
+
+/* Modal enhancements for file management */
+#topic-menu-modal .modal-content {
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+#topic-menu-modal .upload-area {
+  margin-top: 15px;
+  margin-bottom: 20px;
+  border-width: 2px;
+}
+
+#topic-menu-modal .files-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+}
+
+/* Loading animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border-top: 3px solid var(--color-primary);
+  width: 24px;
+  height: 24px;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .upload-area {
+    padding: 20px;
+  }
+
+  .upload-area i {
+    font-size: 36px;
+  }
+
+  .file-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .file-name {
+    max-width: 100%;
+  }
+
+  .file-actions {
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .btn-icon {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .drag-drop-section {
+    padding: 12px;
+  }
+
+  .upload-area {
+    padding: 16px;
+  }
+
+  .upload-area i {
+    font-size: 28px;
+  }
+
+  .file-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

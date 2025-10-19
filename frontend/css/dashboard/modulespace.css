@@ -1,0 +1,26 @@
+/* Responsive Design */
+@media (max-width: 768px) {
+  .subjects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+  }
+
+  .subject-card {
+    min-height: 120px;
+    padding: 20px;
+  }
+
+  .subject-card .subject-header {
+    font-size: 14px;
+  }
+
+  .subject-card .subject-header i {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .subjects-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
