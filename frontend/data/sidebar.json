@@ -33,6 +33,16 @@
       "link": "diary/diary.html"
     },
     {
+      "title": "Exams",
+      "icon": "fas fa-file-pen",
+      "link": "exams.html"
+    },
+    {
+      "title": "Mark Tracker",
+      "icon": "fa-solid fa-chart-simple",
+      "link": "marks/mark-tracker.html"
+    },
+    {
       "title": "Progress",
       "icon": "fas fa-chart-line",
       "link": "progress.html"

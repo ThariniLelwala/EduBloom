@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Mark Tracker</title>
+    <script src="../../../js/sidebar.js"></script>
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/topbar.css" />
+    <link rel="stylesheet" href="../../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/cards.css" />
+    <link rel="stylesheet" href="../../../css/dashboard/mark-tracker.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- sidebar + content -->
+    <div class="container">
+      <div id="sidebar-container"></div>
+      <main id="content">
+        <h2 class="header-row">
+          <div class="card-title">
+            <i
+              class="fas fa-chevron-left"
+              id="back-btn"
+              onclick="window.location.href = './mark-tracker.html';"
+            ></i>
+            <span id="subject-name">Mark Tracker</span>
+          </div>
+        </h2>
+
+        <div class="content-grid">
+          <!-- Tests List -->
+          <div class="tests-section">
+            <div class="card">
+              <div class="card-header">
+                <h3>Tests</h3>
+              </div>
+              <div id="tests-container">
+                <!-- Test items rendered dynamically -->
+              </div>
+              <button class="btn-secondary add-btn" id="add-test-btn">
+                <i class="fas fa-plus"></i> Add Test
+              </button>
+            </div>
+          </div>
+
+          <!-- Progress Chart -->
+          <div class="chart-section">
+            <div class="card">
+              <div class="card-header">
+                <h3>Progress Chart</h3>
+              </div>
+              <canvas id="progressChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal for adding/editing test -->
+    <div id="test-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="test-modal-title">Add Test</h2>
+        <input type="text" id="test-name-input" placeholder="Enter test name" />
+        <input
+          type="number"
+          id="test-mark-input"
+          placeholder="Enter mark (0-100)"
+          min="0"
+          max="100"
+        />
+        <button id="save-test-btn" class="btn-primary">Save</button>
+      </div>
+    </div>
+
+    <script src="../../../js/topbar.js"></script>
+    <script src="../../../js/marks/mark-tracker-subject.js"></script>
+  </body>
+</html>
+
+<script src="../../../js/bg-manager.js"></script>

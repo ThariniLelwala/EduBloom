@@ -41,7 +41,9 @@ function updateSummary() {
   let averageMarks = 0;
   if (examsData.exams.length > 0) {
     const latestExam = examsData.exams[examsData.exams.length - 1];
-    const marks = Object.values(latestExam.marks).filter(mark => mark !== null && mark !== undefined);
+    const marks = Object.values(latestExam.marks).filter(
+      (mark) => mark !== null && mark !== undefined
+    );
     if (marks.length > 0) {
       const sum = marks.reduce((acc, mark) => acc + mark, 0);
       averageMarks = (sum / marks.length).toFixed(2);
@@ -65,7 +67,9 @@ function populateExamsList() {
     li.className = "exam-item";
 
     // Calculate average for this exam
-    const marks = Object.values(exam.marks).filter(mark => mark !== null && mark !== undefined);
+    const marks = Object.values(exam.marks).filter(
+      (mark) => mark !== null && mark !== undefined
+    );
     let examAverage = 0;
     if (marks.length > 0) {
       const sum = marks.reduce((acc, mark) => acc + mark, 0);
@@ -214,14 +218,16 @@ function bindGlobalEvents() {
     const examIndex = examSelect.value;
     const subjectInputs = subjectsContainer.querySelectorAll(".subject-input");
     const newSubjects = Array.from(subjectInputs)
-      .map(input => input.value.trim())
-      .filter(s => s && s.length > 0);
+      .map((input) => input.value.trim())
+      .filter((s) => s && s.length > 0);
 
     if (!examIndex || newSubjects.length === 0) return;
 
     const exam = examsData.exams[examIndex];
-    const uniqueSubjects = newSubjects.filter(subject => !exam.subjects.includes(subject));
-    uniqueSubjects.forEach(subject => {
+    const uniqueSubjects = newSubjects.filter(
+      (subject) => !exam.subjects.includes(subject)
+    );
+    uniqueSubjects.forEach((subject) => {
       exam.subjects.push(subject);
       exam.marks[subject] = null;
     });
@@ -294,7 +300,8 @@ function openSubjectModal(examIndex) {
   examSelect.value = examIndex;
 
   // Clear existing inputs and add one empty input
-  subjectsContainer.innerHTML = '<input type="text" class="subject-input" placeholder="Enter subject name..." />';
+  subjectsContainer.innerHTML =
+    '<input type="text" class="subject-input" placeholder="Enter subject name..." />';
 
   subjectModal.classList.add("show");
   subjectsContainer.querySelector(".subject-input").focus();
