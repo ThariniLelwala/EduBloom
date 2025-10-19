@@ -61,11 +61,11 @@
               <div id="countdown">00:00</div>
             </div>
             <div class="timer-controls">
-              <button id="start" onclick="startTimer()">
+              <button id="start">
                 <i class="fas fa-play"></i>
               </button>
               <!-- <button id="pause"><i class="fas fa-pause"></i></button> -->
-              <button id="reset" onclick="stopTimer()">
+              <button id="reset">
                 <i class="fas fa-stop"></i>
               </button>
             </div>
@@ -134,38 +134,5 @@
 <script src="../../js/sidebar.js"></script>
 <script src="../../js/topbar.js"></script>
 <script src="../../js/timer.js"></script>
-
-<script>
-  const freestyleBtn = document.getElementById("freestyle-btn");
-  const customBtn = document.getElementById("custom-btn");
-  const freestyleSection = document.getElementById("freestyle-section");
-  const customSection = document.getElementById("custom-section");
-
-  freestyleBtn.addEventListener("click", () => {
-    freestyleBtn.classList.add("active");
-    customBtn.classList.remove("active");
-
-    freestyleSection.classList.add("visible");
-    customSection.classList.remove("visible");
-  });
-
-  customBtn.addEventListener("click", () => {
-    customBtn.classList.add("active");
-    freestyleBtn.classList.remove("active");
-
-    customSection.classList.add("visible");
-    freestyleSection.classList.remove("visible");
-  });
-
-  // Optional: Update custom time display
-  document
-    .getElementById("custom-range")
-    .addEventListener("input", function () {
-      const minutes = parseInt(this.value, 10);
-      const hrs = String(Math.floor(minutes / 60)).padStart(2, "0");
-      const mins = String(minutes % 60).padStart(2, "0");
-      document.getElementById("custom-time").textContent = `${hrs}:${mins}`;
-    });
-</script>
 
 <script src="../../js/bg-manager.js"></script>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom Exams</title>
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/dashboard/exams.css" />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- Topbar -->
+    <div id="topbar-container"></div>
+
+    <div class="container">
+      <!-- Sidebar -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main content -->
+      <main id="content">
+        <div class="card welcome full">
+          <div class="welcome-content">
+            <h1 class="heading">
+              <i class="fas fa-chart-line"></i>Exams
+            </h1>
+            <div>"Track your academic progress."</div>
+          </div>
+          <div class="welcome-image"></div>
+        </div>
+        <!-- ===== Summary Cards (Top Row) ===== -->
+        <div class="summary-grid">
+          <div class="card w1 small-card">
+            <h4>Total Exams</h4>
+            <p id="total-exams">0</p>
+          </div>
+
+          <div class="card w1 small-card">
+            <h4>Total Subjects</h4>
+            <p id="total-subjects">0</p>
+          </div>
+
+          <div class="card w1 small-card">
+            <h4>Latest Exam Average</h4>
+            <p id="average-marks">0</p>
+          </div>
+        </div>
+
+        <!-- ===== Main Cards (Bottom Row) ===== -->
+        <div class="card-grid">
+          <!-- Exams Card -->
+          <div class="card w1 h2">
+            <div class="card-header">
+              <h3>Exams</h3>
+            </div>
+            <ul id="exams-list"></ul>
+            <button class="btn-secondary add-btn" data-type="exam">
+              + Add Exam
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- ===== Modal for Adding Exam ===== -->
+    <div id="exam-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="exam-modal-title">Add Exam</h2>
+          <button class="modal-close" id="exam-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="exam-name-input"
+            placeholder="Enter exam name..."
+          />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="exam-modal-cancel">Cancel</button>
+          <button class="btn-primary" id="exam-modal-save">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Modal for Adding Subject ===== -->
+    <div id="subject-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Add Subject</h2>
+          <button class="modal-close" id="subject-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <select id="exam-select">
+            <option value="">Select Exam</option>
+          </select>
+          <div id="subjects-container">
+            <input type="text" class="subject-input" placeholder="Enter subject name..." />
+          </div>
+          <button class="btn-secondary" id="add-subject-btn">+ Add another subject</button>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="subject-modal-cancel">
+            Cancel
+          </button>
+          <button class="btn-primary" id="subject-modal-save">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Modal for Entering Marks ===== -->
+    <div id="marks-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Enter Marks</h2>
+          <button class="modal-close" id="marks-modal-close">&times;</button>
+        </div>
+        <div class="modal-body" id="marks-body">
+          <!-- Dynamic content for subjects and inputs -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="marks-modal-cancel">Cancel</button>
+          <button class="btn-primary" id="marks-modal-save">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Modal for Editing Exam ===== -->
+    <div id="edit-exam-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Edit Exam</h2>
+          <button class="modal-close" id="edit-exam-modal-close">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="edit-exam-name-input"
+            placeholder="Edit exam name..."
+          />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="edit-exam-modal-cancel">
+            Cancel
+          </button>
+          <button class="btn-primary" id="edit-exam-modal-save">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Modal for Deleting Exam ===== -->
+    <div class="modal" id="delete-exam-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Delete Exam</h2>
+          <button class="modal-close" id="delete-exam-modal-close">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete this exam?</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="delete-exam-modal-cancel">
+            Cancel
+          </button>
+          <button class="btn-primary" id="delete-exam-modal-confirm">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JS Files -->
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/sidebar.js"></script>
+    <script src="../../js/exams.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+  </body>
+</html>
