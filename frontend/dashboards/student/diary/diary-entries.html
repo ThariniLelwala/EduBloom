@@ -42,7 +42,13 @@
             <textarea
               class="diary-page"
               placeholder="Write your thoughts here..."
+              id="diary-text"
             ></textarea>
+            <div class="diary-actions">
+              <button class="btn-primary" id="add-entry-btn">
+                <i class="fas fa-save"></i> Save
+              </button>
+            </div>
           </div>
 
           <!-- Settings Container -->
@@ -90,6 +96,20 @@
                     <span class="label">Excited</span>
                   </div>
                 </div>
+                <div class="mood-actions">
+                  <button
+                    class="btn-secondary mood-action-btn"
+                    id="add-mood-btn"
+                  >
+                    <i class="fas fa-plus"></i> Add Mood
+                  </button>
+                  <button
+                    class="btn-secondary mood-action-btn remove-btn"
+                    id="remove-mood-btn"
+                  >
+                    <i class="fas fa-times"></i> Remove
+                  </button>
+                </div>
               </div>
 
               <!-- Energy Card -->
@@ -116,6 +136,20 @@
                     <span class="emoji">🔥</span>
                     <span class="label">Max</span>
                   </div>
+                </div>
+                <div class="mood-actions">
+                  <button
+                    class="btn-secondary mood-action-btn"
+                    id="add-energy-btn"
+                  >
+                    <i class="fas fa-plus"></i> Add Energy
+                  </button>
+                  <button
+                    class="btn-secondary mood-action-btn remove-btn"
+                    id="remove-energy-btn"
+                  >
+                    <i class="fas fa-times"></i> Remove
+                  </button>
                 </div>
               </div>
             </div>

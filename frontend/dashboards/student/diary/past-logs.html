@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Past Diary Entries</title>
+
+    <!-- Sidebar and layout scripts -->
+    <script src="../../../js/sidebar.js"></script>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/topbar.css" />
+    <link rel="stylesheet" href="../../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/cards.css" />
+    <link rel="stylesheet" href="../../../css/dashboard/diary.css" />
+
+    <!-- Font Awesome Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <div class="container">
+      <div id="sidebar-container"></div>
+      <main id="content">
+        <!-- Welcome Card -->
+        <div class="card welcome full">
+          <div class="welcome-content">
+            <h1 class="heading">
+              <i class="fas fa-book-open"></i> Past Diary Entries
+            </h1>
+            <div>"Reflect on your journey"</div>
+          </div>
+          <div class="welcome-image"></div>
+        </div>
+
+        <!-- Main Content Container -->
+        <div class="diary-content">
+          <!-- Search and Filter -->
+          <div class="card full">
+            <div class="search-filter-container">
+              <div class="search-bar">
+                <input
+                  type="text"
+                  id="search-input"
+                  placeholder="Search entries..."
+                />
+                <button id="search-btn"><i class="fas fa-search"></i></button>
+              </div>
+              <div class="filter-options">
+                <select id="mood-filter">
+                  <option value="">All Moods</option>
+                  <option value="Sad">Sad</option>
+                  <option value="Neutral">Neutral</option>
+                  <option value="Calm">Calm</option>
+                  <option value="Happy">Happy</option>
+                  <option value="Excited">Excited</option>
+                </select>
+                <select id="energy-filter">
+                  <option value="">All Energy Levels</option>
+                  <option value="Low">Low</option>
+                  <option value="Relaxed">Relaxed</option>
+                  <option value="Normal">Normal</option>
+                  <option value="High">High</option>
+                  <option value="Max">Max</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Past Entries -->
+          <div class="card full">
+            <h3>Your Diary Entries</h3>
+            <div id="past-entries" class="past-entries">
+              <!-- Past entries will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- View Entry Modal -->
+    <div id="view-entry-modal" class="view-entry-modal">
+      <div class="view-entry-modal-content">
+        <div class="view-entry-modal-header">
+          <h3>Diary Entry</h3>
+          <button class="close-modal-btn" id="close-modal-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="view-entry-modal-body">
+          <div class="view-entry-page">
+            <span class="view-entry-date" id="view-entry-date"></span>
+            <div class="view-entry-text" id="view-entry-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../../js/topbar.js"></script>
+    <script src="../../../js/bg-manager.js"></script>
+    <script>
+      let allEntries = [];
+
+      // Load all diary entries
+      function loadPastEntries() {
+        allEntries = JSON.parse(localStorage.getItem("diaryEntries") || "[]");
+        displayEntries(allEntries);
+      }
+
+      // Display entries with optional filtering
+      function displayEntries(entries) {
+        const container = document.getElementById("past-entries");
+
+        if (entries.length === 0) {
+          container.innerHTML =
+            '<div class="no-entries">No diary entries found.</div>';
+          return;
+        }
+
+        const entriesHtml = entries
+          .map((entry) => {
+            const entryDate = new Date(entry.date).toLocaleDateString(
+              undefined,
+              {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              }
+            );
+
+            const moodEmoji = entry.mood ? getMoodEmoji(entry.mood) : "";
+            const energyEmoji = entry.energy
+              ? getEnergyEmoji(entry.energy)
+              : "";
+
+            return `
+            <div class="past-entry">
+              <div class="past-entry-header">
+                <div class="past-entry-date">${entryDate}</div>
+                <div class="past-entry-meta">
+                  ${
+                    entry.mood
+                      ? `<span class="meta-item">${moodEmoji} ${entry.mood}</span>`
+                      : ""
+                  }
+                  ${
+                    entry.energy
+                      ? `<span class="meta-item">${energyEmoji} ${entry.energy}</span>`
+                      : ""
+                  }
+                  <span class="meta-item">Theme: ${entry.theme}</span>
+                  <span class="meta-item">Font: ${entry.font
+                    .split(",")[0]
+                    .replace(/'/g, "")}</span>
+                </div>
+              </div>
+              <div class="past-entry-content">
+                <div class="past-entry-text" style="font-family: ${
+                  entry.font
+                };">${entry.text.replace(/\n/g, "<br>")}</div>
+              </div>
+              <div class="past-entry-actions">
+                <button class="btn-small-secondary" onclick="viewEntry(${
+                  entry.id
+                })">
+                  <i class="fas fa-eye"></i> View
+                </button>
+                <button class="btn-small-secondary" onclick="editEntry(${
+                  entry.id
+                })">
+                  <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn-small-secondary delete-btn" onclick="deleteEntry(${
+                  entry.id
+                })">
+                  <i class="fas fa-trash"></i> Delete
+                </button>
+              </div>
+            </div>
+          `;
+          })
+          .join("");
+
+        container.innerHTML = entriesHtml;
+      }
+
+      // Search functionality
+      function searchEntries(query) {
+        const filtered = allEntries.filter(
+          (entry) =>
+            entry.text.toLowerCase().includes(query.toLowerCase()) ||
+            entry.mood?.toLowerCase().includes(query.toLowerCase()) ||
+            entry.energy?.toLowerCase().includes(query.toLowerCase())
+        );
+        displayEntries(filtered);
+      }
+
+      // Filter by mood and energy
+      function filterEntries() {
+        const moodFilter = document.getElementById("mood-filter").value;
+        const energyFilter = document.getElementById("energy-filter").value;
+
+        let filtered = allEntries;
+
+        if (moodFilter) {
+          filtered = filtered.filter((entry) => entry.mood === moodFilter);
+        }
+
+        if (energyFilter) {
+          filtered = filtered.filter((entry) => entry.energy === energyFilter);
+        }
+
+        displayEntries(filtered);
+      }
+
+      // Edit entry (redirect to diary-entries with data)
+      function editEntry(entryId) {
+        const entry = allEntries.find((e) => e.id === entryId);
+        if (entry) {
+          // Store entry data for editing
+          sessionStorage.setItem("editEntry", JSON.stringify(entry));
+          window.location.href = "diary-entries.html?edit=" + entryId;
+        }
+      }
+
+      // Delete entry
+      function deleteEntry(entryId) {
+        if (confirm("Are you sure you want to delete this diary entry?")) {
+          const updatedEntries = allEntries.filter(
+            (entry) => entry.id !== entryId
+          );
+          localStorage.setItem("diaryEntries", JSON.stringify(updatedEntries));
+          allEntries = updatedEntries;
+          displayEntries(allEntries);
+        }
+      }
+
+      // Helper functions
+      function getMoodEmoji(mood) {
+        const moodEmojis = {
+          Sad: "😞",
+          Neutral: "😐",
+          Calm: "🙂",
+          Happy: "😊",
+          Excited: "🤩",
+        };
+        return moodEmojis[mood] || "😐";
+      }
+
+      function getEnergyEmoji(energy) {
+        const energyEmojis = {
+          Low: "😴",
+          Relaxed: "😌",
+          Normal: "😃",
+          High: "⚡",
+          Max: "🔥",
+        };
+        return energyEmojis[energy] || "😃";
+      }
+
+      // View entry in modal
+      function viewEntry(entryId) {
+        const entry = allEntries.find((e) => e.id === entryId);
+        if (!entry) return;
+
+        const modal = document.getElementById("view-entry-modal");
+        const viewEntryDate = document.getElementById("view-entry-date");
+        const viewEntryText = document.getElementById("view-entry-text");
+        const viewEntryPage = document.querySelector(".view-entry-page");
+
+        // Set the date
+        const entryDate = new Date(entry.date).toLocaleDateString(undefined, {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        viewEntryDate.textContent = entryDate;
+
+        // Set the text with line breaks preserved
+        viewEntryText.textContent = entry.text;
+
+        // Apply theme and font
+        const themeImage = getThemeImage(entry.theme);
+        viewEntryPage.style.setProperty("--diary-theme-img", themeImage);
+        viewEntryPage.style.background = `var(--diary-theme-img) center/cover no-repeat`;
+
+        viewEntryText.style.fontFamily = entry.font;
+        viewEntryDate.style.fontFamily = entry.font;
+
+        // Show modal
+        modal.style.display = "block";
+        document.body.style.overflow = "hidden"; // Prevent background scrolling
+      }
+
+      // Helper function for theme images
+      function getThemeImage(theme) {
+        const themeImages = {
+          default: 'url("../../../assets/diary-themes/diary1.jpg")',
+          vintage: 'url("../../../assets/diary-themes/diary2.jpg")',
+          dark: 'url("../../../assets/diary-themes/diary3.jpg")',
+          floral: 'url("../../../assets/diary-themes/diary4.jpg")',
+          pastel: 'url("../../../assets/diary-themes/diary5.jpg")',
+          none: "none",
+        };
+        return themeImages[theme] || themeImages["default"];
+      }
+
+      // Event listeners
+      document.addEventListener("DOMContentLoaded", () => {
+        loadPastEntries();
+
+        // Search functionality
+        const searchInput = document.getElementById("search-input");
+        const searchBtn = document.getElementById("search-btn");
+
+        searchBtn.addEventListener("click", () => {
+          searchEntries(searchInput.value);
+        });
+
+        searchInput.addEventListener("keyup", (e) => {
+          if (e.key === "Enter") {
+            searchEntries(searchInput.value);
+          }
+        });
+
+        // Filter functionality
+        document
+          .getElementById("mood-filter")
+          .addEventListener("change", filterEntries);
+        document
+          .getElementById("energy-filter")
+          .addEventListener("change", filterEntries);
+
+        // Modal functionality
+        const viewEntryModal = document.getElementById("view-entry-modal");
+        const closeModalBtn = document.getElementById("close-modal-btn");
+
+        if (closeModalBtn && viewEntryModal) {
+          closeModalBtn.addEventListener("click", () => {
+            viewEntryModal.style.display = "none";
+            document.body.style.overflow = "auto";
+          });
+
+          // Close modal when clicking outside
+          viewEntryModal.addEventListener("click", (e) => {
+            if (e.target === viewEntryModal) {
+              viewEntryModal.style.display = "none";
+              document.body.style.overflow = "auto";
+            }
+          });
+
+          // Close modal with Escape key
+          document.addEventListener("keydown", (e) => {
+            if (
+              e.key === "Escape" &&
+              viewEntryModal.style.display === "block"
+            ) {
+              viewEntryModal.style.display = "none";
+              document.body.style.overflow = "auto";
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

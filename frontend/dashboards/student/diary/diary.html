@@ -34,6 +34,17 @@
           <div class="welcome-image"></div>
         </div>
 
+        <!-- Today's Mood & Energy Display -->
+        <div class="card full todays-mood-energy">
+          <div class="mood-energy-header">
+            <h3>Today's Mood & Energy</h3>
+            <div class="current-date-display" id="current-date-display"></div>
+          </div>
+          <div class="mood-energy-content" id="mood-energy-content">
+            <!-- Mood and energy will be displayed here -->
+          </div>
+        </div>
+
         <!-- Summary Cards -->
         <div class="summary-grid">
           <div class="card w1 small-card">
@@ -57,7 +68,9 @@
           <!-- Recent Logs -->
           <div class="card w2">
             <h3>Recent Logs</h3>
-            <!-- Add dynamic content here later -->
+            <div id="recent-entries" class="recent-entries">
+              <!-- Recent entries will be loaded here -->
+            </div>
           </div>
           <!-- Quick Actions -->
           <div class="card w1">
@@ -69,7 +82,7 @@
                 </a>
               </li>
               <li>
-                <a href="mood-entries.html">
+                <a href="diary-entries.html">
                   <i class="fas fa-face-laugh-beam"></i> Add Today's Mood
                 </a>
               </li>
@@ -84,7 +97,332 @@
       </main>
     </div>
 
+    <!-- View Entry Modal -->
+    <div id="view-entry-modal" class="view-entry-modal">
+      <div class="view-entry-modal-content">
+        <div class="view-entry-modal-header">
+          <h3>Diary Entry</h3>
+          <button class="close-modal-btn" id="close-modal-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="view-entry-modal-body">
+          <div class="view-entry-page">
+            <span class="view-entry-date" id="view-entry-date"></span>
+            <div class="view-entry-text" id="view-entry-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="../../../js/topbar.js"></script>
     <script src="../../../js/bg-manager.js"></script>
+    <script>
+      // Display current date
+      const currentDateEl = document.getElementById("current-date-display");
+      const today = new Date();
+      currentDateEl.textContent = today.toLocaleDateString(undefined, {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
+      // Display selected mood and energy
+      function displayMoodAndEnergy() {
+        const moodEnergyContent = document.getElementById(
+          "mood-energy-content"
+        );
+        const selectedMood = localStorage.getItem("diaryMood");
+        const selectedEnergy = localStorage.getItem("diaryEnergy");
+
+        let html = "";
+
+        if (selectedMood || selectedEnergy) {
+          html += '<div class="mood-energy-display">';
+
+          if (selectedMood) {
+            const moodEmoji = getMoodEmoji(selectedMood);
+            html += `<div class="mood-item">
+              <span class="emoji">${moodEmoji}</span>
+              <div class="mood-info">
+                <div class="mood-label">Current Mood</div>
+                <div class="mood-value">${selectedMood}</div>
+              </div>
+              <div class="mood-item-actions">
+                <button class="btn-icon-only" onclick="editMood()" title="Edit Mood">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon-only delete-btn" onclick="deleteMood()" title="Delete Mood">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>`;
+          }
+
+          if (selectedEnergy) {
+            const energyEmoji = getEnergyEmoji(selectedEnergy);
+            html += `<div class="energy-item">
+              <span class="emoji">${energyEmoji}</span>
+              <div class="energy-info">
+                <div class="energy-label">Energy Level</div>
+                <div class="energy-value">${selectedEnergy}</div>
+              </div>
+              <div class="mood-item-actions">
+                <button class="btn-icon-only" onclick="editEnergy()" title="Edit Energy">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon-only delete-btn" onclick="deleteEnergy()" title="Delete Energy">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>`;
+          }
+
+          html += "</div>";
+        } else {
+          html =
+            '<div class="no-mood-energy"><p>You haven\'t set your mood or energy level for today yet.</p><a href="diary-entries.html" class="set-mood-btn">Set Today\'s Mood & Energy</a></div>';
+        }
+
+        moodEnergyContent.innerHTML = html;
+      }
+
+      function getMoodEmoji(mood) {
+        const moodEmojis = {
+          Sad: "😞",
+          Neutral: "😐",
+          Calm: "🙂",
+          Happy: "😊",
+          Excited: "🤩",
+        };
+        return moodEmojis[mood] || "😐";
+      }
+
+      function getEnergyEmoji(energy) {
+        const energyEmojis = {
+          Low: "😴",
+          Relaxed: "😌",
+          Normal: "😃",
+          High: "⚡",
+          Max: "🔥",
+        };
+        return energyEmojis[energy] || "😃";
+      }
+
+      // Load mood and energy on page load
+      displayMoodAndEnergy();
+      loadRecentEntries();
+
+      function loadRecentEntries() {
+        const recentEntriesContainer =
+          document.getElementById("recent-entries");
+        const entries = JSON.parse(
+          localStorage.getItem("diaryEntries") || "[]"
+        );
+
+        if (entries.length === 0) {
+          recentEntriesContainer.innerHTML =
+            '<div class="no-recent-entries">No diary entries yet. Start writing your first entry!</div>';
+          return;
+        }
+
+        // Show only the 3 most recent entries
+        const recentEntries = entries.slice(0, 3);
+
+        const entriesHtml = recentEntries
+          .map((entry) => {
+            const entryDate = new Date(entry.date).toLocaleDateString(
+              undefined,
+              {
+                weekday: "short",
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              }
+            );
+
+            const moodEmoji = entry.mood ? getMoodEmoji(entry.mood) : "";
+            const energyEmoji = entry.energy
+              ? getEnergyEmoji(entry.energy)
+              : "";
+
+            return `
+            <div class="recent-entry">
+              <div class="recent-entry-header">
+                <div class="recent-entry-date">${entryDate}</div>
+                <div class="recent-entry-mood-energy">
+                  ${
+                    entry.mood
+                      ? `<span class="recent-entry-mood">${moodEmoji} ${entry.mood}</span>`
+                      : ""
+                  }
+                  ${
+                    entry.energy
+                      ? `<span class="recent-entry-energy">${energyEmoji} ${entry.energy}</span>`
+                      : ""
+                  }
+                </div>
+              </div>
+              <div class="recent-entry-text">${entry.text}</div>
+              <div class="recent-entry-actions">
+                <button class="btn-small-secondary" onclick="viewFullEntry(${
+                  entry.id
+                })">View Full</button>
+              </div>
+            </div>
+          `;
+          })
+          .join("");
+
+        recentEntriesContainer.innerHTML = entriesHtml;
+      }
+
+      function viewFullEntry(entryId) {
+        const entries = JSON.parse(
+          localStorage.getItem("diaryEntries") || "[]"
+        );
+        const entry = entries.find((e) => e.id === entryId);
+        if (!entry) return;
+
+        const modal = document.getElementById("view-entry-modal");
+        const viewEntryDate = document.getElementById("view-entry-date");
+        const viewEntryText = document.getElementById("view-entry-text");
+        const viewEntryPage = document.querySelector(".view-entry-page");
+
+        // Set the date
+        const entryDate = new Date(entry.date).toLocaleDateString(undefined, {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        viewEntryDate.textContent = entryDate;
+
+        // Set the text with line breaks preserved
+        viewEntryText.textContent = entry.text;
+
+        // Apply theme and font
+        const themeImage = getThemeImage(entry.theme);
+        viewEntryPage.style.setProperty("--diary-theme-img", themeImage);
+        viewEntryPage.style.background = `var(--diary-theme-img) center/cover no-repeat`;
+
+        viewEntryText.style.fontFamily = entry.font;
+        viewEntryDate.style.fontFamily = entry.font;
+
+        // Show modal
+        modal.style.display = "block";
+        document.body.style.overflow = "hidden"; // Prevent background scrolling
+      }
+
+      // Helper function for theme images
+      function getThemeImage(theme) {
+        const themeImages = {
+          default: 'url("../../../assets/diary-themes/diary1.jpg")',
+          vintage: 'url("../../../assets/diary-themes/diary2.jpg")',
+          dark: 'url("../../../assets/diary-themes/diary3.jpg")',
+          floral: 'url("../../../assets/diary-themes/diary4.jpg")',
+          pastel: 'url("../../../assets/diary-themes/diary5.jpg")',
+          none: "none",
+        };
+        return themeImages[theme] || themeImages["default"];
+      }
+
+      // Modal event listeners
+      document.addEventListener("DOMContentLoaded", () => {
+        // Modal functionality
+        const viewEntryModal = document.getElementById("view-entry-modal");
+        const closeModalBtn = document.getElementById("close-modal-btn");
+
+        if (closeModalBtn && viewEntryModal) {
+          closeModalBtn.addEventListener("click", () => {
+            viewEntryModal.style.display = "none";
+            document.body.style.overflow = "auto";
+          });
+
+          // Close modal when clicking outside
+          viewEntryModal.addEventListener("click", (e) => {
+            if (e.target === viewEntryModal) {
+              viewEntryModal.style.display = "none";
+              document.body.style.overflow = "auto";
+            }
+          });
+
+          // Close modal with Escape key
+          document.addEventListener("keydown", (e) => {
+            if (
+              e.key === "Escape" &&
+              viewEntryModal.style.display === "block"
+            ) {
+              viewEntryModal.style.display = "none";
+              document.body.style.overflow = "auto";
+            }
+          });
+        }
+      });
+
+      // Mood/Energy management functions
+      function editMood() {
+        window.location.href = "diary-entries.html";
+      }
+
+      function deleteMood() {
+        if (confirm("Are you sure you want to delete your current mood?")) {
+          localStorage.removeItem("diaryMood");
+          displayMoodAndEnergy();
+          showSuccessMessage("Mood deleted successfully.");
+        }
+      }
+
+      function editEnergy() {
+        window.location.href = "diary-entries.html";
+      }
+
+      function deleteEnergy() {
+        if (
+          confirm("Are you sure you want to delete your current energy level?")
+        ) {
+          localStorage.removeItem("diaryEnergy");
+          displayMoodAndEnergy();
+          showSuccessMessage("Energy level deleted successfully.");
+        }
+      }
+
+      function showSuccessMessage(message) {
+        // Remove existing message if any
+        const existingMessage = document.querySelector(".success-message");
+        if (existingMessage) {
+          existingMessage.remove();
+        }
+
+        // Create and show success message
+        const messageEl = document.createElement("div");
+        messageEl.className = "success-message";
+        messageEl.textContent = message;
+        messageEl.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: var(--color-primary);
+          color: white;
+          padding: 12px 20px;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          z-index: 1000;
+          font-weight: 500;
+        `;
+
+        document.body.appendChild(messageEl);
+
+        // Remove message after 3 seconds
+        setTimeout(() => {
+          if (messageEl.parentNode) {
+            messageEl.remove();
+          }
+        }, 3000);
+      }
+    </script>
   </body>
 </html>
