@@ -1,0 +1,407 @@
+/* Progress Page Styling */
+
+/* Card Content */
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.stat-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-white);
+  text-shadow: 0 2px 8px rgba(74, 222, 128, 0.3);
+  letter-spacing: -0.5px;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.stat-secondary {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+}
+
+.stat-secondary.trend-up {
+  color: #4ade80;
+}
+
+.stat-secondary.trend-down {
+  color: #ff6b7a;
+}
+
+/* Comparison Styling */
+.comparison {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.comparison-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.comparison-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.comparison-value.increase {
+  color: #4ade80;
+}
+
+.comparison-value.decrease {
+  color: #ff6b7a;
+}
+
+/* Chart Container */
+.chart-container {
+  position: relative;
+  height: 250px;
+  margin: 16px 0;
+  padding: 12px 0;
+}
+
+.chart-container canvas {
+  max-height: 250px;
+}
+
+/* Card Stats */
+.chart-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Week Total Styling */
+.week-total {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.total-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.total-hours {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(74, 222, 128, 0.2);
+}
+
+/* Mental Logs Card Styling */
+.mental-log-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mental-log-item:last-child {
+  border-bottom: none;
+}
+
+.mental-log-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.mental-log-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #4ade80;
+}
+
+/* Streak Value Styling */
+.streak-value {
+  background: linear-gradient(135deg, #ff6b7a, #ffffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.chart-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  text-align: center;
+}
+
+.chart-stat .stat-value {
+  font-size: 1.8rem;
+}
+
+/* Analytics Filters */
+.analytics-filters {
+  display: flex;
+  gap: 8px;
+}
+
+/* Weekly Breakdown */
+.weekly-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.day-stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.day-stat:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: rgba(255, 255, 255, 0.4);
+}
+
+.day-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.day-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  min-width: 60px;
+}
+
+.day-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.day-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #4ade80, #22c55e);
+  border-radius: 3px;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+  transition: width 0.3s ease;
+}
+
+.day-hours {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  min-width: 50px;
+  text-align: right;
+}
+
+/* Tips Container */
+.tips-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.tip {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.tip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: rgba(255, 255, 255, 0.4);
+}
+
+.tip-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.tip p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* GPA Card Styling */
+#gpa-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.gpa-current {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.gpa-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #4ade80;
+  text-shadow: 0 2px 4px rgba(74, 222, 128, 0.3);
+}
+
+.gpa-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gpa-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gpa-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  text-align: center;
+}
+
+.gpa-stat .stat-value {
+  font-size: 1.8rem;
+  color: #4ade80;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .stat-value {
+    font-size: 2rem;
+  }
+
+  .chart-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .card.w2 {
+    grid-column: span 1 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-value {
+    font-size: 1.8rem;
+  }
+
+  .chart-container {
+    height: 200px;
+  }
+
+  .chart-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .day-info {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .day-bar {
+    order: 3;
+    width: 100%;
+  }
+}
+
+/* Tasks Breakdown Styling */
+.tasks-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(74, 222, 128, 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  align-items: center;
+}
+
+.task-stat {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+}
+
+.task-stat:last-child {
+  border-bottom: none;
+}
+
+.task-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.task-value {
+  font-size: 1rem;
+  color: #4ade80;
+  font-weight: 700;
+  display: block;
+}

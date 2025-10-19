@@ -59,7 +59,7 @@
 
           <div class="card w1 small-card">
             <h4>Average Mood</h4>
-            <p id="monthly-completed">0</p>
+            <p id="monthly-completed">--</p>
           </div>
         </div>
 
@@ -118,6 +118,15 @@
     <script src="../../../js/topbar.js"></script>
     <script src="../../../js/bg-manager.js"></script>
     <script>
+      // Mood value mapping (0-4 scale) - MUST be defined first
+      const moodValueMap = {
+        Sad: 0,
+        Neutral: 1,
+        Calm: 2,
+        Happy: 3,
+        Excited: 4,
+      };
+
       // Display current date
       const currentDateEl = document.getElementById("current-date-display");
       const today = new Date();
@@ -213,6 +222,7 @@
       // Load mood and energy on page load
       displayMoodAndEnergy();
       loadRecentEntries();
+      updateSummaryStats();
 
       function loadRecentEntries() {
         const recentEntriesContainer =
@@ -372,6 +382,7 @@
         if (confirm("Are you sure you want to delete your current mood?")) {
           localStorage.removeItem("diaryMood");
           displayMoodAndEnergy();
+          updateSummaryStats();
           showSuccessMessage("Mood deleted successfully.");
         }
       }
@@ -386,6 +397,7 @@
         ) {
           localStorage.removeItem("diaryEnergy");
           displayMoodAndEnergy();
+          updateSummaryStats();
           showSuccessMessage("Energy level deleted successfully.");
         }
       }
@@ -422,6 +434,104 @@
             messageEl.remove();
           }
         }, 3000);
+      }
+
+      // Calculate average mood from all entries
+      function calculateAverageMood() {
+        const entries = JSON.parse(
+          localStorage.getItem("diaryEntries") || "[]"
+        );
+
+        if (entries.length === 0) {
+          return null;
+        }
+
+        const moodsWithValues = entries
+          .filter(
+            (entry) => entry.mood && moodValueMap.hasOwnProperty(entry.mood)
+          )
+          .map((entry) => moodValueMap[entry.mood]);
+
+        if (moodsWithValues.length === 0) {
+          return null;
+        }
+
+        const averageValue =
+          moodsWithValues.reduce((a, b) => a + b, 0) / moodsWithValues.length;
+
+        // Find the closest mood value
+        const moodValues = Object.values(moodValueMap);
+        const closestMoodValue = moodValues.reduce((prev, curr) =>
+          Math.abs(curr - averageValue) < Math.abs(prev - averageValue)
+            ? curr
+            : prev
+        );
+
+        // Map back to mood name
+        const moodNames = Object.keys(moodValueMap);
+        const closestMood = moodNames.find(
+          (mood) => moodValueMap[mood] === closestMoodValue
+        );
+
+        return closestMood || "Neutral";
+      }
+
+      // Calculate day streak (consecutive days with entries)
+      function calculateDayStreak() {
+        const entries = JSON.parse(
+          localStorage.getItem("diaryEntries") || "[]"
+        );
+
+        if (entries.length === 0) {
+          return 0;
+        }
+
+        // Sort entries by date in descending order
+        const sortedEntries = entries.sort(
+          (a, b) => new Date(b.date) - new Date(a.date)
+        );
+
+        let streak = 0;
+        let currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
+
+        for (const entry of sortedEntries) {
+          const entryDate = new Date(entry.date);
+          entryDate.setHours(0, 0, 0, 0);
+
+          const dayDifference = Math.floor(
+            (currentDate - entryDate) / (1000 * 60 * 60 * 24)
+          );
+
+          if (dayDifference === streak) {
+            streak++;
+          } else {
+            break;
+          }
+        }
+
+        return streak;
+      }
+
+      // Update all summary statistics
+      function updateSummaryStats() {
+        const entries = JSON.parse(
+          localStorage.getItem("diaryEntries") || "[]"
+        );
+
+        // Total entries
+        document.getElementById("todo-completed").textContent = entries.length;
+
+        // Day streak
+        const streak = calculateDayStreak();
+        document.getElementById("weekly-completed").textContent = streak;
+
+        // Average mood
+        const averageMood = calculateAverageMood();
+        const moodEmoji = averageMood ? getMoodEmoji(averageMood) : "";
+        document.getElementById("monthly-completed").textContent = averageMood
+          ? `${moodEmoji} ${averageMood}`
+          : "--";
       }
     </script>
   </body>
