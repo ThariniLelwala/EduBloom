@@ -71,14 +71,15 @@ async function fetchProfileData() {
       localStorage.setItem("email", result.user.email);
       localStorage.setItem("userRole", result.user.role);
       localStorage.setItem("userId", result.user.id);
-      
+
       // Handle student type display
       if (result.user.student_type) {
         localStorage.setItem("studentType", result.user.student_type);
         const studentTypeEl = document.getElementById("dropdown-student-type");
-        const studentTypeLabel = result.user.student_type === "university" 
-          ? "University Student" 
-          : "School Student";
+        const studentTypeLabel =
+          result.user.student_type === "university"
+            ? "University Student"
+            : "School Student";
         studentTypeEl.textContent = `Type: ${studentTypeLabel}`;
         studentTypeEl.style.display = "block";
       }

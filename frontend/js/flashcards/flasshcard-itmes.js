@@ -41,12 +41,14 @@ function renderCards() {
     cardElement.innerHTML = `
     <div class="flashcard-header">
       <div class="flashcard-text">
-        <div class="flashcard-question">${i + 1}. ${card.question}</div>
+        <div class="flashcard-label">Question</div>
+        <div class="flashcard-question">${card.question}</div>
+        <div class="flashcard-label">Answer</div>
         <div class="flashcard-answer">${card.answer}</div>
       </div>
       <div class="flashcard-actions">
-        <i class="edit-btn fas fa-edit icon-btn"></i>
-        <i class="delete-btn fas fa-trash icon-btn"></i>
+        <i class="edit-btn fas fa-edit icon-btn" title="Edit flashcard"></i>
+        <i class="delete-btn fas fa-trash icon-btn" title="Delete flashcard"></i>
       </div>
     </div>
     `;
@@ -140,8 +142,8 @@ function saveCard(closeAfter = true) {
   }
 }
 
-saveBtn.addEventListener("click", () => saveQuestion(true));
-saveNextBtn.addEventListener("click", () => saveQuestion(false));
+saveBtn.addEventListener("click", () => saveCard(true));
+saveNextBtn.addEventListener("click", () => saveCard(false));
 
 // Load card into modal for editing
 function openEditModal(id) {
