@@ -233,6 +233,49 @@ class AuthService {
 
     return { message: `Parent request ${action}ed successfully` };
   }
+
+  // Change password
+  async changePassword(userId, oldPassword, newPassword) {
+    if (!oldPassword || !newPassword) {
+      throw new Error("Both old and new passwords are required");
+    }
+
+    if (oldPassword === newPassword) {
+      throw new Error("New password must be different from old password");
+    }
+
+    if (newPassword.length < 6) {
+      throw new Error("New password must be at least 6 characters long");
+    }
+
+    // Get user from database
+    const result = await db.query("SELECT * FROM users WHERE id = $1", [
+      userId,
+    ]);
+
+    if (result.rows.length === 0) {
+      throw new Error("User not found");
+    }
+
+    const user = result.rows[0];
+
+    // Verify old password
+    if (!verifyPassword(oldPassword, user.password, user.salt)) {
+      throw new Error("Old password is incorrect");
+    }
+
+    // Hash new password
+    const { hashed, salt } = hashPassword(newPassword);
+
+    // Update password in database
+    await db.query("UPDATE users SET password = $1, salt = $2 WHERE id = $3", [
+      hashed,
+      salt,
+      userId,
+    ]);
+
+    return { message: "Password changed successfully" };
+  }
 }
 
 module.exports = new AuthService();

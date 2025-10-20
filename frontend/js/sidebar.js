@@ -19,7 +19,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // Calculate current folder depth relative to "student" folder
   const pathParts = currentPath.split("/"); // ["", "student", "dashboard", "quiz", "quiz.html"]
   const studentIndex = pathParts.indexOf("student");
-  const depth = pathParts.length - studentIndex - 2; // -2 because last is file, first is empty
+
+  // Handle profile.html which is in root, not in student folder
+  let depth = 0;
+  if (studentIndex !== -1) {
+    depth = pathParts.length - studentIndex - 2; // -2 because last is file, first is empty
+  } else if (currentPage === "profile.html") {
+    // Profile is in root, sidebar will be loaded from root too
+    depth = -1; // Special marker for root level
+  }
 
   // Load sidebar items from JSON
   fetch("/data/sidebar.json")
@@ -54,7 +62,12 @@ document.addEventListener("DOMContentLoaded", () => {
         // Calculate relative link
         let linkPath = item.link;
         if (!linkPath.startsWith("/")) {
-          linkPath = "../".repeat(depth) + item.link;
+          if (depth === -1) {
+            // Profile is at root level, so we need to go into dashboards/student/
+            linkPath = "dashboards/student/" + item.link;
+          } else {
+            linkPath = "../".repeat(depth) + item.link;
+          }
         }
 
         li.innerHTML = `<i class="${item.icon}"></i> <span>${item.title}</span>`;

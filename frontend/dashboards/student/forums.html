@@ -36,7 +36,10 @@
           <div class="card welcome full">
             <div class="welcome-content">
               <h1 class="heading">Student Forums</h1>
-              <div>Connect with fellow students, share knowledge, and engage in academic discussions.</div>
+              <div>
+                Connect with fellow students, share knowledge, and engage in
+                academic discussions.
+              </div>
             </div>
             <div class="welcome-image"></div>
           </div>
@@ -64,7 +67,9 @@
             <div class="topics-list" id="popular-topics">
               <div class="topic-item">
                 <div class="topic-header">
-                  <span class="topic-title">Best Resources for Machine Learning</span>
+                  <span class="topic-title"
+                    >Best Resources for Machine Learning</span
+                  >
                   <span class="topic-category">Resources</span>
                 </div>
                 <div class="topic-meta">
@@ -74,7 +79,9 @@
                     <i class="fas fa-reply"></i> 23
                   </span>
                 </div>
-                <div class="topic-preview">Sharing the best online resources for ML...</div>
+                <div class="topic-preview">
+                  Sharing the best online resources for ML...
+                </div>
               </div>
 
               <div class="topic-item">
@@ -89,7 +96,9 @@
                     <i class="fas fa-reply"></i> 12
                   </span>
                 </div>
-                <div class="topic-preview">New to CS? Let's share our experiences...</div>
+                <div class="topic-preview">
+                  New to CS? Let's share our experiences...
+                </div>
               </div>
 
               <div class="topic-item">
@@ -104,7 +113,9 @@
                     <i class="fas fa-reply"></i> 8
                   </span>
                 </div>
-                <div class="topic-preview">Stuck on integration by parts...</div>
+                <div class="topic-preview">
+                  Stuck on integration by parts...
+                </div>
               </div>
             </div>
           </div>
@@ -116,7 +127,15 @@
               <h3>Pending Approval</h3>
             </div>
             <div class="pending-topics-list" id="pending-topics">
-              <p style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 20px;">No topics pending approval</p>
+              <p
+                style="
+                  color: rgba(255, 255, 255, 0.6);
+                  text-align: center;
+                  padding: 20px;
+                "
+              >
+                No topics pending approval
+              </p>
             </div>
           </div>
 
@@ -127,7 +146,10 @@
               <h3>Categories</h3>
             </div>
             <div class="categories-list" id="forum-categories">
-              <div class="category-item" onclick="filterByCategory('resources')">
+              <div
+                class="category-item"
+                onclick="filterByCategory('resources')"
+              >
                 <i class="fas fa-book"></i>
                 <span>Resources</span>
                 <span class="category-count">8</span>
@@ -137,7 +159,10 @@
                 <span>General</span>
                 <span class="category-count">25</span>
               </div>
-              <div class="category-item" onclick="filterByCategory('questions')">
+              <div
+                class="category-item"
+                onclick="filterByCategory('questions')"
+              >
                 <i class="fas fa-question"></i>
                 <span>Q&A</span>
                 <span class="category-count">18</span>
@@ -182,8 +207,15 @@
           <span class="close" onclick="closeModal()">&times;</span>
         </div>
         <div class="modal-body">
-          <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin-bottom: 16px;">
-            <i class="fas fa-info-circle"></i> Your topic will be reviewed by an admin before being published.
+          <p
+            style="
+              color: rgba(255, 255, 255, 0.7);
+              font-size: 0.9rem;
+              margin-bottom: 16px;
+            "
+          >
+            <i class="fas fa-info-circle"></i> Your topic will be reviewed by an
+            admin before being published.
           </p>
           <input
             type="text"
@@ -206,7 +238,9 @@
         </div>
         <div class="modal-actions">
           <button class="btn-secondary" onclick="closeModal()">Cancel</button>
-          <button class="btn-primary" onclick="submitTopic()">Create Topic</button>
+          <button class="btn-primary" onclick="submitTopic()">
+            Create Topic
+          </button>
         </div>
       </div>
     </div>

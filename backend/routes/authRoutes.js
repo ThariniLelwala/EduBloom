@@ -33,6 +33,13 @@ function handleAuthRoutes(req, res) {
       );
     }
 
+    if (method === "POST" && pathname === "/api/auth/change-password") {
+      return applyMiddleware([verifyToken], authController.changePassword)(
+        req,
+        res
+      );
+    }
+
     // Student-specific protected routes
     if (method === "POST" && pathname === "/api/student/parent-requests/list") {
       return applyMiddleware(

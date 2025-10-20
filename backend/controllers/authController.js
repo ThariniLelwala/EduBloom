@@ -129,6 +129,34 @@ class AuthController {
       res.end(JSON.stringify({ error: err.message }));
     }
   }
+
+  async changePassword(req, res) {
+    try {
+      const data = await parseRequestBody(req);
+      const { oldPassword, newPassword } = data;
+      const user = req.user;
+
+      if (!oldPassword || !newPassword) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({ error: "Both old and new passwords are required" })
+        );
+        return;
+      }
+
+      const result = await authService.changePassword(
+        user.id,
+        oldPassword,
+        newPassword
+      );
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(result));
+    } catch (err) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
 }
 
 module.exports = new AuthController();
