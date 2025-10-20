@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parent Dashboard</title>
+    <script src="../../js/sidebar.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/dashboard/task.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+
+    <div class="container">
+      <!-- Sidebar -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main content -->
+      <main id="content">
+        <div class="card-grid">
+          <!-- Welcome Card -->
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">Welcome Parent</h1>
+              <div>
+                "Monitor your child's academic progress and stay connected with
+                their educational journey."
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+
+          <!-- Child's Tasks Card -->
+          <div class="card w1">
+            <div class="card-header">
+              <h3>Child's To-Do Tasks</h3>
+            </div>
+            <ul id="child-tasks-list"></ul>
+            <button
+              class="btn-secondary"
+              onclick="window.location.href='task.html'"
+            >
+              View All Tasks
+            </button>
+          </div>
+
+          <!-- Recent Assignments Card -->
+          <div class="card w1">
+            <div class="card-header">
+              <h3>Upcoming Assignments</h3>
+            </div>
+            <ul id="assignments-list"></ul>
+            <button class="btn-secondary">View All Assignments</button>
+          </div>
+
+          <!-- Quick Overview Card -->
+          <div class="card w1">
+            <div class="card-title">
+              <i class="fas fa-chart-bar"></i>
+              <h3>Quick Overview</h3>
+            </div>
+            <div class="quick-actions-container">
+              <button
+                class="quick-action-btn"
+                onclick="window.location.href='../../profile.html'"
+              >
+                <i class="fas fa-user-circle"></i>
+                <span>View Profile</span>
+              </button>
+              <button class="quick-action-btn">
+                <i class="fas fa-envelope"></i>
+                <span>Messages</span>
+              </button>
+              <button class="quick-action-btn">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Recent Performance Card -->
+          <div class="card w1">
+            <h3>Recent Performance</h3>
+            <div class="performance-list">
+              <div class="performance-item">
+                <span class="subject">Mathematics</span>
+                <span class="score">A</span>
+              </div>
+              <div class="performance-item">
+                <span class="subject">English</span>
+                <span class="score">B+</span>
+              </div>
+              <div class="performance-item">
+                <span class="subject">Science</span>
+                <span class="score">A-</span>
+              </div>
+              <div class="performance-item">
+                <span class="subject">History</span>
+                <span class="score">B</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Important Dates Card -->
+          <div class="card w1">
+            <div class="card-title">
+              <i class="fas fa-calendar-check"></i>
+              <h3>Important Dates</h3>
+            </div>
+            <ul id="important-dates-list">
+              <li><strong>Exam Schedule:</strong> Starting June 15</li>
+              <li><strong>Term End:</strong> July 30</li>
+              <li><strong>Summer Break:</strong> Aug 1 - Aug 30</li>
+            </ul>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- ===== Modal for Editing Task ===== -->
+    <div id="edit-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="edit-modal-title">Edit Task</h2>
+          <button class="modal-close" id="edit-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="edit-input" placeholder="Edit task..." />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="edit-cancel">Cancel</button>
+          <button class="btn-primary" id="edit-save">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Modal for Deleting Tasks ===== -->
+    <div class="modal" id="delete-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Delete Task</h2>
+          <button class="modal-close" id="delete-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete this task?</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="delete-cancel">Cancel</button>
+          <button class="btn-primary" id="delete-confirm">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JS -->
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+    <script>
+      console.log("Script started executing");
+
+      // Load and display child's todo tasks on dashboard
+      let dashboardTasks = {
+        todo: [],
+        weekly: [],
+        monthly: [],
+      };
+
+      let currentEditingIndex = -1;
+      let currentEditingType = "";
+
+      console.log("About to add DOMContentLoaded listener");
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("DOMContentLoaded fired!");
+        loadChildTasks();
+        setupModalListeners();
+      });
+
+      // Also try calling it immediately in case DOM is already loaded
+      if (document.readyState === "loading") {
+        console.log("Document still loading");
+      } else {
+        console.log(
+          "Document already loaded, calling loadChildTasks immediately"
+        );
+        loadChildTasks();
+        setupModalListeners();
+      }
+
+      function setupModalListeners() {
+        // Edit modal
+        document
+          .getElementById("edit-modal-close")
+          .addEventListener("click", closeEditModal);
+        document
+          .getElementById("edit-cancel")
+          .addEventListener("click", closeEditModal);
+        document
+          .getElementById("edit-save")
+          .addEventListener("click", saveEditedTask);
+
+        // Delete modal
+        document
+          .getElementById("delete-modal-close")
+          .addEventListener("click", closeDeleteModal);
+        document
+          .getElementById("delete-cancel")
+          .addEventListener("click", closeDeleteModal);
+        document
+          .getElementById("delete-confirm")
+          .addEventListener("click", confirmDelete);
+
+        // Enter key support for edit
+        document
+          .getElementById("edit-input")
+          .addEventListener("keypress", (e) => {
+            if (e.key === "Enter") saveEditedTask();
+          });
+      }
+
+      function loadChildTasks() {
+        const savedTasks = localStorage.getItem("parentTasks");
+        console.log("Saved tasks from localStorage:", savedTasks);
+
+        if (savedTasks) {
+          dashboardTasks = JSON.parse(savedTasks);
+        } else {
+          // Default sample tasks with some marked as completed
+          dashboardTasks = {
+            todo: [
+              { id: 1, text: "Complete Mathematics homework", completed: true },
+              { id: 2, text: "Read Chapter 5 of History", completed: false },
+            ],
+            weekly: [
+              { id: 3, text: "Finish Science project", completed: true },
+              {
+                id: 4,
+                text: "Practice piano for 30 minutes daily",
+                completed: false,
+              },
+            ],
+            monthly: [
+              { id: 5, text: "Complete all assignments", completed: false },
+              { id: 6, text: "Improve grades in Math", completed: false },
+            ],
+          };
+          console.log("Using default tasks", dashboardTasks);
+          localStorage.setItem("parentTasks", JSON.stringify(dashboardTasks));
+        }
+        console.log("Dashboard tasks:", dashboardTasks);
+
+        // Display all todo tasks on dashboard with edit/delete buttons
+        const tasksList = document.getElementById("child-tasks-list");
+        console.log("Task list element:", tasksList);
+        tasksList.innerHTML = "";
+
+        const todoTasks = dashboardTasks.todo;
+        console.log("Todo tasks:", todoTasks);
+
+        if (todoTasks.length === 0) {
+          console.log("No tasks found");
+          tasksList.innerHTML =
+            "<li style='color: rgba(255, 255, 255, 0.6); text-align: center; padding: 20px;'>No tasks assigned yet</li>";
+          return;
+        }
+
+        todoTasks.forEach((task, index) => {
+          const li = document.createElement("li");
+          li.className = "task-item";
+
+          // Add completed class if task is marked as completed
+          if (task.completed) {
+            li.classList.add("completed");
+          }
+
+          li.innerHTML = `
+            <span class="task-text">${task.text}</span>
+            <div class="task-actions">
+              <button class="edit-btn" onclick="editTaskFromDashboard('todo', ${index})" title="Edit task">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="delete-btn" onclick="deleteTaskFromDashboard('todo', ${index})" title="Delete task">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          `;
+          tasksList.appendChild(li);
+        });
+      }
+
+      function editTaskFromDashboard(type, index) {
+        currentEditingType = type;
+        currentEditingIndex = index;
+        const modal = document.getElementById("edit-modal");
+        const input = document.getElementById("edit-input");
+
+        input.value = dashboardTasks[type][index].text;
+        input.focus();
+        modal.classList.add("show");
+      }
+
+      function deleteTaskFromDashboard(type, index) {
+        currentEditingType = type;
+        currentEditingIndex = index;
+        document.getElementById("delete-modal").classList.add("show");
+      }
+
+      function saveEditedTask() {
+        const input = document.getElementById("edit-input");
+        const text = input.value.trim();
+
+        if (!text) {
+          alert("Please enter a task.");
+          return;
+        }
+
+        dashboardTasks[currentEditingType][currentEditingIndex].text = text;
+        localStorage.setItem("parentTasks", JSON.stringify(dashboardTasks));
+        loadChildTasks();
+        closeEditModal();
+      }
+
+      function confirmDelete() {
+        dashboardTasks[currentEditingType].splice(currentEditingIndex, 1);
+        localStorage.setItem("parentTasks", JSON.stringify(dashboardTasks));
+        loadChildTasks();
+        closeDeleteModal();
+      }
+
+      function closeEditModal() {
+        document.getElementById("edit-modal").classList.remove("show");
+        document.getElementById("edit-input").value = "";
+      }
+
+      function closeDeleteModal() {
+        document.getElementById("delete-modal").classList.remove("show");
+      }
+    </script>
+  </body>
+</html>

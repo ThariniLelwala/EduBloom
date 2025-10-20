@@ -1,5 +1,6 @@
 // routes/authRoutes.js
 const authController = require("../controllers/authController");
+const parentController = require("../controllers/parentController");
 const {
   verifyToken,
   requireRole,
@@ -41,20 +42,66 @@ function handleAuthRoutes(req, res) {
     }
 
     // Student-specific protected routes
-    if (method === "POST" && pathname === "/api/student/parent-requests/list") {
+    if (method === "GET" && pathname === "/api/student/linked-parents") {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
-        authController.listPendingRequests
+        authController.getLinkedParents
       )(req, res);
     }
 
     if (
-      method === "POST" &&
-      pathname === "/api/student/parent-requests/respond"
+      method === "GET" &&
+      pathname === "/api/student/pending-parent-requests"
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
-        authController.respondToRequest
+        authController.getPendingParentRequests
+      )(req, res);
+    }
+
+    if (method === "POST" && pathname === "/api/student/accept-parent-link") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        authController.acceptParentLink
+      )(req, res);
+    }
+
+    if (method === "POST" && pathname === "/api/student/reject-parent-link") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        authController.rejectParentLink
+      )(req, res);
+    }
+
+    if (method === "POST" && pathname === "/api/student/remove-parent-link") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        authController.removeParentLink
+      )(req, res);
+    }
+
+    // Parent-specific protected routes
+    if (method === "GET" && pathname === "/api/parent/children") {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        parentController.getChildren
+      )(req, res);
+    }
+
+    if (method === "GET" && pathname.match(/^\/api\/parent\/children\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        parentController.getChildData
+      )(req, res);
+    }
+
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/parent\/children\/\d+\/subjects$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        parentController.getChildSubjects
       )(req, res);
     }
 

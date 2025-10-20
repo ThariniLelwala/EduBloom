@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Child's Progress</title>
+    <script src="../../js/sidebar.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/custom-select.css" />
+    <link rel="stylesheet" href="../../css/dashboard/progress.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+    <div id="topbar-container"></div>
+
+    <div class="container">
+      <!-- Sidebar -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main content -->
+      <main id="content">
+        <div class="card-grid">
+          <!-- Welcome Card -->
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">Your Child's Progress Journey</h1>
+              <div>
+                Track your child's productivity and see how far they've come!
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+
+          <!-- Weekly Pomodoro Sessions Card -->
+          <div class="card w1">
+            <div class="card-title">
+              <i class="fas fa-fire"></i>
+              <h3>This Week</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value" id="weekly-sessions">12</div>
+                <div class="stat-label">Pomodoro Sessions</div>
+              </div>
+              <div class="comparison">
+                <span class="comparison-label">vs Last Week:</span>
+                <span class="comparison-value increase" id="weekly-comparison">
+                  <i class="fas fa-arrow-up"></i> +3 (33%)
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Current Streak Card -->
+          <div class="card w1">
+            <div class="card-title">
+              <i class="fas fa-fire"></i>
+              <h3>EduBloom Streak</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value streak-value" id="current-streak">7</div>
+                <div class="stat-label">Days Active</div>
+              </div>
+              <div class="stat-secondary">
+                <i class="fas fa-bolt"></i> Keep the momentum going!
+              </div>
+            </div>
+          </div>
+
+          <!-- Mental Logs Card -->
+          <div class="card w1">
+            <div class="card-title">
+              <i class="fas fa-brain"></i>
+              <h3>Mental Logs</h3>
+            </div>
+            <div class="card-content">
+              <div class="mental-log-item">
+                <span class="mental-log-label">Total Entries</span>
+                <span class="mental-log-value" id="total-entries">0</span>
+              </div>
+              <div class="mental-log-item">
+                <span class="mental-log-label">Avg Mood</span>
+                <span class="mental-log-value" id="avg-mood">--</span>
+              </div>
+              <div class="mental-log-item">
+                <span class="mental-log-label">Avg Energy</span>
+                <span class="mental-log-value" id="avg-energy">--</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Average GPA Card (University Students Only) -->
+          <div class="card w1" id="avg-gpa-card" style="display: none">
+            <div class="card-title">
+              <i class="fas fa-graduation-cap"></i>
+              <h3>Average GPA</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value" id="avg-gpa-display">3.7</div>
+                <div class="stat-label">Weighted Average</div>
+              </div>
+              <div class="stat-secondary" id="gpa-trend">
+                <i class="fas fa-arrow-up"></i> Improving
+              </div>
+            </div>
+          </div>
+
+          <!-- Average Score Card (School Students Only) -->
+          <div class="card w1" id="avg-score-card" style="display: none">
+            <div class="card-title">
+              <i class="fas fa-chart-bar"></i>
+              <h3>Latest Average Score</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value" id="latest-avg-score">0</div>
+                <div class="stat-label">Latest Exam Average</div>
+              </div>
+              <div class="stat-secondary" id="score-trend">
+                <i class="fas fa-arrow-up"></i> Improving
+              </div>
+            </div>
+          </div>
+
+          <!-- Monthly Analytics Card -->
+          <div class="card w2 h2">
+            <div class="card-header">
+              <h3>Monthly Pomodoro Analytics</h3>
+              <div class="analytics-filters">
+                <div class="custom-select-wrapper">
+                  <select id="month-select">
+                    <option value="current">Current Month</option>
+                    <option value="last">Last Month</option>
+                    <option value="3months">Last 3 Months</option>
+                  </select>
+                  <div class="custom-select-display">Current Month</div>
+                  <div class="custom-select-options">
+                    <div
+                      class="custom-select-option selected"
+                      data-value="current"
+                    >
+                      Current Month
+                    </div>
+                    <div class="custom-select-option" data-value="last">
+                      Last Month
+                    </div>
+                    <div class="custom-select-option" data-value="3months">
+                      Last 3 Months
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="monthlyChart"></canvas>
+            </div>
+            <div class="chart-stats">
+              <div class="chart-stat">
+                <span class="stat-label">Total Sessions</span>
+                <span class="stat-value" id="total-sessions-month">48</span>
+              </div>
+              <div class="chart-stat">
+                <span class="stat-label">Total Hours</span>
+                <span class="stat-value" id="total-hours-month">40</span>
+              </div>
+              <div class="chart-stat">
+                <span class="stat-label">Avg Per Day</span>
+                <span class="stat-value" id="avg-per-day">1.3</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Weekly Breakdown Card -->
+          <div class="card w1 h2">
+            <div class="card-header">
+              <h3>Weekly Pomodoro Breakdown</h3>
+              <div class="week-total">
+                <span class="total-label">Total:</span>
+                <span class="total-hours" id="weekly-total-hours">5h</span>
+              </div>
+            </div>
+            <div class="weekly-breakdown" id="weekly-breakdown">
+              <!-- Generated by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Productivity Tips Card -->
+          <div class="card w1 h2">
+            <div class="card-title">
+              <i class="fas fa-lightbulb"></i>
+              <h3>Pro Tips</h3>
+            </div>
+            <div class="tips-container">
+              <div class="tip">
+                <span class="tip-number">1</span>
+                <p>Consistency is key to building strong study habits</p>
+              </div>
+              <div class="tip">
+                <span class="tip-number">2</span>
+                <p>Take breaks between sessions for better focus</p>
+              </div>
+              <div class="tip">
+                <span class="tip-number">3</span>
+                <p>Track your child's progress to stay motivated</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- GPA Progress Card (University Students Only) -->
+          <div class="card w2 h2" id="gpa-card" style="display: none">
+            <div class="card-header">
+              <h3>GPA Progress</h3>
+              <div class="gpa-current">
+                <div class="gpa-value" id="current-gpa">3.8</div>
+                <div class="gpa-label">Current GPA</div>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="gpaChart"></canvas>
+            </div>
+            <div class="gpa-stats">
+              <div class="gpa-stat">
+                <span class="stat-label">Highest GPA</span>
+                <span class="stat-value" id="highest-gpa">3.9</span>
+              </div>
+              <div class="gpa-stat">
+                <span class="stat-label">Lowest GPA</span>
+                <span class="stat-value" id="lowest-gpa">3.5</span>
+              </div>
+              <div class="gpa-stat">
+                <span class="stat-label">Average GPA</span>
+                <span class="stat-value" id="average-gpa">3.7</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Average Scores Progress Card (School Students Only) -->
+          <div class="card w2 h2" id="avg-scores-card" style="display: none">
+            <div class="card-header">
+              <h3>Exam Performance Over Time</h3>
+              <div class="analytics-filters">
+                <div class="exam-filters-container">
+                  <div class="filter-input-group">
+                    <label for="exam-count-input">Show last</label>
+                    <input
+                      type="number"
+                      id="exam-count-input"
+                      min="1"
+                      value="0"
+                      placeholder="Enter number"
+                    />
+                    <span>exams</span>
+                  </div>
+                  <div class="custom-select-wrapper">
+                    <select id="exam-select-filter">
+                      <option value="">All Exams</option>
+                    </select>
+                    <div class="custom-select-display">All Exams</div>
+                    <div class="custom-select-options">
+                      <!-- Generated by JavaScript -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="scoresChart"></canvas>
+            </div>
+            <div class="gpa-stats">
+              <div class="gpa-stat">
+                <span class="stat-label">Highest Average</span>
+                <span class="stat-value" id="highest-score">0</span>
+              </div>
+              <div class="gpa-stat">
+                <span class="stat-label">Lowest Average</span>
+                <span class="stat-value" id="lowest-score">0</span>
+              </div>
+              <div class="gpa-stat">
+                <span class="stat-label">Current Average</span>
+                <span class="stat-value" id="current-score">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tasks Completion Card (University Students Only) -->
+          <div class="card w1 h2" id="tasks-card" style="display: none">
+            <div class="card-title">
+              <i class="fas fa-tasks"></i>
+              <h3>Tasks Progress</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value" id="total-all-completed">0/0</div>
+                <div class="stat-label">All Tasks Completed</div>
+              </div>
+              <div class="tasks-breakdown">
+                <div class="task-stat">
+                  <span class="task-label">To-Do</span>
+                  <span class="task-value" id="todo-tasks-completed">0/0</span>
+                </div>
+                <div class="task-stat">
+                  <span class="task-label">Weekly Goals</span>
+                  <span class="task-value" id="weekly-tasks-completed"
+                    >0/0</span
+                  >
+                </div>
+                <div class="task-stat">
+                  <span class="task-label">Monthly Goals</span>
+                  <span class="task-value" id="monthly-tasks-completed"
+                    >0/0</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+    <script src="../../js/parent-progress.js"></script>
+    <script src="../../js/progress.js"></script>
+  </body>
+</html>

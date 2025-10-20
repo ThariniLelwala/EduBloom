@@ -68,6 +68,17 @@ async function fetchProfile() {
           </div>
         </div>
       `;
+
+      // If user is a student, fetch and display linked parents and pending requests
+      if (result.user.role === "student") {
+        loadPendingParentRequests();
+        loadLinkedParents();
+      }
+
+      // If user is a parent, fetch and display their children
+      if (result.user.role === "parent") {
+        loadParentChildren();
+      }
     } else {
       // Handle any errors (e.g., token expired or invalid)
       alert(result.error || "Error fetching profile.");
@@ -85,6 +96,441 @@ function logout() {
   localStorage.removeItem("userId");
   localStorage.removeItem("username");
   window.location.href = "/login.html"; // Redirect to login page
+}
+
+// Function to load and display parent children selector (for parents only)
+async function loadParentChildren() {
+  const token = localStorage.getItem("authToken");
+
+  try {
+    const res = await fetch("/api/parent/children", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const result = await res.json();
+
+    if (res.ok && result.children && result.children.length > 0) {
+      console.log("Parent children found:", result.children);
+
+      // Sort children by creation date (oldest first)
+      result.children.sort(
+        (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0)
+      );
+
+      // Get currently selected child from localStorage, or default to first child
+      let selectedChildId = localStorage.getItem("selectedChildId");
+      if (
+        !selectedChildId ||
+        !result.children.find((c) => c.id == selectedChildId)
+      ) {
+        selectedChildId = result.children[0].id;
+        localStorage.setItem("selectedChildId", selectedChildId);
+      }
+
+      // Create a section to display child selector
+      const profileInfo = document.getElementById("profile-info");
+      const childSelectorSection = document.createElement("div");
+      childSelectorSection.className = "profile-card";
+      childSelectorSection.style.marginTop = "24px";
+
+      let childSelectorHTML = `
+        <h3 style="color: var(--color-white); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-child"></i> Child Selection
+        </h3>
+        <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 16px; font-size: 14px;">
+          Select which child you want to view and manage:
+        </p>
+        <div style="margin-bottom: 16px;">
+          <select id="childSelector" class="custom-select" style="width: 100%; max-width: 300px;">
+      `;
+
+      result.children.forEach((child) => {
+        const selected = child.id == selectedChildId ? "selected" : "";
+        childSelectorHTML += `<option value="${child.id}" ${selected}>${
+          child.username
+        } (${child.student_type || "student"})</option>`;
+      });
+
+      childSelectorHTML += `
+          </select>
+        </div>
+        <div id="selectedChildInfo" style="padding: 16px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">
+          <!-- Selected child info will be displayed here -->
+        </div>
+      `;
+
+      childSelectorSection.innerHTML = childSelectorHTML;
+      profileInfo.parentElement.appendChild(childSelectorSection);
+
+      // Initialize custom select styling
+      if (typeof initCustomSelects === "function") {
+        initCustomSelects();
+      }
+
+      // Add event listener to child selector
+      document
+        .getElementById("childSelector")
+        .addEventListener("change", (e) => {
+          const selectedId = e.target.value;
+          localStorage.setItem("selectedChildId", selectedId);
+          updateSelectedChildInfo(
+            result.children.find((c) => c.id == selectedId)
+          );
+          showToast("Child selection updated!");
+        });
+
+      // Display info for currently selected child
+      updateSelectedChildInfo(
+        result.children.find((c) => c.id == selectedChildId)
+      );
+    } else if (res.ok && (!result.children || result.children.length === 0)) {
+      // No children linked yet
+      const profileInfo = document.getElementById("profile-info");
+      const noChildrenSection = document.createElement("div");
+      noChildrenSection.className = "profile-card";
+      noChildrenSection.style.marginTop = "24px";
+
+      noChildrenSection.innerHTML = `
+        <h3 style="color: var(--color-white); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-child"></i> Child Selection
+        </h3>
+        <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 16px; font-size: 14px;">
+          You haven't linked any children yet. When you register as a parent, you can enter your child's username to create a link request.
+        </p>
+        <div style="padding: 16px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); text-align: center;">
+          <i class="fas fa-info-circle" style="font-size: 24px; color: var(--color-primary); margin-bottom: 8px;"></i>
+          <p style="margin: 0; color: rgba(255, 255, 255, 0.8);">No children linked</p>
+        </div>
+      `;
+
+      profileInfo.parentElement.appendChild(noChildrenSection);
+    } else {
+      console.log("No children found or response not ok");
+    }
+  } catch (err) {
+    console.error("Error loading parent children:", err);
+  }
+}
+
+// Function to update the selected child info display
+function updateSelectedChildInfo(child) {
+  const infoDiv = document.getElementById("selectedChildInfo");
+  if (infoDiv && child) {
+    infoDiv.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+        <i class="fas fa-user-graduate" style="color: var(--color-primary); font-size: 18px;"></i>
+        <strong style="color: var(--color-white); font-size: 16px;">${
+          child.username
+        }</strong>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 14px;">
+        <div>
+          <span style="color: rgba(255, 255, 255, 0.6);">Email:</span><br>
+          <span style="color: var(--color-white);">${child.email}</span>
+        </div>
+        <div>
+          <span style="color: rgba(255, 255, 255, 0.6);">Type:</span><br>
+          <span style="color: var(--color-white);">${
+            child.student_type || "Student"
+          }</span>
+        </div>
+      </div>
+    `;
+  }
+}
+async function loadPendingParentRequests() {
+  const token = localStorage.getItem("authToken");
+  console.log("loadPendingParentRequests called, token exists:", !!token);
+
+  try {
+    const res = await fetch("/api/student/pending-parent-requests", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log(
+      "Pending requests response status:",
+      res.status,
+      res.statusText
+    );
+    const result = await res.json();
+    console.log("Pending requests response data:", result);
+
+    if (res.ok && result.pendingRequests && result.pendingRequests.length > 0) {
+      console.log("Pending requests found:", result.pendingRequests);
+      // Create a section to display pending parent requests
+      const profileInfo = document.getElementById("profile-info");
+      const pendingSection = document.createElement("div");
+      pendingSection.className = "profile-card";
+      pendingSection.style.marginTop = "24px";
+
+      let pendingHTML = `
+        <h3 style="color: #ffd700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-hourglass-start"></i> Pending Parent Requests
+        </h3>
+        <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 16px; font-size: 14px;">
+          These parents are waiting for your approval to view your progress and manage tasks.
+        </p>
+        <div class="profile-info-grid">
+      `;
+
+      result.pendingRequests.forEach((request) => {
+        pendingHTML += `
+          <div class="profile-item" style="position: relative;">
+            <strong>${request.parent_username}</strong>
+            <p style="margin-bottom: 8px; font-size: 13px;">${
+              request.parent_email
+            }</p>
+            <p style="margin-bottom: 12px; font-size: 12px; color: rgba(255, 255, 255, 0.6);">
+              Requested: ${new Date(request.created_at).toLocaleDateString()}
+            </p>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-primary accept-parent-btn" data-link-id="${
+                request.id
+              }" 
+                      style="flex: 1; font-size: 12px;">
+                <i class="fas fa-check"></i> Accept
+              </button>
+              <button class="btn-secondary reject-parent-btn" data-link-id="${
+                request.id
+              }" 
+                      style="flex: 1; font-size: 12px;">
+                <i class="fas fa-times"></i> Reject
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      pendingHTML += `
+        </div>
+      `;
+
+      pendingSection.innerHTML = pendingHTML;
+      profileInfo.parentElement.appendChild(pendingSection);
+
+      // Add event listeners to accept/reject buttons
+      document.querySelectorAll(".accept-parent-btn").forEach((btn) => {
+        btn.addEventListener("click", () =>
+          acceptParentLink(btn.dataset.linkId)
+        );
+        btn.addEventListener("mouseover", () => {
+          btn.style.opacity = "0.8";
+        });
+        btn.addEventListener("mouseout", () => {
+          btn.style.opacity = "1";
+        });
+      });
+
+      document.querySelectorAll(".reject-parent-btn").forEach((btn) => {
+        btn.addEventListener("click", () =>
+          rejectParentLink(btn.dataset.linkId)
+        );
+        btn.addEventListener("mouseover", () => {
+          btn.style.opacity = "0.8";
+        });
+        btn.addEventListener("mouseout", () => {
+          btn.style.opacity = "1";
+        });
+      });
+    } else {
+      console.log("No pending requests found or response not ok");
+    }
+  } catch (err) {
+    console.error("Error loading pending parent requests:", err);
+  }
+}
+
+// Function to accept a parent link request
+async function acceptParentLink(linkId) {
+  const token = localStorage.getItem("authToken");
+
+  try {
+    const res = await fetch("/api/student/accept-parent-link", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ linkId }),
+    });
+
+    const result = await res.json();
+
+    if (res.ok) {
+      showToast("Parent link accepted successfully!");
+      setTimeout(() => {
+        location.reload();
+      }, 1500);
+    } else {
+      showToast(result.error || "Failed to accept parent link");
+    }
+  } catch (err) {
+    console.error("Error accepting parent link:", err);
+    showToast("An error occurred while accepting the link");
+  }
+}
+
+// Function to reject a parent link request
+async function rejectParentLink(linkId) {
+  if (!confirm("Are you sure you want to reject this parent link request?")) {
+    return;
+  }
+
+  const token = localStorage.getItem("authToken");
+
+  try {
+    const res = await fetch("/api/student/reject-parent-link", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ linkId }),
+    });
+
+    const result = await res.json();
+
+    if (res.ok) {
+      showToast("Parent link request rejected");
+      setTimeout(() => {
+        location.reload();
+      }, 1500);
+    } else {
+      showToast(result.error || "Failed to reject parent link");
+    }
+  } catch (err) {
+    console.error("Error rejecting parent link:", err);
+    showToast("An error occurred while rejecting the link");
+  }
+}
+
+// Function to load and display linked parents (for students only)
+async function loadLinkedParents() {
+  const token = localStorage.getItem("authToken");
+  console.log("loadLinkedParents called, token exists:", !!token);
+
+  try {
+    const res = await fetch("/api/student/linked-parents", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log("Fetch response status:", res.status, res.statusText);
+    const result = await res.json();
+    console.log("Response data:", result);
+
+    if (res.ok && result.parents && result.parents.length > 0) {
+      console.log("Parents found:", result.parents);
+      // Create a section to display linked parents
+      const profileInfo = document.getElementById("profile-info");
+      const parentsSection = document.createElement("div");
+      parentsSection.className = "profile-card";
+      parentsSection.style.marginTop = "24px";
+
+      let parentsHTML = `
+        <h3 style="color: #4dabf7; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-user-shield"></i> Active Parent Links
+        </h3>
+        <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 16px; font-size: 14px;">
+          These parents have access to your progress and can manage your tasks.
+        </p>
+        <div class="profile-info-grid">
+      `;
+
+      result.parents.forEach((parent) => {
+        parentsHTML += `
+          <div class="profile-item" style="position: relative;">
+            <strong>${parent.parent_username}</strong>
+            <p style="margin-bottom: 8px; font-size: 13px;">${
+              parent.parent_email
+            }</p>
+            <p style="margin-bottom: 12px; font-size: 12px; color: rgba(255, 255, 255, 0.6);">
+              Connected: ${new Date(parent.created_at).toLocaleDateString()}
+            </p>
+            <button class="btn-secondary remove-parent-btn" data-link-id="${
+              parent.link_id
+            }" 
+                    style="font-size: 12px; width: 100%;">
+              <i class="fas fa-unlink"></i> Remove Link
+            </button>
+          </div>
+        `;
+      });
+
+      parentsHTML += `
+        </div>
+      `;
+
+      parentsSection.innerHTML = parentsHTML;
+      profileInfo.parentElement.appendChild(parentsSection);
+
+      // Add event listeners to remove buttons
+      document.querySelectorAll(".remove-parent-btn").forEach((btn) => {
+        btn.addEventListener("click", () =>
+          removeParentLink(btn.dataset.linkId)
+        );
+        btn.addEventListener("mouseover", () => {
+          btn.style.opacity = "0.8";
+        });
+        btn.addEventListener("mouseout", () => {
+          btn.style.opacity = "1";
+        });
+      });
+    } else {
+      console.log("No parents found or response not ok:", {
+        ok: res.ok,
+        parents: result.parents,
+      });
+    }
+  } catch (err) {
+    console.error("Error loading linked parents:", err);
+  }
+}
+
+// Function to remove a parent link
+async function removeParentLink(linkId) {
+  if (!confirm("Are you sure you want to remove this parent link?")) {
+    return;
+  }
+
+  const token = localStorage.getItem("authToken");
+
+  try {
+    const res = await fetch("/api/student/remove-parent-link", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ linkId }),
+    });
+
+    const result = await res.json();
+
+    if (res.ok) {
+      showToast("Parent link removed successfully");
+      // Reload the page to refresh the parent list
+      setTimeout(() => {
+        location.reload();
+      }, 1500);
+    } else {
+      showToast(result.error || "Failed to remove parent link");
+    }
+  } catch (err) {
+    console.error("Error removing parent link:", err);
+    showToast("An error occurred while removing the link");
+  }
 }
 
 // Select background function (applies immediately)
@@ -138,6 +584,14 @@ function handleCustomUpload() {
 // Apply background to current page
 function applyBackground(path) {
   document.querySelector(".bg-image").style.backgroundImage = `url(${path})`;
+
+  // Also update welcome image on the profile page
+  const welcomeImages = document.querySelectorAll(".welcome-image");
+  if (welcomeImages.length > 0) {
+    welcomeImages.forEach((el) => {
+      el.style.backgroundImage = `url(${path})`;
+    });
+  }
 }
 
 // Apply saved background on page load

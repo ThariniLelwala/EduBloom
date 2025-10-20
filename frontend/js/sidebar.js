@@ -16,16 +16,29 @@ document.addEventListener("DOMContentLoaded", () => {
   const currentPath = window.location.pathname;
   const currentPage = currentPath.split("/").pop(); // e.g., "quiz.html"
 
-  // Calculate current folder depth relative to "student" folder
-  const pathParts = currentPath.split("/"); // ["", "student", "dashboard", "quiz", "quiz.html"]
-  const studentIndex = pathParts.indexOf("student");
+  // Calculate current folder depth - check for any role folder (student, parent, teacher, admin)
+  const pathParts = currentPath.split("/");
+  const roleFolders = ["student", "parent", "teacher", "admin"];
+  let roleIndex = -1;
+  let detectedRole = null;
 
-  // Handle profile.html which is in root, not in student folder
+  // Find which role folder we're in
+  for (let folder of roleFolders) {
+    roleIndex = pathParts.indexOf(folder);
+    if (roleIndex !== -1) {
+      detectedRole = folder;
+      break;
+    }
+  }
+
+  // Handle profile.html which is in root, not in role folder
   let depth = 0;
-  if (studentIndex !== -1) {
-    depth = pathParts.length - studentIndex - 2; // -2 because last is file, first is empty
+  if (roleIndex !== -1) {
+    depth = pathParts.length - roleIndex - 2; // -2 because last is file, first is empty
   } else if (currentPage === "profile.html") {
     // Profile is in root, sidebar will be loaded from root too
+    // Use userRole to determine which folder to go back to
+    detectedRole = userRole;
     depth = -1; // Special marker for root level
   }
 
@@ -63,8 +76,8 @@ document.addEventListener("DOMContentLoaded", () => {
         let linkPath = item.link;
         if (!linkPath.startsWith("/")) {
           if (depth === -1) {
-            // Profile is at root level, so we need to go into dashboards/student/
-            linkPath = "dashboards/student/" + item.link;
+            // Profile is at root level, so we need to go into dashboards/role/
+            linkPath = "dashboards/" + detectedRole + "/" + item.link;
           } else {
             linkPath = "../".repeat(depth) + item.link;
           }

@@ -44,13 +44,17 @@ const server = http.createServer((req, res) => {
 
   // API routes
   if (pathname.startsWith("/api/")) {
-    // Try student routes first
-    const studentResult = handleStudentRoutes(req, res);
-    if (studentResult !== null) {
-      return studentResult;
+    // Check if it's a student module route (subjects, topics, notes) - these go to studentRoutes
+    if (pathname.match(/^\/api\/student\/(subjects|(?:subjects\/\d+\/))/)) {
+      const studentResult = handleStudentRoutes(req, res);
+      if (studentResult === null) {
+        // If student routes don't handle it, fall back to auth routes
+        return handleAuthRoutes(req, res);
+      }
+      return;
     }
 
-    // Fall back to auth routes
+    // For all other API routes (including /api/student/linked-parents), use auth routes
     return handleAuthRoutes(req, res);
   }
 

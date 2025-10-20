@@ -171,6 +171,30 @@
       "link": "../../profile.html"
     }
   ],
+  "parent": [
+    { "title": "Dashboard", "icon": "fas fa-home", "link": "dashboard.html" },
+    {
+      "title": "Tasks",
+      "icon": "fas fa-clipboard-list",
+      "link": "task.html"
+    },
+    {
+      "title": "Child's Progress",
+      "icon": "fas fa-chart-line",
+      "link": "progress.html"
+    },
+    { "title": "Calendar", "icon": "fas fa-calendar", "link": "calendar.html" },
+    {
+      "title": "Messages",
+      "icon": "fas fa-envelope",
+      "link": "messages.html"
+    },
+    {
+      "title": "Profile",
+      "icon": "fas fa-user",
+      "link": "../../profile.html"
+    }
+  ],
   "teacher": [
     { "title": "Dashboard", "icon": "fas fa-home", "link": "dashboard.html" },
     {

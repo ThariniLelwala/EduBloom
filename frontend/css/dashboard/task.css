@@ -66,12 +66,13 @@ input[type="checkbox"].task-checkbox {
   transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
   pointer-events: none;
   z-index: 2;
+  display: none;
 }
 
 #todo-list li.completed::after,
 #weekly-list li.completed::after,
 #monthly-list li.completed::after {
-  transform: translateY(-50%) scaleX(1);
+  display: none;
 }
 
 #todo-list li.completed label,
@@ -106,4 +107,110 @@ input[type="checkbox"].task-checkbox {
   color: var(--color-white);
   font-size: 1rem;
   padding: 16px 0;
+}
+
+/* Parent Task View Styles */
+.task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+  position: relative;
+}
+
+.task-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.task-text {
+  flex: 1;
+  color: var(--color-white);
+  word-break: break-word;
+}
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.task-actions button {
+  background: transparent;
+  border: none;
+  color: var(--color-white);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.task-actions button:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.task-actions i {
+  font-size: 14px;
+}
+
+/* Dashboard task display styles */
+.task-item-dashboard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+  list-style: none;
+  position: relative;
+}
+
+.task-item-dashboard:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.task-item-dashboard .task-text {
+  flex: 1;
+  color: var(--color-white);
+  word-break: break-word;
+}
+
+.task-item-dashboard .task-status {
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.task-item-dashboard.more-tasks {
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  padding: 8px;
+}
+
+.task-item-dashboard.more-tasks:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Completed task styling */
+.task-item.completed,
+.task-item-dashboard.completed {
+  opacity: 0.6;
+}
+
+.task-item.completed .task-text,
+.task-item-dashboard.completed .task-text {
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-color: rgba(255, 255, 255, 0.7);
 }
