@@ -4,18 +4,34 @@ let currentExamIndex = null;
 let editExamContext = null;
 let deleteExamContext = null;
 
-// Load exams from JSON
+// Load exams from localStorage or JSON
 async function loadExams() {
   try {
-    const response = await fetch("../../data/exams.json");
-    if (!response.ok) throw new Error("Failed to load exams.json");
-    examsData = await response.json();
+    // Try to load from localStorage first
+    const stored = localStorage.getItem("examsData");
+    if (stored) {
+      examsData = JSON.parse(stored);
+    } else {
+      // Fallback to JSON file
+      const response = await fetch("../../data/exams.json");
+      if (!response.ok) throw new Error("Failed to load exams.json");
+      examsData = await response.json();
+    }
 
     renderAll();
     bindGlobalEvents();
   } catch (err) {
     console.error("Error loading exams:", err);
+    // Initialize with empty data
+    examsData = { exams: [] };
+    renderAll();
+    bindGlobalEvents();
   }
+}
+
+// Save exams data to localStorage
+function saveExamsData() {
+  localStorage.setItem("examsData", JSON.stringify(examsData));
 }
 
 // Render all
@@ -196,6 +212,7 @@ function bindGlobalEvents() {
     if (!name) return;
 
     examsData.exams.push({ name, subjects: [], marks: {} });
+    saveExamsData();
     renderAll();
     closeModal(examModal);
   });
@@ -231,6 +248,7 @@ function bindGlobalEvents() {
       exam.subjects.push(subject);
       exam.marks[subject] = null;
     });
+    saveExamsData();
     renderAll();
     closeModal(subjectModal);
   });
@@ -250,6 +268,7 @@ function bindGlobalEvents() {
         exam.marks[subject] = mark;
       }
     });
+    saveExamsData();
     renderAll();
     closeModal(marksModal);
   });
@@ -264,6 +283,7 @@ function bindGlobalEvents() {
     if (!newName || !editExamContext) return;
 
     examsData.exams[editExamContext].name = newName;
+    saveExamsData();
     renderAll();
     closeModal(editExamModal);
     editExamContext = null;
@@ -277,6 +297,7 @@ function bindGlobalEvents() {
   deleteExamModalConfirm.addEventListener("click", () => {
     if (deleteExamContext !== null) {
       examsData.exams.splice(deleteExamContext, 1);
+      saveExamsData();
       renderAll();
       closeModal(deleteExamModal);
       deleteExamContext = null;

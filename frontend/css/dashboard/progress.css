@@ -175,6 +175,60 @@
   gap: 8px;
 }
 
+.exam-filters-container {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.filter-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 6px 12px;
+  text-wrap: nowrap;
+  width: 100%;
+}
+
+.filter-input-group label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.filter-input-group input {
+  width: 60px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: var(--color-white);
+  font-size: 0.9rem;
+  margin-bottom: 0px;
+  text-align: center;
+}
+
+.filter-input-group input:focus {
+  outline: none;
+  border-color: rgba(74, 222, 128, 0.5);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.filter-input-group input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.filter-input-group span {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
 /* Weekly Breakdown */
 .weekly-breakdown {
   display: flex;

@@ -302,17 +302,293 @@ function loadTasks() {
   }
 }
 
+// ==================== EXAM SCORES FOR SCHOOL STUDENTS ====================
+let examsData = null;
+let scoresChart = null;
+
+async function loadExamScores() {
+  try {
+    // Try to load from localStorage first
+    const stored = localStorage.getItem("examsData");
+    if (stored) {
+      examsData = JSON.parse(stored);
+    } else {
+      // Fallback to JSON file
+      const response = await fetch("../../data/exams.json");
+      if (!response.ok) throw new Error("Failed to load exams.json");
+      examsData = await response.json();
+    }
+
+    console.log("Exam data loaded:", examsData);
+    updateLatestAverageScore();
+    populateExamSelectFilter();
+    updateScoresChart();
+  } catch (error) {
+    console.error("Error loading exam scores:", error);
+  }
+}
+
+function updateLatestAverageScore() {
+  if (!examsData || !examsData.exams || examsData.exams.length === 0) return;
+
+  const latestExam = examsData.exams[examsData.exams.length - 1];
+  const marks = Object.values(latestExam.marks).filter(
+    (mark) => mark !== null && mark !== undefined
+  );
+
+  if (marks.length > 0) {
+    const average = (marks.reduce((a, b) => a + b, 0) / marks.length).toFixed(
+      2
+    );
+    document.getElementById("latest-avg-score").textContent = average;
+  }
+}
+
+function calculateScoreTrend() {
+  if (!examsData || examsData.exams.length < 2) return "stable";
+
+  const exams = examsData.exams;
+  const getAverage = (exam) => {
+    const marks = Object.values(exam.marks).filter(
+      (mark) => mark !== null && mark !== undefined
+    );
+    return marks.length > 0
+      ? marks.reduce((a, b) => a + b, 0) / marks.length
+      : 0;
+  };
+
+  const priorAverage = getAverage(exams[exams.length - 2]);
+  const currentAverage = getAverage(exams[exams.length - 1]);
+
+  if (currentAverage > priorAverage + 2) return "improving";
+  if (currentAverage < priorAverage - 2) return "declining";
+  return "stable";
+}
+
+function updateScoreTrendDisplay() {
+  const trend = calculateScoreTrend();
+  const trendElement = document.getElementById("score-trend");
+
+  if (trend === "improving") {
+    trendElement.innerHTML = '<i class="fas fa-arrow-up"></i> Improving';
+    trendElement.className = "stat-secondary trend-up";
+  } else if (trend === "declining") {
+    trendElement.innerHTML = '<i class="fas fa-arrow-down"></i> Declining';
+    trendElement.className = "stat-secondary trend-down";
+  } else {
+    trendElement.innerHTML = '<i class="fas fa-minus"></i> Stable';
+    trendElement.className = "stat-secondary";
+  }
+}
+
+function populateExamSelectFilter() {
+  if (!examsData || !examsData.exams) return;
+
+  const selectElement = document.getElementById("exam-select-filter");
+  if (!selectElement) return;
+
+  // Find the options container that's a sibling of the select
+  const selectWrapper = selectElement.parentElement;
+  let optionsContainer = selectWrapper.querySelector(".custom-select-options");
+
+  if (!optionsContainer) return;
+
+  optionsContainer.innerHTML = "";
+
+  // Add "All Exams" option
+  const allOption = document.createElement("div");
+  allOption.className = "custom-select-option selected";
+  allOption.textContent = "All Exams";
+  allOption.dataset.value = "";
+  allOption.addEventListener("click", () => {
+    updateScoresChart("");
+    const countInput = document.getElementById("exam-count-input");
+    countInput.value = "0";
+    document
+      .querySelector(".custom-select-wrapper")
+      .querySelector(".custom-select-display").textContent = "All Exams";
+  });
+  optionsContainer.appendChild(allOption);
+
+  // Add individual exam options
+  examsData.exams.forEach((exam, index) => {
+    const option = document.createElement("div");
+    option.className = "custom-select-option";
+    option.textContent = `Up to ${exam.name}`;
+    option.dataset.value = index;
+    option.addEventListener("click", () => {
+      updateScoresChart(index);
+      const countInput = document.getElementById("exam-count-input");
+      countInput.value = "0";
+      selectWrapper.querySelector(
+        ".custom-select-display"
+      ).textContent = `Up to ${exam.name}`;
+    });
+    optionsContainer.appendChild(option);
+  });
+}
+
+function setupExamCountListener() {
+  const countInput = document.getElementById("exam-count-input");
+  if (!countInput) return;
+
+  countInput.addEventListener("change", () => {
+    const count = parseInt(countInput.value);
+
+    // Validate input
+    if (isNaN(count) || count <= 0) {
+      // Show all exams
+      updateScoresChart("");
+      document
+        .querySelector(".custom-select-wrapper")
+        .querySelector(".custom-select-display").textContent = "All Exams";
+      return;
+    }
+
+    // Check if count exceeds number of exams
+    if (count > examsData.exams.length) {
+      countInput.value = examsData.exams.length;
+      // Show all exams
+      updateScoresChart("");
+      document
+        .querySelector(".custom-select-wrapper")
+        .querySelector(".custom-select-display").textContent = "All Exams";
+      return;
+    }
+
+    // Show last N exams
+    const lastExamIndex = examsData.exams.length - count;
+    updateScoresChart(lastExamIndex);
+
+    // Update display text
+    const selectDisplay = document
+      .querySelector(".custom-select-wrapper")
+      .querySelector(".custom-select-display");
+    selectDisplay.textContent = `Last ${count} exam${count !== 1 ? "s" : ""}`;
+  });
+}
+
+function updateScoresChart(upToIndex = "") {
+  if (!examsData || !examsData.exams) return;
+
+  let filteredExams = examsData.exams;
+  if (upToIndex !== "" && upToIndex !== undefined && upToIndex !== null) {
+    const startIndex = parseInt(upToIndex);
+    // If startIndex is positive, it means we want exams FROM that index TO the end
+    // This allows showing the last N exams
+    filteredExams = examsData.exams.slice(startIndex);
+  }
+
+  const labels = filteredExams.map((exam) => exam.name);
+  const data = filteredExams.map((exam) => {
+    const marks = Object.values(exam.marks).filter(
+      (mark) => mark !== null && mark !== undefined
+    );
+    return marks.length > 0
+      ? (marks.reduce((a, b) => a + b, 0) / marks.length).toFixed(2)
+      : 0;
+  });
+
+  // Update stats
+  const numericData = data.map((d) => parseFloat(d));
+  if (numericData.length > 0) {
+    document.getElementById("highest-score").textContent = Math.max(
+      ...numericData
+    ).toFixed(2);
+    document.getElementById("lowest-score").textContent = Math.min(
+      ...numericData
+    ).toFixed(2);
+    document.getElementById("current-score").textContent =
+      numericData[numericData.length - 1];
+  }
+
+  updateScoreTrendDisplay();
+
+  if (scoresChart) {
+    scoresChart.data.labels = labels;
+    scoresChart.data.datasets[0].data = data;
+    scoresChart.update();
+  }
+}
+
+function initializeScoresChart() {
+  if (!examsData || !examsData.exams || examsData.exams.length === 0) return;
+
+  const ctx = document.getElementById("scoresChart");
+  if (!ctx) return;
+
+  const labels = examsData.exams.map((exam) => exam.name);
+  const data = examsData.exams.map((exam) => {
+    const marks = Object.values(exam.marks).filter(
+      (mark) => mark !== null && mark !== undefined
+    );
+    return marks.length > 0
+      ? (marks.reduce((a, b) => a + b, 0) / marks.length).toFixed(2)
+      : 0;
+  });
+
+  scoresChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "Average Score",
+          data: data,
+          borderColor: "rgba(74, 222, 128, 0.8)",
+          backgroundColor: "rgba(74, 222, 128, 0.1)",
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: "rgba(74, 222, 128, 0.8)",
+          pointBorderColor: "rgba(74, 222, 128, 1)",
+          pointRadius: 6,
+          pointHoverRadius: 8,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: "rgba(255, 255, 255, 0.7)",
+            font: { size: 12 },
+          },
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 100,
+          grid: { color: "rgba(255, 255, 255, 0.1)" },
+          ticks: { color: "rgba(255, 255, 255, 0.7)" },
+        },
+        x: {
+          grid: { color: "rgba(255, 255, 255, 0.1)" },
+          ticks: { color: "rgba(255, 255, 255, 0.7)" },
+        },
+      },
+    },
+  });
+}
+
 // Check if university student and initialize GPA card
 function checkAndInitializeGPA() {
   const studentType = localStorage.getItem("studentType");
   const gpaCard = document.getElementById("gpa-card");
   const avgGpaCard = document.getElementById("avg-gpa-card");
   const tasksCard = document.getElementById("tasks-card");
+  const avgScoresCard = document.getElementById("avg-scores-card");
+  const avgScoreSmallCard = document.getElementById("avg-score-card");
 
   if (studentType === "university") {
     gpaCard.style.display = "block";
     avgGpaCard.style.display = "block";
     tasksCard.style.display = "block";
+    avgScoresCard.style.display = "none";
+    avgScoreSmallCard.style.display = "none";
     loadGPAFromTracker();
     updateGPAStats();
     updateAvgGPACard();
@@ -321,6 +597,13 @@ function checkAndInitializeGPA() {
     gpaCard.style.display = "none";
     avgGpaCard.style.display = "none";
     tasksCard.style.display = "none";
+    avgScoresCard.style.display = "block";
+    avgScoreSmallCard.style.display = "block";
+    // Load exam scores and then initialize chart
+    loadExamScores().then(() => {
+      initializeScoresChart();
+      setupExamCountListener();
+    });
   }
 }
 
