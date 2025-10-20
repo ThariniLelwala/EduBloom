@@ -66,14 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Remove all position classes
-        card.classList.remove(
-          "active",
-          "prev",
-          "next",
-          "far-prev",
-          "far-next",
-          "hidden"
-        );
+        card.classList.remove("active", "prev", "next", "hidden");
 
         // Add appropriate position class
         const diff = i - this.currentIndex;
@@ -84,10 +77,6 @@ document.addEventListener("DOMContentLoaded", () => {
           card.classList.add("prev");
         } else if (diff === 1) {
           card.classList.add("next");
-        } else if (diff === -2) {
-          card.classList.add("far-prev");
-        } else if (diff === 2) {
-          card.classList.add("far-next");
         } else {
           card.classList.add("hidden");
         }
