@@ -17,6 +17,11 @@
       "link": "quiz/quiz.html"
     },
     {
+      "title": "Resources",
+      "icon": "fas fa-book",
+      "link": "resources.html"
+    },
+    {
       "title": "Flash Cards",
       "icon": "fas fa-sticky-note",
       "link": "flashcard/flashcards.html"
@@ -69,6 +74,11 @@
       "title": "Quiz",
       "icon": "fas fa-clipboard-question",
       "link": "quiz/quiz.html"
+    },
+    {
+      "title": "Forums",
+      "icon": "fas fa-users",
+      "link": "forums.html"
     },
     {
       "title": "Flash Cards",

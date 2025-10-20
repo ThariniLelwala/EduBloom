@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Teacher Resources</title>
+    <script src="../../js/sidebar.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/dashboard/progress.css" />
+    <link rel="stylesheet" href="../../css/dashboard/resources.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+    <div id="topbar-container"></div>
+
+    <div class="container">
+      <!-- Sidebar -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main content -->
+      <main id="content">
+        <div class="card-grid">
+          <!-- Welcome Card -->
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">Teacher Resources</h1>
+              <div>
+                Access teacher-created forums, notes, and quizzes to enhance
+                your learning experience!
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+
+          <!-- Forums Card -->
+          <div class="card w2">
+            <div class="card-title">
+              <i class="fas fa-users"></i>
+              <h3>Forums</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value" id="active-forums">5</div>
+                <div class="stat-label">Active Discussions</div>
+              </div>
+              <div class="comparison">
+                <span class="comparison-label">Latest Activity:</span>
+                <span class="comparison-value increase">
+                  <i class="fas fa-clock"></i> 2 hours ago
+                </span>
+              </div>
+              <div class="forum-topics" id="forum-topics">
+                <div class="forum-topic">
+                  <span class="topic-title">Math Homework Help</span>
+                  <span class="topic-replies">12 replies</span>
+                </div>
+                <div class="forum-topic">
+                  <span class="topic-title">Science Project Ideas</span>
+                  <span class="topic-replies">8 replies</span>
+                </div>
+                <div class="forum-topic">
+                  <span class="topic-title">English Literature Discussion</span>
+                  <span class="topic-replies">15 replies</span>
+                </div>
+              </div>
+              <button class="btn-primary" onclick="openForums()">
+                <i class="fas fa-comments"></i> Join Discussions
+              </button>
+            </div>
+          </div>
+
+          <!-- Teacher Notes Card -->
+          <div class="card w2">
+            <div class="card-title">
+              <i class="fas fa-file-alt"></i>
+              <h3>Notes</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value" id="notes-count">24</div>
+                <div class="stat-label">Available Notes</div>
+              </div>
+              <div class="comparison">
+                <span class="comparison-label">Recently Updated:</span>
+                <span class="comparison-value increase">
+                  <i class="fas fa-calendar"></i> Today
+                </span>
+              </div>
+              <div class="notes-subjects" id="notes-subjects">
+                <div class="subject-note">
+                  <span class="subject-name">Mathematics</span>
+                  <span class="note-count">8 notes</span>
+                </div>
+                <div class="subject-note">
+                  <span class="subject-name">Science</span>
+                  <span class="note-count">6 notes</span>
+                </div>
+                <div class="subject-note">
+                  <span class="subject-name">English</span>
+                  <span class="note-count">10 notes</span>
+                </div>
+              </div>
+              <button class="btn-primary" onclick="openTeacherNotes()">
+                <i class="fas fa-book"></i> Browse Notes
+              </button>
+            </div>
+          </div>
+
+          <!-- Teacher Quizzes Card -->
+          <div class="card w2">
+            <div class="card-title">
+              <i class="fas fa-brain"></i>
+              <h3>Quizzes</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value" id="quiz-count">18</div>
+                <div class="stat-label">Available Quizzes</div>
+              </div>
+              <div class="comparison">
+                <span class="comparison-label">Your Best Score:</span>
+                <span class="comparison-value increase">
+                  <i class="fas fa-trophy"></i> 95%
+                </span>
+              </div>
+              <div class="quiz-subjects" id="quiz-subjects">
+                <div class="subject-quiz">
+                  <span class="subject-name">Mathematics</span>
+                  <span class="quiz-count">6 quizzes</span>
+                </div>
+                <div class="subject-quiz">
+                  <span class="subject-name">Science</span>
+                  <span class="quiz-count">5 quizzes</span>
+                </div>
+                <div class="subject-quiz">
+                  <span class="subject-name">English</span>
+                  <span class="quiz-count">7 quizzes</span>
+                </div>
+              </div>
+              <button class="btn-primary" onclick="openTeacherQuizzes()">
+                <i class="fas fa-play"></i> Take Quizzes
+              </button>
+            </div>
+          </div>
+
+          <!-- Resource Tips Card -->
+          <div class="card w1 h2">
+            <div class="card-title">
+              <i class="fas fa-lightbulb"></i>
+              <h3>Resource Tips</h3>
+            </div>
+            <div class="tips-container">
+              <div class="tip">
+                <span class="tip-number">1</span>
+                <p>Use teacher forums to ask questions and get expert help</p>
+              </div>
+              <div class="tip">
+                <span class="tip-number">2</span>
+                <p>Review teacher notes before attempting quizzes</p>
+              </div>
+              <div class="tip">
+                <span class="tip-number">3</span>
+                <p>Teacher quizzes help track your understanding</p>
+              </div>
+              <div class="tip">
+                <span class="tip-number">4</span>
+                <p>
+                  Regular practice with teacher resources improves retention
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity Card -->
+          <div class="card w2">
+            <div class="card-title">
+              <i class="fas fa-history"></i>
+              <h3>Recent Activity</h3>
+            </div>
+            <div class="card-content">
+              <div class="activity-list" id="recent-activity">
+                <div class="activity-item">
+                  <i class="fas fa-comments"></i>
+                  <span>Posted in "Math Homework Help" forum</span>
+                  <small>2 hours ago</small>
+                </div>
+                <div class="activity-item">
+                  <i class="fas fa-file-alt"></i>
+                  <span>Downloaded teacher notes for "Algebra Chapter 3"</span>
+                  <small>Yesterday</small>
+                </div>
+                <div class="activity-item">
+                  <i class="fas fa-brain"></i>
+                  <span>Completed teacher quiz "Science Quiz 2" - 88%</span>
+                  <small>2 days ago</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+    <script src="../../js/resources.js"></script>
+  </body>
+</html>

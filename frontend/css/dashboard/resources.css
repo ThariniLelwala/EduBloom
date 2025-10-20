@@ -1,0 +1,199 @@
+/* Resources Page Styling */
+
+/* Forum Topics */
+.forum-topics {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.forum-topic {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border-left: 3px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.forum-topic:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: rgba(74, 222, 128, 0.5);
+}
+
+.topic-title {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.topic-replies {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+}
+
+/* Subject Notes */
+.notes-subjects {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.subject-note {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border-left: 3px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.subject-note:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: rgba(74, 222, 128, 0.5);
+}
+
+.subject-note .subject-name {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.subject-note .note-count {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+}
+
+/* Subject Quizzes */
+.quiz-subjects {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.subject-quiz {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border-left: 3px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.subject-quiz:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: rgba(74, 222, 128, 0.5);
+}
+
+.subject-quiz .subject-name {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.subject-quiz .quiz-count {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+}
+
+/* Activity List */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.activity-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: rgba(74, 222, 128, 0.5);
+}
+
+.activity-item i {
+  color: var(--color-white);
+  font-size: 1rem;
+  min-width: 20px;
+}
+
+.activity-item span {
+  flex: 1;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.activity-item small {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+}
+
+/* Button Styling - Uses standard btn-primary from style.css */
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .forum-topics,
+  .notes-subjects,
+  .quiz-subjects {
+    gap: 6px;
+  }
+
+  .activity-list {
+    gap: 8px;
+  }
+
+  .activity-item {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .activity-item span {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .card.w2 {
+    grid-column: span 1 !important;
+  }
+
+  .forum-topic,
+  .subject-note,
+  .subject-quiz {
+    padding: 6px 8px;
+  }
+
+  .topic-title,
+  .subject-name {
+    font-size: 0.85rem;
+  }
+
+  .topic-replies,
+  .note-count,
+  .quiz-count {
+    font-size: 0.75rem;
+  }
+}
