@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Dashboard - EduBloom</title>
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="../../css/topbar.css" />
+  <link rel="stylesheet" href="../../css/sidebar.css" />
+  <link rel="stylesheet" href="../../css/cards.css" />
+
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+    crossorigin="anonymous"
+  />
+
+  <style>
+    /* Dashboard grid layout */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin: 30px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.08);
+      padding: 20px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      color: var(--color-white);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      transition: 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+    }
+
+    .card h3 {
+      margin: 10px 0;
+      font-size: 20px;
+    }
+
+    .card .card-icon {
+      font-size: 28px;
+    }
+
+    .card.full {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .welcome-content h1 {
+      font-size: 32px;
+      margin: 0 0 10px 0;
+    }
+
+    .quick-actions button {
+      margin: 5px 0;
+      width: 100%;
+      background: linear-gradient(135deg, white,white);
+      color: rgb(8, 8, 8);
+      border: none;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .quick-actions button:hover {
+      background: linear-gradient(135deg, #36e15b, #36e15b);
+      transform: scale(1.05);
+    }
+
+    .overview-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .overview-item:last-child {
+      border-bottom: none;
+    }
+
+    @media (max-width: 768px) {
+      .card.full {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-image"></div>
+
+  <!-- Topbar -->
+  <script src="../../js/topbar.js"></script>
+  
+
+  <div class="container">
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <ul>
+        <li class="active" onclick="window.location.href='dashboard.html'">
+          <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+        </li>
+        <li onclick="window.location.href='forum.html'">
+          <i class="fas fa-comments"></i> <span>Forum Management</span>
+        </li>
+        <li onclick="window.location.href='post.html'">
+          <i class="fas fa-pencil-alt"></i> <span>Post Management</span>
+        </li>
+        <li onclick="window.location.href='upload.html'">
+          <i class="fas fa-upload"></i> <span>Content Upload</span>
+        </li>
+        <li onclick="window.location.href='calendar.html'">
+          <i class="fas fa-calendar-alt"></i> <span>Calendar</span>
+        </li>
+        <li onclick="window.location.href='messages.html'">
+          <i class="fas fa-envelope"></i> <span>Messages</span>
+        </li>
+        <li onclick="window.location.href='settings.html'">
+          <i class="fas fa-cog"></i> <span>Settings</span>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="content">
+      <div class="card-grid">
+
+        <!-- Welcome Card -->
+        <div class="card full welcome">
+          <div class="welcome-content">
+            <h1>Welcome,Teacher!</h1>
+            <p>Time to inspire your students!</p>
+          </div>
+          <div class="card-icon">
+            <i class="fas fa-chalkboard-teacher"></i>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+          <h3><i class="fas fa-history"></i> Recent Activity</h3>
+          <div id="recentActivity" class="overview-item-list">
+            <div class="overview-item">Student John submitted assignment <span>2h ago</span></div>
+            <div class="overview-item">New forum "Math Quiz" created <span>5h ago</span></div>
+            <div class="overview-item">Quiz "Science Chapter 1" published <span>1d ago</span></div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+          <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+          <div class="quick-actions">
+            <button onclick="window.location.href='forum.html'"><i class="fas fa-plus"></i> Create New Forum</button>
+            <button onclick="window.location.href='upload.html'"><i class="fas fa-upload"></i> Upload Content</button>
+            <button onclick="window.location.href='post.html'"><i class="fas fa-pencil-alt"></i> Create New Post</button>
+          </div>
+        </div>
+
+        <!-- Student Engagement -->
+        <div class="card">
+          <h3><i class="fas fa-users"></i> Student Engagement</h3>
+          <div class="overview-item">Active Today <span>23</span></div>
+          <div class="overview-item">Participating in Forums <span>15</span></div>
+          <div class="overview-item">Quizzes Taken <span>12</span></div>
+        </div>
+
+        <!-- Upcoming Tasks -->
+        <div class="card">
+          <h3><i class="fas fa-tasks"></i> Upcoming Tasks</h3>
+          <div class="overview-item">Grade Assignment 3 <span>Due: 25 Oct</span></div>
+          <div class="overview-item">Prepare Quiz for Math <span>Due: 27 Oct</span></div>
+          <div class="overview-item">Upload Lecture Notes <span>Due: 28 Oct</span></div>
+        </div>
+
+        <!-- Notes & Quizzes Overview -->
+        <div class="card">
+          <h3><i class="fas fa-book"></i> Notes & Quizzes Overview</h3>
+          <div class="overview-item">Total Notes <span>32</span></div>
+          <div class="overview-item">Total Quizzes <span>18</span></div>
+          <div class="overview-item">Notes Uploaded This Week <span>5</span></div>
+          <div class="overview-item">Quizzes Published This Week <span>3</span></div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+</body>
+</html>
+

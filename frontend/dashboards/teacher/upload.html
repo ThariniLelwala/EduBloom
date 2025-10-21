@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Content Upload - EduBloom</title>
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="../../css/topbar.css" />
+  <link rel="stylesheet" href="../../css/sidebar.css" />
+
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous"
+  />
+
+  <style>
+    .upload-container {
+      margin: 30px;
+      padding: 25px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      color: var(--color-white);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .upload-container:hover {
+      box-shadow: 0 6px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    h2 {
+      font-size: 28px;
+      font-weight: 600;
+      border-bottom: 2px solid rgba(255,255,255,0.15);
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .upload-section {
+      margin-bottom: 30px;
+    }
+
+    .upload-section h3 {
+      margin-bottom: 12px;
+      font-size: 22px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .upload-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .upload-form input[type="file"],
+    .upload-form input[type="text"] {
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      background: rgba(255,255,255,0.15);
+      color: white;
+    }
+
+    .upload-form button {
+      background: linear-gradient(135deg, white, white);
+      color: black;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+      width: fit-content;
+    }
+
+    .upload-form button:hover {
+      background: linear-gradient(135deg, #36e15b, #36e15b);
+      transform: scale(1.05);
+    }
+
+    .upload-list {
+      margin-top: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .upload-item {
+      background: rgba(255,255,255,0.12);
+      padding: 12px 16px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: 0.3s;
+    }
+
+    .upload-item:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .upload-item span {
+      opacity: 0.9;
+    }
+
+    .upload-item button {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.2s;
+    }
+
+    .upload-item button:hover {
+      transform: scale(1.2);
+      color: #ff7675;
+    }
+
+    @media (max-width: 768px) {
+      .upload-form button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-image"></div>
+
+  <!-- Topbar -->
+  <script src="../../js/topbar.js"></script>
+  
+
+  <div class="container">
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <ul>
+        <li onclick="window.location.href='dashboard.html'">
+          <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+        </li>
+        <li onclick="window.location.href='forum.html'">
+          <i class="fas fa-comments"></i> <span>Forum Management</span>
+        </li>
+        <li onclick="window.location.href='post.html'">
+          <i class="fas fa-pencil-alt"></i> <span>Post Management</span>
+        </li>
+        <li class="active">
+          <i class="fas fa-upload"></i> <span>Content Upload</span>
+        </li>
+        <li onclick="window.location.href='calendar.html'">
+            <i class="fas fa-calendar-alt"></i> <span>Calendar</span>
+          </li>
+          <li onclick="window.location.href='messages.html'">
+            <i class="fas fa-envelope"></i> <span>Messages</span>
+          </li>
+          <li onclick="window.location.href='settings.html'">
+            <i class="fas fa-cog"></i> <span>Settings</span>
+          </li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="content">
+      <div class="upload-container">
+        <h2><i class="fas fa-upload"></i> Content Upload</h2>
+
+        <!-- Quiz Bank Upload -->
+        <div class="upload-section">
+          <h3><i class="fas fa-book"></i> Quiz Bank</h3>
+          <div class="upload-form">
+            <input type="text" id="quizTitle" placeholder="Quiz title..." />
+            <input type="file" id="quizFile" />
+            <button id="uploadQuiz"><i class="fas fa-plus"></i> Upload Quiz</button>
+          </div>
+          <div class="upload-list" id="quizList"></div>
+        </div>
+
+        <!-- Notes/Papers Upload -->
+        <div class="upload-section">
+          <h3><i class="fas fa-file-alt"></i> Notes / Papers</h3>
+          <div class="upload-form">
+            <input type="text" id="noteTitle" placeholder="Title..." />
+            <input type="file" id="noteFile" />
+            <button id="uploadNote"><i class="fas fa-plus"></i> Upload Note</button>
+          </div>
+          <div class="upload-list" id="noteList"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const quizList = document.getElementById("quizList");
+    const noteList = document.getElementById("noteList");
+
+    let quizzes = JSON.parse(localStorage.getItem("quizzes")) || [];
+    let notes = JSON.parse(localStorage.getItem("notes")) || [];
+
+    function renderUploads(list, container) {
+      container.innerHTML = "";
+      if (list.length === 0) {
+        container.innerHTML = "<p style='opacity:0.7;'>No uploads yet.</p>";
+        return;
+      }
+
+      list.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "upload-item";
+        div.innerHTML = `
+          <span>${item.title} (${item.fileName})</span>
+          <button onclick="deleteUpload(${index}, '${container.id}')" title="Delete"><i class="fas fa-trash"></i></button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function saveUploads() {
+      localStorage.setItem("quizzes", JSON.stringify(quizzes));
+      localStorage.setItem("notes", JSON.stringify(notes));
+    }
+
+    // Upload Quiz
+    document.getElementById("uploadQuiz").addEventListener("click", () => {
+      const title = document.getElementById("quizTitle").value.trim();
+      const file = document.getElementById("quizFile").files[0];
+      if (!title || !file) { alert("Please provide quiz title and file."); return; }
+      quizzes.push({ title, fileName: file.name });
+      saveUploads(); renderUploads(quizzes, quizList);
+      document.getElementById("quizTitle").value = "";
+      document.getElementById("quizFile").value = "";
+    });
+
+    // Upload Note
+    document.getElementById("uploadNote").addEventListener("click", () => {
+      const title = document.getElementById("noteTitle").value.trim();
+      const file = document.getElementById("noteFile").files[0];
+      if (!title || !file) { alert("Please provide title and file."); return; }
+      notes.push({ title, fileName: file.name });
+      saveUploads(); renderUploads(notes, noteList);
+      document.getElementById("noteTitle").value = "";
+      document.getElementById("noteFile").value = "";
+    });
+
+    // Delete Upload
+    window.deleteUpload = function(index, containerId) {
+      if (confirm("Are you sure you want to delete this upload?")) {
+        if (containerId === "quizList") quizzes.splice(index,1);
+        else notes.splice(index,1);
+        saveUploads();
+        renderUploads(quizzes, quizList);
+        renderUploads(notes, noteList);
+      }
+    }
+
+    renderUploads(quizzes, quizList);
+    renderUploads(notes, noteList);
+  </script>
+</body>
+</html>

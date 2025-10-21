@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Messages - EduBloom</title>
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="../../css/topbar.css" />
+  <link rel="stylesheet" href="../../css/sidebar.css" />
+
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous"
+  />
+
+  <style>
+    .messages-container {
+      margin: 30px;
+      padding: 25px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      color: var(--color-white);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 28px;
+      font-weight: 600;
+      border-bottom: 2px solid rgba(255,255,255,0.15);
+      padding-bottom: 8px;
+    }
+
+    .message-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .message-item {
+      background-color: rgba(255,255,255,0.12);
+      padding: 15px 20px;
+      border-radius: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      transition: 0.3s ease;
+    }
+
+    .message-item:hover {
+      background-color: rgba(255,255,255,0.2);
+    }
+
+    .message-content {
+      flex: 1;
+    }
+
+    .message-sender {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .message-text {
+      margin-bottom: 8px;
+    }
+
+    .message-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .message-actions button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .message-actions button:hover {
+      transform: scale(1.2);
+      color: #ff7675;
+    }
+
+    .new-message {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .new-message input {
+      flex: 1;
+      padding: 12px 15px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      outline: none;
+      background: rgba(255,255,255,0.15);
+      color: white;
+    }
+
+    .new-message button {
+      background: linear-gradient(135deg, #4e9eff, #007bff);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .new-message button:hover {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+      .new-message {
+        flex-direction: column;
+      }
+      .new-message button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-image"></div>
+
+  <!-- Topbar -->
+  <script src="../../js/topbar.js"></script>
+  
+
+  <div class="container">
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <ul>
+        <li onclick="window.location.href='dashboard.html'">
+          <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+        </li>
+        <li onclick="window.location.href='forum.html'">
+          <i class="fas fa-comments"></i> <span>Forum Management</span>
+        </li>
+        <li onclick="window.location.href='post.html'">
+          <i class="fas fa-pencil-alt"></i> <span>Post Management</span>
+        </li>
+        <li onclick="window.location.href='upload.html'">
+          <i class="fas fa-upload"></i> <span>Content Upload</span>
+        </li>
+        <li onclick="window.location.href='calendar.html'">
+          <i class="fas fa-calendar-alt"></i> <span>Calendar</span>
+        </li>
+        <li class="active">
+          <i class="fas fa-envelope"></i> <span>Messages</span>
+        </li>
+        <li onclick="window.location.href='settings.html'">
+          <i class="fas fa-cog"></i> <span>Settings</span>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="content">
+      <div class="messages-container">
+        <h2><i class="fas fa-envelope"></i> Messages</h2>
+
+        <!-- New Message -->
+        <div class="new-message">
+          <input type="text" id="messageInput" placeholder="Type a new message..." />
+          <button id="sendMessage"><i class="fas fa-paper-plane"></i> Send</button>
+        </div>
+
+        <!-- Messages List -->
+        <div class="message-list" id="messageList"></div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const messageList = document.getElementById("messageList");
+    const sendBtn = document.getElementById("sendMessage");
+    const messageInput = document.getElementById("messageInput");
+
+    let messages = JSON.parse(localStorage.getItem("teacherMessages")) || [];
+
+    function renderMessages() {
+      messageList.innerHTML = "";
+      if(messages.length === 0) {
+        messageList.innerHTML = "<p style='opacity:0.7;'>No messages yet.</p>";
+        return;
+      }
+
+      messages.forEach((msg, index) => {
+        const div = document.createElement("div");
+        div.className = "message-item";
+        div.innerHTML = `
+          <div class="message-content">
+            <div class="message-sender">${msg.sender}</div>
+            <div class="message-text">${msg.text}</div>
+          </div>
+          <div class="message-actions">
+            <button onclick="replyMessage(${index})" title="Reply"><i class="fas fa-reply"></i></button>
+            <button onclick="deleteMessage(${index})" title="Delete"><i class="fas fa-trash"></i></button>
+          </div>
+        `;
+        messageList.appendChild(div);
+      });
+    }
+
+    function saveMessages() {
+      localStorage.setItem("teacherMessages", JSON.stringify(messages));
+    }
+
+    sendBtn.addEventListener("click", () => {
+      const text = messageInput.value.trim();
+      if(!text) return alert("Please type a message.");
+      messages.push({sender: "Teacher", text});
+      saveMessages();
+      renderMessages();
+      messageInput.value = "";
+    });
+
+    window.replyMessage = function(index) {
+      const replyText = prompt("Reply to this message:", "");
+      if(replyText && replyText.trim() !== "") {
+        messages.push({sender: "Teacher (Reply)", text: replyText.trim()});
+        saveMessages();
+        renderMessages();
+      }
+    }
+
+    window.deleteMessage = function(index) {
+      if(confirm("Are you sure you want to delete this message?")) {
+        messages.splice(index, 1);
+        saveMessages();
+        renderMessages();
+      }
+    }
+
+    renderMessages();
+  </script>
+</body>
+</html>

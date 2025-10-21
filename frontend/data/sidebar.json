@@ -29,29 +29,32 @@
       "link": "progress.html"
     }
   ],
+  {
   "teacher": [
-    { "title": "Dashboard", "icon": "fas fa-home", "link": "dashboard.html" },
     {
-      "title": "Pomodoro Timer",
-      "icon": "fas fa-alarm-clock",
-      "link": "pomodoro.html"
+      "title": "Dashboard",
+      "icon": "fas fa-house",
+      "link": "dashboard/teacher/dashboard.html"
     },
     {
-      "title": "Quiz",
-      "icon": "fas fa-clipboard-question",
-      "link": "quiz/quiz.html"
+      "title": "Forum Management",
+      "icon": "fas fa-book",
+      "link": "dashboard/teacher/forum.html"
     },
     {
-      "title": "Flash Cards",
-      "icon": "fas fa-bolt",
-      "link": "flashcards.html"
+      "title": "Post Management",
+      "icon": "fas fa-newspaper",
+      "link": "dashboard/teacher/post.html"
     },
-    { "title": "Calendar", "icon": "fas fa-calendar", "link": "calendar.html" },
-    { "title": "Diary", "icon": "fas fa-book-open", "link": "diary.html" },
     {
-      "title": "Progress",
-      "icon": "fas fa-chart-line",
-      "link": "progress.html"
+      "title": "Content Upload",
+      "icon": "fas fa-user-graduate",
+      "link": "dashboard/teacher/content.html"
+    },
+    {
+      
     }
   ]
+}
+
 }

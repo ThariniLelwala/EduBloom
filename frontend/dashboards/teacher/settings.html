@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Settings - EduBloom</title>
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="../../css/topbar.css" />
+  <link rel="stylesheet" href="../../css/sidebar.css" />
+
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous"
+  />
+
+  <style>
+    .settings-container {
+      margin: 30px;
+      padding: 25px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      color: var(--color-white);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 28px;
+      font-weight: 600;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+      padding-bottom: 8px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    label {
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    input, select {
+      padding: 12px 15px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      outline: none;
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    button {
+      background: linear-gradient(135deg, #4e9eff, #007bff);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      transform: scale(1.05);
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      padding-bottom: 5px;
+    }
+
+    @media (max-width: 768px) {
+      form {
+        gap: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-image"></div>
+
+  <!-- Topbar -->
+  <script src="../../js/topbar.js"></script>
+  
+
+  <div class="container">
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <ul>
+        <li onclick="window.location.href='dashboard.html'">
+          <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+        </li>
+        <li onclick="window.location.href='forum.html'">
+          <i class="fas fa-comments"></i> <span>Forum Management</span>
+        </li>
+        <li onclick="window.location.href='post.html'">
+          <i class="fas fa-pencil-alt"></i> <span>Post Management</span>
+        </li>
+        <li onclick="window.location.href='upload.html'">
+          <i class="fas fa-upload"></i> <span>Content Upload</span>
+        </li>
+        <li onclick="window.location.href='calendar.html'">
+          <i class="fas fa-calendar-alt"></i> <span>Calendar</span>
+        </li>
+        <li onclick="window.location.href='messages.html'">
+          <i class="fas fa-envelope"></i> <span>Messages</span>
+        </li>
+        <li class="active">
+          <i class="fas fa-cog"></i> <span>Settings</span>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="content">
+      <div class="settings-container">
+        <h2><i class="fas fa-cog"></i> Settings</h2>
+
+        <!-- Profile Info -->
+        <div class="section-title">Profile Information</div>
+        <form id="profileForm">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="Enter username" required />
+
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="Enter email" required />
+
+          <button type="submit"><i class="fas fa-save"></i> Save Profile</button>
+        </form><br/>
+
+        <!-- Change Password -->
+        <div class="section-title">Change Password</div>
+        <form id="passwordForm">
+          <label for="oldPassword">Old Password</label>
+          <input type="password" id="oldPassword" placeholder="Old password" required />
+
+          <label for="newPassword">New Password</label>
+          <input type="password" id="newPassword" placeholder="New password" required />
+
+          <label for="confirmPassword">Confirm New Password</label>
+          <input type="password" id="confirmPassword" placeholder="Confirm new password" required />
+
+          <button type="submit"><i class="fas fa-key"></i> Change Password</button>
+        </form><br/>
+
+        <!-- Preferences -->
+        <div class="section-title">Preferences</div>
+        <form id="preferencesForm">
+          <label for="theme">Theme</label>
+          <select id="theme">
+            <option value="light">Light</option>
+            <option value="dark" selected>Dark</option>
+          </select>
+
+          <button type="submit"><i class="fas fa-sliders-h"></i> Save Preferences</button>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Load user data from localStorage
+    const usernameInput = document.getElementById("username");
+    const emailInput = document.getElementById("email");
+    const themeSelect = document.getElementById("theme");
+
+    usernameInput.value = localStorage.getItem("username") || "";
+    emailInput.value = localStorage.getItem("email") || "";
+    themeSelect.value = localStorage.getItem("theme") || "dark";
+
+    // Save profile
+    document.getElementById("profileForm").addEventListener("submit", e => {
+      e.preventDefault();
+      localStorage.setItem("username", usernameInput.value);
+      localStorage.setItem("email", emailInput.value);
+      alert("Profile updated successfully!");
+    });
+
+    // Change password (mock)
+    document.getElementById("passwordForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const oldPass = document.getElementById("oldPassword").value;
+      const newPass = document.getElementById("newPassword").value;
+      const confirmPass = document.getElementById("confirmPassword").value;
+
+      if(newPass !== confirmPass){
+        alert("New password and confirm password do not match!");
+        return;
+      }
+      // For demo purposes, we'll just alert success
+      alert("Password changed successfully!");
+      document.getElementById("passwordForm").reset();
+    });
+
+    // Save preferences
+    document.getElementById("preferencesForm").addEventListener("submit", e => {
+      e.preventDefault();
+      localStorage.setItem("theme", themeSelect.value);
+      alert("Preferences saved!");
+    });
+  </script>
+</body>
+</html>
