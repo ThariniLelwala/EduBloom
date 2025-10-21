@@ -125,3 +125,82 @@
   background: var(--color-white);
   color: var(--color-text);
 }
+
+/* Important Days Styles */
+.important-days-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.important-day-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.important-day-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: rgba(255, 255, 255, 0.5);
+}
+
+.important-day-item.holiday {
+  border-left-color: #22c55e;
+}
+
+.important-day-item.holiday:hover {
+  border-left-color: #16a34a;
+}
+
+.important-day-item.exam {
+  border-left-color: #ef4444;
+}
+
+.important-day-item.exam:hover {
+  border-left-color: #dc2626;
+}
+
+.important-day-item.event {
+  border-left-color: #3b82f6;
+}
+
+.important-day-item.event:hover {
+  border-left-color: #2563eb;
+}
+
+.day-info {
+  flex: 1;
+}
+
+.day-title {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-white);
+  margin-bottom: 2px;
+}
+
+.day-detail {
+  display: block;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.day-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--color-white);
+  font-weight: 500;
+}
+
+.day-date i {
+  opacity: 0.8;
+}

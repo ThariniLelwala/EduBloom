@@ -185,9 +185,9 @@
     },
     { "title": "Calendar", "icon": "fas fa-calendar", "link": "calendar.html" },
     {
-      "title": "Messages",
-      "icon": "fas fa-envelope",
-      "link": "messages.html"
+      "title": "Resources",
+      "icon": "fas fa-book",
+      "link": "resources.html"
     },
     {
       "title": "Profile",

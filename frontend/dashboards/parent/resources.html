@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Parent Resources</title>
+    <script src="../../js/sidebar.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/custom-select.css" />
+    <link rel="stylesheet" href="../../css/dashboard/progress.css" />
+    <link rel="stylesheet" href="../../css/student/resources.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+    <div id="topbar-container"></div>
+
+    <div class="container">
+      <!-- Sidebar -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main content -->
+      <main id="content">
+        <div class="card-grid">
+          <!-- Welcome Card -->
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">Educational Resources</h1>
+              <div>
+                Select the best teacher-created resources to support your
+                child's learning journey.
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+
+          <!-- Resource Type Selector -->
+          <div class="card w2">
+            <div class="card-title">
+              <i class="fas fa-search"></i>
+              <h3>Browse Resources</h3>
+            </div>
+            <div class="card-content">
+              <div class="resource-type-selector">
+                <button
+                  class="resource-type-btn active"
+                  data-type="all"
+                  onclick="filterByType('all')"
+                >
+                  <i class="fas fa-th-large"></i> All Resources
+                </button>
+                <button
+                  class="resource-type-btn"
+                  data-type="forums"
+                  onclick="filterByType('forums')"
+                >
+                  <i class="fas fa-users"></i> Forums
+                </button>
+                <button
+                  class="resource-type-btn"
+                  data-type="notes"
+                  onclick="filterByType('notes')"
+                >
+                  <i class="fas fa-file-alt"></i> Notes
+                </button>
+                <button
+                  class="resource-type-btn"
+                  data-type="quizzes"
+                  onclick="filterByType('quizzes')"
+                >
+                  <i class="fas fa-brain"></i> Quizzes
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Forums Card -->
+          <div class="card w2 resource-card" data-type="forums">
+            <div class="card-title">
+              <i class="fas fa-users"></i>
+              <h3>Discussion Forums</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value" id="active-forums">5</div>
+                <div class="stat-label">Active Discussions</div>
+              </div>
+              <div class="comparison">
+                <span class="comparison-label">Latest Activity:</span>
+                <span class="comparison-value increase">
+                  <i class="fas fa-clock"></i> 2 hours ago
+                </span>
+              </div>
+              <div class="forum-topics" id="forum-topics">
+                <div
+                  class="forum-topic resource-item"
+                  data-subject="mathematics"
+                  data-difficulty="intermediate"
+                >
+                  <div class="resource-info">
+                    <span class="topic-title">Math Homework Help</span>
+                    <span class="topic-replies">12 replies</span>
+                  </div>
+                  <div class="resource-actions">
+                    <button
+                      class="btn-view"
+                      onclick="viewResource('forum', 'Math Homework Help', 'A dedicated forum for students to get help with mathematics homework. Active discussions on algebra, geometry, and calculus problems.')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                    <button
+                      class="btn-secondary"
+                      onclick="selectResource('forum', 'Math Homework Help')"
+                    >
+                      <i class="fas fa-plus"></i> Select
+                    </button>
+                  </div>
+                </div>
+                <div
+                  class="forum-topic resource-item"
+                  data-subject="science"
+                  data-difficulty="intermediate"
+                >
+                  <div class="resource-info">
+                    <span class="topic-title">Science Project Ideas</span>
+                    <span class="topic-replies">8 replies</span>
+                  </div>
+                  <div class="resource-actions">
+                    <button
+                      class="btn-view"
+                      onclick="viewResource('forum', 'Science Project Ideas', 'Share and discuss creative science project ideas. From biology experiments to physics demonstrations, get inspired by fellow students.')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                    <button
+                      class="btn-secondary"
+                      onclick="selectResource('forum', 'Science Project Ideas')"
+                    >
+                      <i class="fas fa-plus"></i> Select
+                    </button>
+                  </div>
+                </div>
+                <div
+                  class="forum-topic resource-item"
+                  data-subject="english"
+                  data-difficulty="advanced"
+                >
+                  <div class="resource-info">
+                    <span class="topic-title"
+                      >English Literature Discussion</span
+                    >
+                    <span class="topic-replies">15 replies</span>
+                  </div>
+                  <div class="resource-actions">
+                    <button
+                      class="btn-view"
+                      onclick="viewResource('forum', 'English Literature Discussion', 'Deep dive into classic and contemporary literature. Discuss themes, characters, and literary devices with peers and teachers.')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                    <button
+                      class="btn-secondary"
+                      onclick="selectResource('forum', 'English Literature Discussion')"
+                    >
+                      <i class="fas fa-plus"></i> Select
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Teacher Notes Card -->
+          <div class="card w2 resource-card" data-type="notes">
+            <div class="card-title">
+              <i class="fas fa-file-alt"></i>
+              <h3>Teacher Notes</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value" id="notes-count">24</div>
+                <div class="stat-label">Available Notes</div>
+              </div>
+              <div class="comparison">
+                <span class="comparison-label">Recently Updated:</span>
+                <span class="comparison-value increase">
+                  <i class="fas fa-calendar"></i> Today
+                </span>
+              </div>
+              <div class="notes-subjects" id="notes-subjects">
+                <div
+                  class="subject-note resource-item"
+                  data-subject="mathematics"
+                  data-difficulty="intermediate"
+                >
+                  <div class="resource-info">
+                    <span class="subject-name"
+                      >Mathematics - Algebra Fundamentals</span
+                    >
+                    <span class="note-count">8 pages</span>
+                  </div>
+                  <div class="resource-actions">
+                    <button
+                      class="btn-view"
+                      onclick="viewResource('note', 'Mathematics - Algebra Fundamentals', 'Comprehensive algebra notes covering variables, equations, inequalities, and functions. Includes practice problems and step-by-step solutions.')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                    <button
+                      class="btn-secondary"
+                      onclick="selectResource('note', 'Mathematics - Algebra Fundamentals')"
+                    >
+                      <i class="fas fa-plus"></i> Select
+                    </button>
+                  </div>
+                </div>
+                <div
+                  class="subject-note resource-item"
+                  data-subject="science"
+                  data-difficulty="beginner"
+                >
+                  <div class="resource-info">
+                    <span class="subject-name">Science - Basic Chemistry</span>
+                    <span class="note-count">6 pages</span>
+                  </div>
+                  <div class="resource-actions">
+                    <button
+                      class="btn-view"
+                      onclick="viewResource('note', 'Science - Basic Chemistry', 'Introduction to chemistry concepts including atoms, molecules, chemical reactions, and the periodic table. Perfect for beginners.')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                    <button
+                      class="btn-secondary"
+                      onclick="selectResource('note', 'Science - Basic Chemistry')"
+                    >
+                      <i class="fas fa-plus"></i> Select
+                    </button>
+                  </div>
+                </div>
+                <div
+                  class="subject-note resource-item"
+                  data-subject="english"
+                  data-difficulty="advanced"
+                >
+                  <div class="resource-info">
+                    <span class="subject-name"
+                      >English - Literary Analysis</span
+                    >
+                    <span class="note-count">10 pages</span>
+                  </div>
+                  <div class="resource-actions">
+                    <button
+                      class="btn-view"
+                      onclick="viewResource('note', 'English - Literary Analysis', 'Advanced literary analysis techniques including symbolism, themes, character development, and writing effective essays.')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                    <button
+                      class="btn-secondary"
+                      onclick="selectResource('note', 'English - Literary Analysis')"
+                    >
+                      <i class="fas fa-plus"></i> Select
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Teacher Quizzes Card -->
+          <div class="card w2 resource-card" data-type="quizzes">
+            <div class="card-title">
+              <i class="fas fa-brain"></i>
+              <h3>Practice Quizzes</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value" id="quiz-count">18</div>
+                <div class="stat-label">Available Quizzes</div>
+              </div>
+              <div class="comparison">
+                <span class="comparison-label">Average Score:</span>
+                <span class="comparison-value increase">
+                  <i class="fas fa-trophy"></i> 85%
+                </span>
+              </div>
+              <div class="quiz-subjects" id="quiz-subjects">
+                <div
+                  class="subject-quiz resource-item"
+                  data-subject="mathematics"
+                  data-difficulty="intermediate"
+                >
+                  <div class="resource-info">
+                    <span class="subject-name"
+                      >Mathematics - Geometry Quiz</span
+                    >
+                    <span class="quiz-count">15 questions</span>
+                  </div>
+                  <div class="resource-actions">
+                    <button
+                      class="btn-view"
+                      onclick="viewResource('quiz', 'Mathematics - Geometry Quiz', 'Test your geometry knowledge with questions on shapes, angles, theorems, and geometric proofs. Perfect for reinforcing classroom learning.')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                    <button
+                      class="btn-secondary"
+                      onclick="selectResource('quiz', 'Mathematics - Geometry Quiz')"
+                    >
+                      <i class="fas fa-plus"></i> Select
+                    </button>
+                  </div>
+                </div>
+                <div
+                  class="subject-quiz resource-item"
+                  data-subject="science"
+                  data-difficulty="beginner"
+                >
+                  <div class="resource-info">
+                    <span class="subject-name">Science - Physics Basics</span>
+                    <span class="quiz-count">12 questions</span>
+                  </div>
+                  <div class="resource-actions">
+                    <button
+                      class="btn-view"
+                      onclick="viewResource('quiz', 'Science - Physics Basics', 'Introduction to physics concepts including motion, forces, energy, and basic principles. Great for building foundational knowledge.')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                    <button
+                      class="btn-secondary"
+                      onclick="selectResource('quiz', 'Science - Physics Quiz')"
+                    >
+                      <i class="fas fa-plus"></i> Select
+                    </button>
+                  </div>
+                </div>
+                <div
+                  class="subject-quiz resource-item"
+                  data-subject="english"
+                  data-difficulty="advanced"
+                >
+                  <div class="resource-info">
+                    <span class="subject-name"
+                      >English - Grammar Challenge</span
+                    >
+                    <span class="quiz-count">20 questions</span>
+                  </div>
+                  <div class="resource-actions">
+                    <button
+                      class="btn-view"
+                      onclick="viewResource('quiz', 'English - Literature Quiz', 'Advanced grammar quiz covering complex sentence structures, punctuation, and language mechanics. Challenge yourself!')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                    <button
+                      class="btn-secondary"
+                      onclick="selectResource('quiz', 'English - Literature Quiz')"
+                    >
+                      <i class="fas fa-plus"></i> Select
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selected Resources Card -->
+          <div class="card w1 h2">
+            <div class="card-title">
+              <i class="fas fa-check-circle"></i>
+              <h3>Selected Resources</h3>
+            </div>
+            <div class="selected-resources" id="selected-resources">
+              <p class="empty-message">No resources selected yet</p>
+            </div>
+            <div class="selected-actions">
+              <button class="btn-primary" onclick="recommendResources()">
+                <i class="fas fa-paper-plane"></i> Recommend to Child
+              </button>
+              <button class="btn-secondary" onclick="clearSelection()">
+                <i class="fas fa-trash"></i> Clear All
+              </button>
+            </div>
+          </div>
+
+          <!-- Child's Progress Card -->
+          <div class="card w2">
+            <div class="card-title">
+              <i class="fas fa-chart-line"></i>
+              <h3>Child's Resource Usage</h3>
+            </div>
+            <div class="card-content">
+              <div class="progress-stats">
+                <div class="stat-item">
+                  <span class="stat-label">Resources Accessed:</span>
+                  <span class="stat-value" id="resources-accessed">12</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Forums Participated:</span>
+                  <span class="stat-value" id="forums-participated">3</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Quizzes Completed:</span>
+                  <span class="stat-value" id="quizzes-completed">8</span>
+                </div>
+              </div>
+              <div class="recent-activity" id="child-activity">
+                <div class="activity-item">
+                  <i class="fas fa-comments"></i>
+                  <span>Participated in "Math Help" forum</span>
+                  <small>2 hours ago</small>
+                </div>
+                <div class="activity-item">
+                  <i class="fas fa-brain"></i>
+                  <span>Completed "Science Quiz 1" - 92%</span>
+                  <small>Yesterday</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resource Tips Card -->
+          <div class="card w1 h2">
+            <div class="card-title">
+              <i class="fas fa-lightbulb"></i>
+              <h3>Parent Tips</h3>
+            </div>
+            <div class="tips-container">
+              <div class="tip">
+                <span class="tip-number">1</span>
+                <p>
+                  Select resources that match your child's current skill level
+                </p>
+              </div>
+              <div class="tip">
+                <span class="tip-number">2</span>
+                <p>Encourage forum participation for peer learning</p>
+              </div>
+              <div class="tip">
+                <span class="tip-number">3</span>
+                <p>Use quizzes to track progress and identify weak areas</p>
+              </div>
+              <div class="tip">
+                <span class="tip-number">4</span>
+                <p>Teacher notes provide structured learning materials</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Recommendation Modal -->
+    <div id="recommendation-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Recommend Resources</h2>
+          <button class="modal-close" id="recommendation-modal-close">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Send these selected resources to your child's learning dashboard?
+          </p>
+          <div class="selected-summary" id="selected-summary"></div>
+          <div class="recommendation-options">
+            <label>
+              <input type="checkbox" id="send-notification" checked />
+              Send notification to child
+            </label>
+            <label>
+              <input type="checkbox" id="add-to-schedule" />
+              Add to child's study schedule
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="recommendation-cancel">
+            Cancel
+          </button>
+          <button class="btn-primary" id="recommendation-confirm">
+            Send Recommendation
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resource View Modal -->
+    <div id="resource-view-modal" class="modal">
+      <div class="modal-content large">
+        <div class="modal-header">
+          <h2 id="resource-view-title">Resource Details</h2>
+          <button class="modal-close" id="resource-view-modal-close">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="resource-details">
+            <div class="resource-meta">
+              <div class="resource-type-badge" id="resource-type-badge">
+                <i class="fas fa-file"></i> Resource
+              </div>
+              <div class="resource-stats">
+                <span id="resource-stat-1">Loading...</span>
+                <span id="resource-stat-2">Loading...</span>
+              </div>
+            </div>
+            <div class="resource-description" id="resource-description">
+              Loading resource details...
+            </div>
+            <div class="resource-preview">
+              <h4>Preview:</h4>
+              <div class="preview-content" id="preview-content">
+                <!-- Preview content will be populated based on resource type -->
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="resource-view-cancel">Close</button>
+          <button
+            class="btn-primary"
+            id="resource-view-select"
+            onclick="selectFromView()"
+          >
+            <i class="fas fa-plus"></i> Select This Resource
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+    <script src="../../js/custom-select.js"></script>
+    <script src="../../js/parent/parent-resources.js"></script>
+  </body>
+</html>

@@ -214,3 +214,128 @@ input[type="checkbox"].task-checkbox {
   text-decoration-thickness: 2px;
   text-decoration-color: rgba(255, 255, 255, 0.7);
 }
+
+/* Quick Actions Container */
+.quick-actions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* Current Average Card */
+.stat-group {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-white);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.comparison {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+.comparison-label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.comparison-value {
+  color: var(--color-white);
+  font-weight: 500;
+}
+
+.comparison-value.increase {
+  color: #22c55e;
+}
+
+.comparison-value.decrease {
+  color: #ef4444;
+}
+
+/* Important Dates Container */
+.important-dates-container {
+  margin-bottom: 16px;
+}
+
+.date-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.date-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: rgba(255, 255, 255, 0.5);
+}
+
+.date-item.upcoming {
+  border-left-color: #3b82f6;
+}
+
+.date-item.upcoming:hover {
+  border-left-color: #2563eb;
+}
+
+.date-item.holiday {
+  border-left-color: #22c55e;
+}
+
+.date-item.holiday:hover {
+  border-left-color: #16a34a;
+}
+
+.date-info {
+  flex: 1;
+}
+
+.date-title {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-white);
+  margin-bottom: 2px;
+}
+
+.date-detail {
+  display: block;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.date-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--color-white);
+  font-weight: 500;
+}
+
+.date-time i {
+  opacity: 0.8;
+}

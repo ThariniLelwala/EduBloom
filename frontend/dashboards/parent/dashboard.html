@@ -60,56 +60,64 @@
           <!-- Recent Assignments Card -->
           <div class="card w1">
             <div class="card-header">
-              <h3>Upcoming Assignments</h3>
+              <h3>Upcoming Events</h3>
             </div>
             <ul id="assignments-list"></ul>
-            <button class="btn-secondary">View All Assignments</button>
+            <div class="card-actions">
+              <button class="btn-primary" onclick="addEvent()">
+                <i class="fas fa-plus"></i> Add Event
+              </button>
+              <button class="btn-secondary">View All Events</button>
+            </div>
           </div>
 
           <!-- Quick Overview Card -->
           <div class="card w1">
             <div class="card-title">
               <i class="fas fa-chart-bar"></i>
-              <h3>Quick Overview</h3>
+              <h3>Quick Actions</h3>
             </div>
             <div class="quick-actions-container">
               <button
-                class="quick-action-btn"
+                class="btn-primary"
+                onclick="window.location.href='progress.html'"
+              >
+                <i class="fas fa-chart-line"></i>
+                <span>View Progress</span>
+              </button>
+              <button
+                class="btn-primary"
+                onclick="window.location.href='resources.html'"
+              >
+                <i class="fas fa-book"></i>
+                <span>Recommend Resources</span>
+              </button>
+              <button
+                class="btn-secondary"
                 onclick="window.location.href='../../profile.html'"
               >
-                <i class="fas fa-user-circle"></i>
-                <span>View Profile</span>
-              </button>
-              <button class="quick-action-btn">
-                <i class="fas fa-envelope"></i>
-                <span>Messages</span>
-              </button>
-              <button class="quick-action-btn">
-                <i class="fas fa-bell"></i>
-                <span>Notifications</span>
+                <i class="fas fa-user-cog"></i>
+                <span>Change Child Account</span>
               </button>
             </div>
           </div>
 
-          <!-- Recent Performance Card -->
+          <!-- Current Average Card -->
           <div class="card w1">
-            <h3>Recent Performance</h3>
-            <div class="performance-list">
-              <div class="performance-item">
-                <span class="subject">Mathematics</span>
-                <span class="score">A</span>
+            <div class="card-title">
+              <i class="fas fa-graduation-cap"></i>
+              <h3>Current Average</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value" id="current-average">--</div>
+                <div class="stat-label" id="average-type">Loading...</div>
               </div>
-              <div class="performance-item">
-                <span class="subject">English</span>
-                <span class="score">B+</span>
-              </div>
-              <div class="performance-item">
-                <span class="subject">Science</span>
-                <span class="score">A-</span>
-              </div>
-              <div class="performance-item">
-                <span class="subject">History</span>
-                <span class="score">B</span>
+              <div class="comparison">
+                <span class="comparison-label">Trend:</span>
+                <span class="comparison-value" id="average-trend">
+                  <i class="fas fa-arrow-up"></i> Improving
+                </span>
               </div>
             </div>
           </div>
@@ -120,11 +128,44 @@
               <i class="fas fa-calendar-check"></i>
               <h3>Important Dates</h3>
             </div>
-            <ul id="important-dates-list">
-              <li><strong>Exam Schedule:</strong> Starting June 15</li>
-              <li><strong>Term End:</strong> July 30</li>
-              <li><strong>Summer Break:</strong> Aug 1 - Aug 30</li>
-            </ul>
+            <div class="important-dates-container">
+              <div class="date-item upcoming">
+                <div class="date-info">
+                  <span class="date-title">Exam Schedule</span>
+                  <span class="date-detail">Mathematics & Science Finals</span>
+                </div>
+                <div class="date-time">
+                  <i class="fas fa-clock"></i>
+                  <span>June 15</span>
+                </div>
+              </div>
+              <div class="date-item upcoming">
+                <div class="date-info">
+                  <span class="date-title">Parent-Teacher Meeting</span>
+                  <span class="date-detail">Discuss progress & goals</span>
+                </div>
+                <div class="date-time">
+                  <i class="fas fa-clock"></i>
+                  <span>June 20</span>
+                </div>
+              </div>
+              <div class="date-item holiday">
+                <div class="date-info">
+                  <span class="date-title">Summer Break</span>
+                  <span class="date-detail">School holidays begin</span>
+                </div>
+                <div class="date-time">
+                  <i class="fas fa-umbrella-beach"></i>
+                  <span>July 1</span>
+                </div>
+              </div>
+            </div>
+            <button
+              class="btn-secondary"
+              onclick="window.location.href='calendar.html'"
+            >
+              <i class="fas fa-calendar"></i> View Full Calendar
+            </button>
           </div>
         </div>
       </main>
@@ -167,185 +208,6 @@
     <!-- JS -->
     <script src="../../js/topbar.js"></script>
     <script src="../../js/bg-manager.js"></script>
-    <script>
-      console.log("Script started executing");
-
-      // Load and display child's todo tasks on dashboard
-      let dashboardTasks = {
-        todo: [],
-        weekly: [],
-        monthly: [],
-      };
-
-      let currentEditingIndex = -1;
-      let currentEditingType = "";
-
-      console.log("About to add DOMContentLoaded listener");
-      document.addEventListener("DOMContentLoaded", () => {
-        console.log("DOMContentLoaded fired!");
-        loadChildTasks();
-        setupModalListeners();
-      });
-
-      // Also try calling it immediately in case DOM is already loaded
-      if (document.readyState === "loading") {
-        console.log("Document still loading");
-      } else {
-        console.log(
-          "Document already loaded, calling loadChildTasks immediately"
-        );
-        loadChildTasks();
-        setupModalListeners();
-      }
-
-      function setupModalListeners() {
-        // Edit modal
-        document
-          .getElementById("edit-modal-close")
-          .addEventListener("click", closeEditModal);
-        document
-          .getElementById("edit-cancel")
-          .addEventListener("click", closeEditModal);
-        document
-          .getElementById("edit-save")
-          .addEventListener("click", saveEditedTask);
-
-        // Delete modal
-        document
-          .getElementById("delete-modal-close")
-          .addEventListener("click", closeDeleteModal);
-        document
-          .getElementById("delete-cancel")
-          .addEventListener("click", closeDeleteModal);
-        document
-          .getElementById("delete-confirm")
-          .addEventListener("click", confirmDelete);
-
-        // Enter key support for edit
-        document
-          .getElementById("edit-input")
-          .addEventListener("keypress", (e) => {
-            if (e.key === "Enter") saveEditedTask();
-          });
-      }
-
-      function loadChildTasks() {
-        const savedTasks = localStorage.getItem("parentTasks");
-        console.log("Saved tasks from localStorage:", savedTasks);
-
-        if (savedTasks) {
-          dashboardTasks = JSON.parse(savedTasks);
-        } else {
-          // Default sample tasks with some marked as completed
-          dashboardTasks = {
-            todo: [
-              { id: 1, text: "Complete Mathematics homework", completed: true },
-              { id: 2, text: "Read Chapter 5 of History", completed: false },
-            ],
-            weekly: [
-              { id: 3, text: "Finish Science project", completed: true },
-              {
-                id: 4,
-                text: "Practice piano for 30 minutes daily",
-                completed: false,
-              },
-            ],
-            monthly: [
-              { id: 5, text: "Complete all assignments", completed: false },
-              { id: 6, text: "Improve grades in Math", completed: false },
-            ],
-          };
-          console.log("Using default tasks", dashboardTasks);
-          localStorage.setItem("parentTasks", JSON.stringify(dashboardTasks));
-        }
-        console.log("Dashboard tasks:", dashboardTasks);
-
-        // Display all todo tasks on dashboard with edit/delete buttons
-        const tasksList = document.getElementById("child-tasks-list");
-        console.log("Task list element:", tasksList);
-        tasksList.innerHTML = "";
-
-        const todoTasks = dashboardTasks.todo;
-        console.log("Todo tasks:", todoTasks);
-
-        if (todoTasks.length === 0) {
-          console.log("No tasks found");
-          tasksList.innerHTML =
-            "<li style='color: rgba(255, 255, 255, 0.6); text-align: center; padding: 20px;'>No tasks assigned yet</li>";
-          return;
-        }
-
-        todoTasks.forEach((task, index) => {
-          const li = document.createElement("li");
-          li.className = "task-item";
-
-          // Add completed class if task is marked as completed
-          if (task.completed) {
-            li.classList.add("completed");
-          }
-
-          li.innerHTML = `
-            <span class="task-text">${task.text}</span>
-            <div class="task-actions">
-              <button class="edit-btn" onclick="editTaskFromDashboard('todo', ${index})" title="Edit task">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button class="delete-btn" onclick="deleteTaskFromDashboard('todo', ${index})" title="Delete task">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          `;
-          tasksList.appendChild(li);
-        });
-      }
-
-      function editTaskFromDashboard(type, index) {
-        currentEditingType = type;
-        currentEditingIndex = index;
-        const modal = document.getElementById("edit-modal");
-        const input = document.getElementById("edit-input");
-
-        input.value = dashboardTasks[type][index].text;
-        input.focus();
-        modal.classList.add("show");
-      }
-
-      function deleteTaskFromDashboard(type, index) {
-        currentEditingType = type;
-        currentEditingIndex = index;
-        document.getElementById("delete-modal").classList.add("show");
-      }
-
-      function saveEditedTask() {
-        const input = document.getElementById("edit-input");
-        const text = input.value.trim();
-
-        if (!text) {
-          alert("Please enter a task.");
-          return;
-        }
-
-        dashboardTasks[currentEditingType][currentEditingIndex].text = text;
-        localStorage.setItem("parentTasks", JSON.stringify(dashboardTasks));
-        loadChildTasks();
-        closeEditModal();
-      }
-
-      function confirmDelete() {
-        dashboardTasks[currentEditingType].splice(currentEditingIndex, 1);
-        localStorage.setItem("parentTasks", JSON.stringify(dashboardTasks));
-        loadChildTasks();
-        closeDeleteModal();
-      }
-
-      function closeEditModal() {
-        document.getElementById("edit-modal").classList.remove("show");
-        document.getElementById("edit-input").value = "";
-      }
-
-      function closeDeleteModal() {
-        document.getElementById("delete-modal").classList.remove("show");
-      }
-    </script>
+    <script src="../../js/parent/parent-dashboard.js"></script>
   </body>
 </html>

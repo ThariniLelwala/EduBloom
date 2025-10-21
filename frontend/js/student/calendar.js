@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let currentDate = new Date();
   let deadlines = [];
+  let importantDays = [];
   let editContext = null;
   let deleteContext = null;
 
@@ -26,15 +27,100 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!res.ok) throw new Error("Failed to load tasks.json");
       const data = await res.json();
       deadlines = data.deadlines || [];
+      loadImportantDays();
       renderAll();
     } catch (err) {
       console.error(err);
+      loadImportantDays();
+      renderAll();
+    }
+  }
+
+  // Load important days
+  function loadImportantDays() {
+    const saved = localStorage.getItem("importantDays");
+    if (saved) {
+      importantDays = JSON.parse(saved);
+    } else {
+      // Default important days
+      importantDays = [
+        {
+          id: 1,
+          title: "Summer Break",
+          detail: "School holidays begin",
+          date: "2025-07-01",
+          type: "holiday",
+          icon: "calendar",
+        },
+        {
+          id: 2,
+          title: "Final Exams",
+          detail: "Mathematics & Science",
+          date: "2025-06-15",
+          type: "exam",
+          icon: "graduation-cap",
+        },
+        {
+          id: 3,
+          title: "Parent-Teacher Meeting",
+          detail: "Discuss progress",
+          date: "2025-06-25",
+          type: "event",
+          icon: "users",
+        },
+      ];
+      localStorage.setItem("importantDays", JSON.stringify(importantDays));
     }
   }
 
   function renderAll() {
     renderCalendar(currentDate);
     renderDeadlines();
+    renderImportantDays();
+  }
+
+  function renderImportantDays() {
+    const container = document.querySelector(".important-days-container");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    // Sort by date and show upcoming ones
+    const today = new Date();
+    const upcomingDays = importantDays
+      .filter((day) => new Date(day.date) >= today)
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .slice(0, 3); // Show only next 3 important days
+
+    if (upcomingDays.length === 0) {
+      container.innerHTML =
+        '<p style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 20px;">No upcoming important days</p>';
+      return;
+    }
+
+    upcomingDays.forEach((day) => {
+      const dayElement = document.createElement("div");
+      dayElement.className = `important-day-item ${day.type}`;
+
+      const dateObj = new Date(day.date);
+      const formattedDate = dateObj.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+
+      dayElement.innerHTML = `
+        <div class="day-info">
+          <span class="day-title">${day.title}</span>
+          <span class="day-detail">${day.detail}</span>
+        </div>
+        <div class="day-date">
+          <i class="fas fa-${day.icon}"></i>
+          <span>${formattedDate}</span>
+        </div>
+      `;
+
+      container.appendChild(dayElement);
+    });
   }
 
   function renderDeadlines() {
@@ -221,3 +307,41 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   await loadDeadlines();
 });
+
+// Add important day function
+function addImportantDay() {
+  const title = prompt("Enter important day title:");
+  if (!title) return;
+
+  const detail = prompt("Enter details:");
+  if (!detail) return;
+
+  const date = prompt("Enter date (YYYY-MM-DD):");
+  if (!date) return;
+
+  const type = prompt("Enter type (holiday, exam, event):");
+  if (!type || !["holiday", "exam", "event"].includes(type)) {
+    alert("Please enter a valid type: holiday, exam, or event");
+    return;
+  }
+
+  const icon =
+    type === "holiday"
+      ? "calendar"
+      : type === "exam"
+      ? "graduation-cap"
+      : "users";
+
+  const newDay = {
+    id: Date.now(),
+    title: title,
+    detail: detail,
+    date: date,
+    type: type,
+    icon: icon,
+  };
+
+  importantDays.push(newDay);
+  localStorage.setItem("importantDays", JSON.stringify(importantDays));
+  renderImportantDays();
+}
