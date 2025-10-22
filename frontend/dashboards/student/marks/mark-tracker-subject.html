@@ -69,17 +69,27 @@
     <!-- Modal for adding/editing test -->
     <div id="test-modal" class="modal">
       <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2 id="test-modal-title">Add Test</h2>
-        <input type="text" id="test-name-input" placeholder="Enter test name" />
-        <input
-          type="number"
-          id="test-mark-input"
-          placeholder="Enter mark (0-100)"
-          min="0"
-          max="100"
-        />
-        <button id="save-test-btn" class="btn-primary">Save</button>
+        <div class="modal-header">
+          <h2 id="test-modal-title">Add Test</h2>
+          <button class="modal-close" id="test-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="test-name-input"
+            placeholder="Enter test name"
+          />
+          <input
+            type="number"
+            id="test-mark-input"
+            placeholder="Enter mark (0-100)"
+            min="0"
+            max="100"
+          />
+        </div>
+        <div class="modal-footer">
+          <button id="save-test-btn" class="btn-primary">Save</button>
+        </div>
       </div>
     </div>
 

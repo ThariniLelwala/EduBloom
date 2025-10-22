@@ -47,15 +47,21 @@
     <!-- Modal -->
     <div id="subject-modal" class="modal">
       <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2 id="modal-title">Add Subject</h2>
-        <input
-          type="text"
-          id="subject-input"
-          placeholder="Enter subject name"
-          maxlength="50"
-        />
-        <button id="save-subject-btn" class="btn-primary">Save</button>
+        <div class="modal-header">
+          <h2 id="modal-title">Add Subject</h2>
+          <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="subject-input"
+            placeholder="Enter subject name"
+            maxlength="50"
+          />
+        </div>
+        <div class="modal-footer">
+          <button id="save-subject-btn" class="btn-primary">Save</button>
+        </div>
       </div>
     </div>
 
@@ -64,15 +70,17 @@
       <div class="modal-content">
         <div class="modal-header">
           <h2>Create New Topic</h2>
-          <span class="close">&times;</span>
+          <button class="modal-close" id="topic-close">&times;</button>
         </div>
-        <input
-          type="text"
-          id="topic-name"
-          placeholder="Enter topic name"
-          maxlength="50"
-        />
-        <div class="modal-actions">
+        <div class="modal-body">
+          <input
+            type="text"
+            id="topic-name"
+            placeholder="Enter topic name"
+            maxlength="50"
+          />
+        </div>
+        <div class="modal-footer">
           <button id="cancel-topic" class="btn-secondary">Cancel</button>
           <button id="save-topic" class="btn-primary">Create</button>
         </div>

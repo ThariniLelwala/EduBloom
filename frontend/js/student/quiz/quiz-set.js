@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const modalTitle = document.getElementById("modal-title");
   const input = document.getElementById("subject-input");
   const saveBtn = document.getElementById("save-subject-btn");
-  const closeBtn = modal.querySelector(".close");
+  const closeBtn = modal.querySelector(".modal-close");
   const subjectHeading = document.getElementById("subject-name");
 
   const params = new URLSearchParams(window.location.search);
@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ---------------- Take Quiz Logic ----------------
   const takeQuizBtn = document.getElementById("take-quiz-btn");
   const takeQuizModal = document.getElementById("take-quiz-modal");
-  const closeTakeQuiz = takeQuizModal.querySelector(".close");
+  const closeTakeQuiz = takeQuizModal.querySelector(".modal-close");
   const quizOptionsContainer = document.getElementById("quiz-options");
   const confirmTakeQuiz = document.getElementById("confirm-take-quiz");
   const cancelTakeQuiz = document.getElementById("cancel-take-quiz");

@@ -45,24 +45,26 @@
     <!-- Modal -->
     <div id="flashcard-modal" class="modal">
       <div class="modal-content">
-        <div>
-          <span class="close">&times;</span>
+        <div class="modal-header">
           <h2 id="modal-title">Add Flashcard</h2>
+          <button class="modal-close" id="flashcard-modal-close">
+            &times;
+          </button>
         </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="question-input"
+            placeholder="Enter term/question"
+          />
 
-        <input
-          type="text"
-          id="question-input"
-          placeholder="Enter term/question"
-        />
-
-        <textarea
-          id="answer-input"
-          placeholder="Enter definition/answer"
-          rows="4"
-        ></textarea>
-
-        <div class="modal-actions">
+          <textarea
+            id="answer-input"
+            placeholder="Enter definition/answer"
+            rows="4"
+          ></textarea>
+        </div>
+        <div class="modal-footer">
           <button id="save-btn" class="btn-primary">Save</button>
           <button id="save-next-btn" class="btn-primary">Save & Next</button>
         </div>

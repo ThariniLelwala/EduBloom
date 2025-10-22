@@ -232,13 +232,13 @@ function setupEventListeners() {
   const saveTopicBtn = document.getElementById("save-topic");
   const cancelTopicBtn = document.getElementById("cancel-topic");
   const topicModal = document.getElementById("topic-modal");
-  const topicModalCloseBtn = topicModal.querySelector(".close");
+  const topicModalCloseBtn = topicModal.querySelector(".modal-close");
 
   const dragDropArea = document.getElementById("drag-drop-area");
   const fileInput = document.getElementById("file-input");
   const saveTopicMenuBtn = document.getElementById("close-topic-menu");
   const topicMenuModal = document.getElementById("topic-menu-modal");
-  const topicMenuCloseBtn = topicMenuModal.querySelector(".close");
+  const topicMenuCloseBtn = topicMenuModal.querySelector(".modal-close");
 
   // Save topic
   if (saveTopicBtn) {

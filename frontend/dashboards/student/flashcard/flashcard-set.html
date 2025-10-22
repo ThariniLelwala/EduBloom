@@ -60,20 +60,32 @@
     <!-- Modal for creating/editing flashcard set -->
     <div id="subject-modal" class="modal">
       <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2 id="modal-title">Add Flashcard Set</h2>
-        <input type="text" id="subject-input" placeholder="Enter set title" />
-        <button id="save-subject-btn" class="btn-primary">Save</button>
+        <div class="modal-header">
+          <h2 id="modal-title">Add Flashcard Set</h2>
+          <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="subject-input" placeholder="Enter set title" />
+        </div>
+        <div class="modal-footer">
+          <button id="save-subject-btn" class="btn-primary">Save</button>
+        </div>
       </div>
     </div>
 
     <!-- Modal for studying flashcards -->
     <div id="study-flashcards-modal" class="modal">
       <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Select Sets to Study</h2>
-        <div id="flashcard-options"></div>
-        <div class="modal-actions">
+        <div class="modal-header">
+          <h2>Select Sets to Study</h2>
+          <button class="modal-close" id="study-flashcards-close">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div id="flashcard-options"></div>
+        </div>
+        <div class="modal-footer">
           <button id="confirm-study-flashcards" class="btn-primary">
             Study Now
           </button>

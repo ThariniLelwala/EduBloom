@@ -83,7 +83,7 @@ backBtn.addEventListener("click", () => {
 
 // ------------------- Modal Logic -------------------
 const modal = document.getElementById("flashcard-modal");
-const closeBtn = modal.querySelector(".close");
+const closeBtn = modal.querySelector(".modal-close");
 const addFlashcardBtn = document.getElementById("add-flashcard-btn");
 const questionInput = document.getElementById("question-input");
 const answerInput = document.getElementById("answer-input");

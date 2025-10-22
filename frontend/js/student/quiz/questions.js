@@ -81,7 +81,7 @@ backBtn.addEventListener("click", () => {
 
 // ------------------- Modal Logic -------------------
 const modal = document.getElementById("question-modal");
-const closeBtn = modal.querySelector(".close");
+const closeBtn = modal.querySelector(".modal-close");
 const addQuestionBtn = document.getElementById("add-question-btn");
 const questionInput = document.getElementById("question-input");
 const answersContainer = document.getElementById("answers-container");

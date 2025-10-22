@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalTitle = document.getElementById("modal-title");
   const input = document.getElementById("subject-input");
   const saveBtn = document.getElementById("save-subject-btn");
-  const closeBtn = document.querySelector(".close");
+  const closeBtn = document.querySelector(".modal-close");
 
   let subjects = [];
   let editId = null;

@@ -204,7 +204,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h2>Create New Topic</h2>
-          <span class="close" onclick="closeModal()">&times;</span>
+          <button class="modal-close" onclick="closeModal()">&times;</button>
         </div>
         <div class="modal-body">
           <p
@@ -236,7 +236,7 @@
             maxlength="500"
           ></textarea>
         </div>
-        <div class="modal-actions">
+        <div class="modal-footer">
           <button class="btn-secondary" onclick="closeModal()">Cancel</button>
           <button class="btn-primary" onclick="submitTopic()">
             Create Topic

@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const testNameInput = document.getElementById("test-name-input");
   const testMarkInput = document.getElementById("test-mark-input");
   const saveTestBtn = document.getElementById("save-test-btn");
-  const closeTestBtn = testModal.querySelector(".close");
+  const closeTestBtn = testModal.querySelector(".modal-close");
   const addTestBtn = document.getElementById("add-test-btn");
   const subjectHeading = document.getElementById("subject-name");
 

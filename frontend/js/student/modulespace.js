@@ -26,7 +26,9 @@ function setupEventListeners() {
   const subjectModal = document.getElementById("subject-modal");
   const subjectInput = document.getElementById("subject-input");
   const modalTitle = document.getElementById("modal-title");
-  const closeBtn = subjectModal ? subjectModal.querySelector(".close") : null;
+  const closeBtn = subjectModal
+    ? subjectModal.querySelector(".modal-close")
+    : null;
 
   if (saveSubjectBtn) {
     saveSubjectBtn.addEventListener("click", () =>

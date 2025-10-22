@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const modalTitle = document.getElementById("modal-title");
   const input = document.getElementById("subject-input");
   const saveBtn = document.getElementById("save-subject-btn");
-  const closeBtn = modal.querySelector(".close");
+  const closeBtn = modal.querySelector(".modal-close");
   const subjectHeading = document.getElementById("subject-name");
 
   const params = new URLSearchParams(window.location.search);
@@ -129,7 +129,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const studyFlashcardsModal = document.getElementById(
     "study-flashcards-modal"
   );
-  const closeStudyFlashcards = studyFlashcardsModal.querySelector(".close");
+  const closeStudyFlashcards =
+    studyFlashcardsModal.querySelector(".modal-close");
   const flashcardOptionsContainer =
     document.getElementById("flashcard-options");
   const confirmStudyFlashcards = document.getElementById(

@@ -59,20 +59,34 @@
     <!-- Modal for creating/editing quiz -->
     <div id="subject-modal" class="modal">
       <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2 id="modal-title">Add Quiz</h2>
-        <input type="text" id="subject-input" placeholder="Enter quiz title" />
-        <button id="save-subject-btn" class="btn-primary">Save</button>
+        <div class="modal-header">
+          <h2 id="modal-title">Add Quiz</h2>
+          <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="subject-input"
+            placeholder="Enter quiz title"
+          />
+        </div>
+        <div class="modal-footer">
+          <button id="save-subject-btn" class="btn-primary">Save</button>
+        </div>
       </div>
     </div>
 
     <!-- Modal for taking quiz -->
     <div id="take-quiz-modal" class="modal">
       <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Select Topics</h2>
-        <div id="quiz-options"></div>
-        <div class="modal-actions">
+        <div class="modal-header">
+          <h2>Select Topics</h2>
+          <button class="modal-close" id="take-quiz-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="quiz-options"></div>
+        </div>
+        <div class="modal-footer">
           <button id="confirm-take-quiz" class="btn-primary">Take Quiz</button>
           <button id="cancel-take-quiz" class="btn-secondary cancel-btn">
             Cancel

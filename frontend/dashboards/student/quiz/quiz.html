@@ -49,14 +49,20 @@
     <!-- Modal -->
     <div id="subject-modal" class="modal">
       <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2 id="modal-title">Add Subject</h2>
-        <input
-          type="text"
-          id="subject-input"
-          placeholder="Enter subject name"
-        />
-        <button id="save-subject-btn" class="btn-primary">Save</button>
+        <div class="modal-header">
+          <h2 id="modal-title">Add Subject</h2>
+          <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="subject-input"
+            placeholder="Enter subject name"
+          />
+        </div>
+        <div class="modal-footer">
+          <button id="save-subject-btn" class="btn-primary">Save</button>
+        </div>
       </div>
     </div>
     <script src="../../../js/student/quiz/quiz.js"></script>

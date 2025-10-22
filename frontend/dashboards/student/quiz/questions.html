@@ -47,21 +47,21 @@
     <!-- Modal -->
     <div id="question-modal" class="modal">
       <div class="modal-content">
-        <div>
-          <span class="close">&times;</span>
+        <div class="modal-header">
           <h2 id="modal-title">Add Question</h2>
+          <button class="modal-close" id="modal-close">&times;</button>
         </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="question-input"
+            placeholder="Enter question text"
+          />
 
-        <input
-          type="text"
-          id="question-input"
-          placeholder="Enter question text"
-        />
-
-        <div id="answers-container"></div>
-        <button id="add-answer-btn">+ Add Option</button>
-
-        <div class="modal-actions">
+          <div id="answers-container"></div>
+          <button id="add-answer-btn">+ Add Option</button>
+        </div>
+        <div class="modal-footer">
           <button id="save-btn" class="btn-primary">Save</button>
           <button id="save-next-btn" class="btn-primary">Save & Next</button>
         </div>

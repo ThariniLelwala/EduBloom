@@ -50,15 +50,21 @@
     <!-- Create Topic Modal -->
     <div id="topic-modal" class="modal">
       <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2 id="topic-modal-title">Add Topic</h2>
-        <input
-          type="text"
-          id="topic-name"
-          placeholder="Enter topic name"
-          maxlength="50"
-        />
-        <button id="save-topic" class="btn-primary">Save</button>
+        <div class="modal-header">
+          <h2 id="topic-modal-title">Add Topic</h2>
+          <button class="modal-close" id="topic-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="topic-name"
+            placeholder="Enter topic name"
+            maxlength="50"
+          />
+        </div>
+        <div class="modal-footer">
+          <button id="save-topic" class="btn-primary">Save</button>
+        </div>
       </div>
     </div>
 
@@ -69,45 +75,47 @@
           <h2 id="topic-menu-title">
             Topic: <span id="topic-menu-name"></span>
           </h2>
-          <span class="close">&times;</span>
-        </div>
-
-        <!-- Drag and drop area for PDF files inside modal -->
-        <div id="drag-drop-area" class="upload-area">
-          <i class="fas fa-cloud-upload-alt"></i>
-          <p>Drag & drop PDF files here</p>
-          <p style="font-size: 0.9em; color: #999">or click to browse</p>
-          <input
-            type="file"
-            id="file-input"
-            accept=".pdf"
-            multiple
-            style="display: none"
-          />
-          <button
-            class="btn-secondary"
-            onclick="document.getElementById('file-input').click()"
-          >
-            Browse Files
+          <button class="modal-close" id="topic-menu-modal-close">
+            &times;
           </button>
+        </div>
+        <div class="modal-body">
+          <!-- Drag and drop area for PDF files inside modal -->
+          <div id="drag-drop-area" class="upload-area">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Drag & drop PDF files here</p>
+            <p style="font-size: 0.9em; color: #999">or click to browse</p>
+            <input
+              type="file"
+              id="file-input"
+              accept=".pdf"
+              multiple
+              style="display: none"
+            />
+            <button
+              class="btn-secondary"
+              onclick="document.getElementById('file-input').click()"
+            >
+              Browse Files
+            </button>
 
-          <!-- Upload loading indicator -->
-          <div
-            id="upload-indicator"
-            class="upload-loading"
-            style="display: none"
-          >
-            <div class="spinner"></div>
-            <p>Uploading files...</p>
+            <!-- Upload loading indicator -->
+            <div
+              id="upload-indicator"
+              class="upload-loading"
+              style="display: none"
+            >
+              <div class="spinner"></div>
+              <p>Uploading files...</p>
+            </div>
+          </div>
+
+          <!-- Files list -->
+          <div id="topic-files-list" class="files-list">
+            <!-- Files for this topic -->
           </div>
         </div>
-
-        <!-- Files list -->
-        <div id="topic-files-list" class="files-list">
-          <!-- Files for this topic -->
-        </div>
-
-        <div class="modal-actions">
+        <div class="modal-footer">
           <button id="close-topic-menu" class="btn-primary">Close</button>
         </div>
       </div>
