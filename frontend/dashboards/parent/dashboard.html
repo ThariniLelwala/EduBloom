@@ -339,45 +339,54 @@
       function initializeAverageScoreCard() {
         const studentType = localStorage.getItem("studentType");
         const avgScoreSmallCard = document.getElementById("avg-score-card");
-        
+
         if (studentType !== "university" && avgScoreSmallCard) {
           avgScoreSmallCard.style.display = "block";
-          
+
           // Load exam scores from localStorage
           try {
-            const examsData = JSON.parse(localStorage.getItem("examsData") || "{}");
-            
+            const examsData = JSON.parse(
+              localStorage.getItem("examsData") || "{}"
+            );
+
             if (examsData.exams && examsData.exams.length > 0) {
               // Get the latest exam
               const latestExam = examsData.exams[examsData.exams.length - 1];
               const marks = Object.values(latestExam.marks).filter(
                 (mark) => mark !== null && mark !== undefined
               );
-              
+
               if (marks.length > 0) {
-                const average = (marks.reduce((a, b) => a + b, 0) / marks.length).toFixed(2);
-                document.getElementById("latest-avg-score").textContent = average;
-                
+                const average = (
+                  marks.reduce((a, b) => a + b, 0) / marks.length
+                ).toFixed(2);
+                document.getElementById("latest-avg-score").textContent =
+                  average;
+
                 // Calculate trend
                 if (examsData.exams.length >= 2) {
                   const priorExam = examsData.exams[examsData.exams.length - 2];
                   const priorMarks = Object.values(priorExam.marks).filter(
                     (mark) => mark !== null && mark !== undefined
                   );
-                  
+
                   if (priorMarks.length > 0) {
-                    const priorAverage = priorMarks.reduce((a, b) => a + b, 0) / priorMarks.length;
+                    const priorAverage =
+                      priorMarks.reduce((a, b) => a + b, 0) / priorMarks.length;
                     const currentAverage = average;
-                    
+
                     const trendElement = document.getElementById("score-trend");
                     if (currentAverage > priorAverage + 2) {
-                      trendElement.innerHTML = '<i class="fas fa-arrow-up"></i> Improving';
+                      trendElement.innerHTML =
+                        '<i class="fas fa-arrow-up"></i> Improving';
                       trendElement.className = "stat-secondary trend-up";
                     } else if (currentAverage < priorAverage - 2) {
-                      trendElement.innerHTML = '<i class="fas fa-arrow-down"></i> Declining';
+                      trendElement.innerHTML =
+                        '<i class="fas fa-arrow-down"></i> Declining';
                       trendElement.className = "stat-secondary trend-down";
                     } else {
-                      trendElement.innerHTML = '<i class="fas fa-minus"></i> Stable';
+                      trendElement.innerHTML =
+                        '<i class="fas fa-minus"></i> Stable';
                       trendElement.className = "stat-secondary";
                     }
                   }
