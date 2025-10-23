@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Help & Support</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/dashboard/progress.css" />
+    <link rel="stylesheet" href="../../css/admin/dashboard.css" />
+    <link rel="stylesheet" href="../../css/admin/themes.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+
+    <div class="container">
+      <!-- Sidebar -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main content -->
+      <main id="content">
+        <div class="card-grid">
+          <!-- Welcome Card -->
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">
+                <i class="fas fa-life-ring"></i> Help & Support
+              </h1>
+              <div>"Manage FAQs and respond to user support requests."</div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+
+          <!-- FAQs Section -->
+          <div class="card full">
+            <div class="card-header">
+              <h3>
+                <i class="fas fa-question-circle"></i> Frequently Asked
+                Questions
+              </h3>
+              <div
+                style="
+                  margin-left: auto;
+                  width: fit-content;
+                  padding-right: 16px;
+                "
+              >
+                <button
+                  class="btn btn-primary"
+                  id="add-faq-btn"
+                  style="white-space: nowrap"
+                >
+                  <i class="fas fa-plus"></i> Add
+                </button>
+              </div>
+            </div>
+            <div id="faqs-container" class="faqs-list">
+              <!-- Populated by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Help Requests Section -->
+          <div class="card full">
+            <div class="card-header">
+              <h3><i class="fas fa-envelope"></i> Help Requests</h3>
+            </div>
+            <div class="admin-controls">
+              <div class="admin-controls-left">
+                <input
+                  type="text"
+                  id="requests-search"
+                  class="admin-search-input"
+                  placeholder="Search by user or topic..."
+                />
+                <select id="requests-status-filter" class="admin-filter-select">
+                  <option value="">Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="replied">Replied</option>
+                  <option value="resolved">Resolved</option>
+                </select>
+              </div>
+            </div>
+            <div class="admin-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Topic</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="help-requests-tbody">
+                  <!-- Populated by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add FAQ Modal -->
+    <div id="add-faq-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Add FAQ</h2>
+          <span class="modal-close" data-modal="add-faq-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div style="display: flex; flex-direction: column; gap: 16px">
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.8);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 8px;
+                "
+                >Question</label
+              >
+              <input
+                type="text"
+                id="faq-question-input"
+                class="admin-search-input"
+                placeholder="Enter question..."
+                style="width: 100%"
+              />
+            </div>
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.8);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 8px;
+                "
+                >Answer</label
+              >
+              <textarea
+                id="faq-answer-input"
+                class="admin-search-input"
+                placeholder="Enter answer..."
+                style="width: 100%; resize: vertical; min-height: 100px"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-modal="add-faq-modal">
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="save-faq-btn">Save FAQ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- View/Reply Help Request Modal -->
+    <div id="help-request-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="help-request-title">Help Request</h2>
+          <span class="modal-close" data-modal="help-request-modal"
+            >&times;</span
+          >
+        </div>
+        <div class="modal-body">
+          <div style="display: flex; flex-direction: column; gap: 16px">
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 4px;
+                "
+                >From</label
+              >
+              <p
+                id="help-request-user"
+                style="color: var(--color-white); margin: 0"
+              ></p>
+            </div>
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 4px;
+                "
+                >Topic</label
+              >
+              <p
+                id="help-request-topic"
+                style="color: var(--color-white); margin: 0"
+              ></p>
+            </div>
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 4px;
+                "
+                >Message</label
+              >
+              <p
+                id="help-request-message"
+                style="
+                  color: var(--color-white);
+                  margin: 0;
+                  white-space: pre-wrap;
+                "
+              ></p>
+            </div>
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 4px;
+                "
+                >Date</label
+              >
+              <p
+                id="help-request-date"
+                style="color: var(--color-white); margin: 0"
+              ></p>
+            </div>
+            <div id="current-reply-div" style="display: none">
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 4px;
+                "
+                >Current Reply</label
+              >
+              <p
+                id="help-request-reply"
+                style="
+                  color: var(--color-white);
+                  margin: 0;
+                  white-space: pre-wrap;
+                "
+              ></p>
+            </div>
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.8);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 8px;
+                "
+                >Your Reply</label
+              >
+              <textarea
+                id="reply-input"
+                class="admin-search-input"
+                placeholder="Type your response..."
+                style="width: 100%; resize: vertical; min-height: 100px"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-modal="help-request-modal">
+            Close
+          </button>
+          <button class="btn btn-primary" id="send-reply-btn">
+            Send Reply
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete FAQ Confirmation Modal -->
+    <div id="delete-faq-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Delete FAQ</h2>
+          <span class="modal-close" data-modal="delete-faq-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+          <p style="color: var(--color-white); margin: 0">
+            Are you sure you want to delete this FAQ? This action cannot be
+            undone.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-modal="delete-faq-modal">
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="confirm-delete-faq-btn">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JS -->
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/sidebar.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+    <script src="../../js/admin/admin-theme-manager.js"></script>
+    <script src="../../js/admin/admin-help.js"></script>
+  </body>
+</html>

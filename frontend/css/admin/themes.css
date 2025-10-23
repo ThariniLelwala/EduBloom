@@ -1,0 +1,239 @@
+/* ===== Admin Theme Styles ===== */
+
+/* ===== Form Group Styles ===== */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group-select {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: var(--color-white);
+  font-size: 14px;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.form-group-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.form-group-select option {
+  background: rgba(20, 20, 40, 0.9);
+  color: var(--color-white);
+}
+
+/* ===== Theme Color Definitions ===== */
+:root.theme-dark {
+  --color-primary: #6366f1;
+  --color-white: #ffffff;
+  --color-secondary: #8b5cf6;
+}
+
+:root.theme-light {
+  --color-primary: #3b82f6;
+  --color-white: #1a1a2e;
+  --color-secondary: #60a5fa;
+}
+
+:root.theme-blue {
+  --color-primary: #0ea5e9;
+  --color-white: #ffffff;
+  --color-secondary: #06b6d4;
+}
+
+:root.theme-purple {
+  --color-primary: #a855f7;
+  --color-white: #ffffff;
+  --color-secondary: #d946ef;
+}
+
+:root.theme-green {
+  --color-primary: #10b981;
+  --color-white: #ffffff;
+  --color-secondary: #34d399;
+}
+
+/* ===== Light Theme ===== */
+body.theme-light {
+  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%) !important;
+  color: #1a1a2e;
+}
+
+body.theme-light .bg-image {
+  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%) !important;
+}
+
+body.theme-light .card {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #1a1a2e;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+body.theme-light .card h2,
+body.theme-light .card h3,
+body.theme-light .card p {
+  color: #1a1a2e !important;
+}
+
+body.theme-light .card-title {
+  color: #1a1a2e !important;
+}
+
+body.theme-light .header-row {
+  color: #1a1a2e !important;
+}
+
+body.theme-light input,
+body.theme-light select {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #1a1a2e !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+body.theme-light .modal-content {
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: #1a1a2e !important;
+}
+
+body.theme-light .modal-header h2,
+body.theme-light .modal-header,
+body.theme-light .modal-body,
+body.theme-light .modal-body p {
+  color: #1a1a2e !important;
+}
+
+body.theme-light .admin-table tbody tr {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+body.theme-light .admin-table tbody tr:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+body.theme-light .admin-table-action {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+body.theme-light .admin-table-action:hover {
+  color: rgba(0, 0, 0, 0.9) !important;
+}
+
+body.theme-light .admin-table th {
+  color: #1a1a2e !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+body.theme-light .admin-table td {
+  color: #1a1a2e !important;
+}
+
+body.theme-light .admin-search-input {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
+  color: #1a1a2e !important;
+}
+
+body.theme-light .admin-search-input::placeholder {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+body.theme-light .admin-filter-select {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
+  color: #1a1a2e !important;
+}
+
+body.theme-light .admin-filter-select:hover {
+  border-color: rgba(0, 0, 0, 0.3) !important;
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+body.theme-light .active-user-item {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #1a1a2e !important;
+}
+
+body.theme-light .active-user-item:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+body.theme-light .active-user-name,
+body.theme-light .active-user-role,
+body.theme-light .active-user-activity {
+  color: #1a1a2e !important;
+}
+
+body.theme-light .faq-item,
+body.theme-light .announcement-item {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #1a1a2e !important;
+}
+
+body.theme-light .faq-item:hover,
+body.theme-light .announcement-item:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+body.theme-light .btn {
+  color: var(--color-white) !important;
+}
+
+body.theme-light .btn-primary {
+  background: var(--color-primary) !important;
+  color: var(--color-white) !important;
+}
+
+body.theme-light .btn-secondary {
+  background: rgba(0, 0, 0, 0.1) !important;
+  color: #1a1a2e !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ===== Profile Item Styling ===== */
+body.theme-light .profile-item {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #1a1a2e !important;
+}
+
+body.theme-light .profile-item strong {
+  color: #1a1a2e !important;
+}
+
+body.theme-light .profile-item p {
+  color: #1a1a2e !important;
+}
+
+/* ===== Sidebar & Topbar ===== */
+body.theme-light .sidebar {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+body.theme-light .sidebar a,
+body.theme-light .sidebar span {
+  color: #1a1a2e !important;
+}
+
+body.theme-light .topbar {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}

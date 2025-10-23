@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>System Analytics</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/dashboard/progress.css" />
+    <link rel="stylesheet" href="../../css/admin/dashboard.css" />
+    <link rel="stylesheet" href="../../css/admin/themes.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+
+    <div class="container">
+      <!-- Sidebar -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main content -->
+      <main id="content">
+        <div class="card-grid">
+          <!-- Welcome Card -->
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">
+                <i class="fas fa-chart-line"></i> System Analytics
+              </h1>
+              <div>
+                "Monitor platform activity and user engagement metrics."
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+
+          <!-- Statistics Cards -->
+          <div class="card w1 small-card">
+            <h4>Active Users</h4>
+            <p id="active-users-count">0</p>
+          </div>
+
+          <div class="card w1 small-card">
+            <h4>Active Forums</h4>
+            <p id="active-forums-count">0</p>
+          </div>
+
+          <div class="card w1 small-card">
+            <h4>New Registrations</h4>
+            <p id="new-registrations-count">0</p>
+          </div>
+
+          <div class="card w1 small-card">
+            <h4>Today's Logins</h4>
+            <p id="today-logins-count">0</p>
+          </div>
+
+          <!-- User Growth Chart -->
+          <div class="card w1">
+            <div class="card-header">
+              <h3>User Growth</h3>
+            </div>
+            <canvas id="user-growth-chart"></canvas>
+          </div>
+
+          <!-- Daily Logins Chart -->
+          <div class="card w1">
+            <div class="card-header">
+              <h3>Daily Logins</h3>
+            </div>
+            <canvas id="daily-logins-chart"></canvas>
+          </div>
+
+          <!-- Content Uploading Trend Chart -->
+          <div class="card w1">
+            <div class="card-header">
+              <h3>Content Uploading Trend</h3>
+            </div>
+            <canvas id="content-uploading-chart"></canvas>
+          </div>
+
+          <!-- Busiest Times of the Day -->
+          <div class="card w1">
+            <div class="card-header">
+              <h3>Busiest Times of the Day</h3>
+            </div>
+            <canvas id="busiest-times-chart"></canvas>
+          </div>
+
+          <!-- Most Active Users -->
+          <div class="card w1">
+            <div class="card-header">
+              <h3>Most Active Users</h3>
+            </div>
+            <div
+              id="most-active-users-container"
+              class="most-active-users-list"
+            >
+              <!-- Populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- JS -->
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/sidebar.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+    <script src="../../js/admin/admin-theme-manager.js"></script>
+    <script src="../../js/admin/admin-system-analytics.js"></script>
+  </body>
+</html>

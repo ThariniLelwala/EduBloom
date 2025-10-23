@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Management</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/dashboard/progress.css" />
+    <link rel="stylesheet" href="../../css/admin/dashboard.css" />
+    <link rel="stylesheet" href="../../css/admin/themes.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+
+    <div class="container">
+      <!-- Sidebar -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main content -->
+      <main id="content">
+        <div class="card-grid">
+          <!-- Welcome Card -->
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">
+                <i class="fas fa-users-cog"></i> User Management
+              </h1>
+              <div>"Manage platform users and monitor their activity."</div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+
+          <!-- Statistics Cards -->
+          <div class="card w1 small-card">
+            <h4>Total Users</h4>
+            <p id="total-users-count">0</p>
+          </div>
+
+          <div class="card w1 small-card">
+            <h4>Active Users</h4>
+            <p id="active-users-count">0</p>
+          </div>
+
+          <div class="card w1 small-card">
+            <h4>Suspended Users</h4>
+            <p id="suspended-users-count">0</p>
+          </div>
+
+          <div class="card w1 small-card">
+            <h4>Daily Registration</h4>
+            <p id="daily-registration-count">0</p>
+          </div>
+
+          <!-- Users Table Card -->
+          <div class="card full">
+            <div class="card-header">
+              <h3>All Users</h3>
+            </div>
+
+            <!-- Controls Section -->
+            <div class="admin-controls">
+              <!-- Left Side: Search and Filters -->
+              <div class="admin-controls-left">
+                <!-- Search Bar -->
+                <input
+                  type="text"
+                  id="search-users"
+                  class="admin-search-input"
+                  placeholder="Search by name or email..."
+                />
+
+                <!-- Filter by Role -->
+                <select id="filter-role" class="admin-filter-select">
+                  <option value="">All Roles</option>
+                  <option value="student">Student</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="parent">Parent</option>
+                </select>
+
+                <!-- Filter by Activity -->
+                <select id="filter-activity" class="admin-filter-select">
+                  <option value="">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="suspended">Suspended</option>
+                </select>
+              </div>
+
+              <!-- Right Side: Action Buttons -->
+              <div class="admin-controls-right">
+                <!-- Add User Button -->
+                <button class="btn-primary" id="add-user-btn">
+                  <i class="fas fa-user-plus"></i> Add User
+                </button>
+
+                <!-- Bulk Delete Button -->
+                <button class="btn-secondary" id="bulk-delete-btn" disabled>
+                  <i class="fas fa-trash"></i> Delete Selected
+                </button>
+              </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="admin-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>
+                      <input
+                        type="checkbox"
+                        id="select-all"
+                        class="admin-table-checkbox"
+                      />
+                    </th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th style="text-align: center">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table-body">
+                  <!-- Users will be populated here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- JS -->
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/sidebar.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+    <script src="../../js/admin/admin-theme-manager.js"></script>
+    <script src="../../js/admin/admin-user-management.js"></script>
+  </body>
+</html>
