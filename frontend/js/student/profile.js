@@ -243,10 +243,10 @@ document.addEventListener("DOMContentLoaded", function () {
         <p>${request.parent_email}</p>
         <p>Requested on: ${new Date(request.created_at).toLocaleDateString()}</p>
         <div class="request-actions">
-          <button class="btn-accept" onclick="handleParentRequest(${request.id}, 'accept')">
+          <button class="btn-accept" onclick="handleParentRequest(${request.id || request.link_id}, 'accept')">
             <i class="fas fa-check"></i> Accept
           </button>
-          <button class="btn-reject" onclick="handleParentRequest(${request.id}, 'reject')">
+          <button class="btn-reject" onclick="handleParentRequest(${request.id || request.link_id}, 'reject')">
             <i class="fas fa-times"></i> Reject
           </button>
         </div>
