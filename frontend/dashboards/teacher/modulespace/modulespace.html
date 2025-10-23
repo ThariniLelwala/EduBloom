@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Teacher Module Space</title>
+    <script src="../../../js/sidebar.js"></script>
+    <script src="../../../config/googleDrive.config.js"></script>
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/topbar.css" />
+    <link rel="stylesheet" href="../../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/cards.css" />
+    <link rel="stylesheet" href="../../../css/student/quiz.css" />
+    <link rel="stylesheet" href="../../../css/student/modulespace.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- sidebar + content -->
+    <div class="container">
+      <div id="sidebar-container"></div>
+      <main id="content">
+        <div class="card welcome full">
+          <div class="welcome-content">
+            <h1 class="heading"><i class="fas fa-folder"></i> Module Space</h1>
+            <div>
+              "Organize your teaching materials. Create topics. Share with
+              students."
+            </div>
+          </div>
+          <div class="welcome-image"></div>
+        </div>
+
+        <div id="subjects-container" class="subjects-grid">
+          <!-- Cards rendered dynamically -->
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="subject-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Add Subject</h2>
+          <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="subject-input"
+            placeholder="Enter subject name"
+            maxlength="50"
+          />
+        </div>
+        <div class="modal-footer">
+          <button id="save-subject-btn" class="btn-primary">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Topic Modal -->
+    <div id="topic-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Create New Topic</h2>
+          <button class="modal-close" id="topic-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="topic-name"
+            placeholder="Enter topic name"
+            maxlength="50"
+          />
+        </div>
+        <div class="modal-footer">
+          <button id="cancel-topic" class="btn-secondary">Cancel</button>
+          <button id="save-topic" class="btn-primary">Create</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Public File Status Modal -->
+    <div id="public-status-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="public-status-title">File Visibility</h2>
+          <button class="modal-close" id="public-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <input
+              type="checkbox"
+              id="file-public-toggle"
+              style="width: 20px; height: 20px; cursor: pointer"
+            />
+            <label for="file-public-toggle" style="cursor: pointer; margin: 0">
+              Make this file public
+            </label>
+          </div>
+          <p
+            style="
+              margin-top: 10px;
+              font-size: 0.9rem;
+              color: rgba(255, 255, 255, 0.7);
+            "
+          >
+            Public files can be accessed by students in your classes.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button id="public-cancel" class="btn-secondary">Cancel</button>
+          <button id="public-save" class="btn-primary">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../../js/topbar.js"></script>
+    <script src="../../../js/teacher/modulespace.js"></script>
+    <script src="../../../js/bg-manager.js"></script>
+
+    <!-- Google APIs -->
+    <script async defer src="https://apis.google.com/js/platform.js"></script>
+    <script async src="https://accounts.google.com/gsi/client"></script>
+  </body>
+</html>

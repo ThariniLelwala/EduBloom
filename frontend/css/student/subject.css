@@ -116,13 +116,13 @@
 
 .file-info i {
   font-size: 24px;
-  color: #ff6b6b;
+  color: var(--color-white);
 }
 
 .file-name {
   margin: 0;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-white);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -146,7 +146,7 @@
   border-radius: 6px;
   border: none;
   background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: var(--color-white);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -160,8 +160,8 @@
 }
 
 .btn-icon.delete:hover {
-  background: #ff6b6b;
-  color: #fff;
+  background: var(--color-white);
+  color: var(--color-white);
 }
 
 /* Modal enhancements for file management */

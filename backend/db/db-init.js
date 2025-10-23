@@ -101,6 +101,62 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_module_notes_topic_id ON module_notes(topic_id);
     `);
 
+    // Teacher Module Subjects table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS teacher_module_subjects (
+        id SERIAL PRIMARY KEY,
+        teacher_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Teacher Module Topics table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS teacher_module_topics (
+        id SERIAL PRIMARY KEY,
+        subject_id INT NOT NULL REFERENCES teacher_module_subjects(id) ON DELETE CASCADE,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Teacher Module Notes table (with public visibility)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS teacher_module_notes (
+        id SERIAL PRIMARY KEY,
+        topic_id INT NOT NULL REFERENCES teacher_module_topics(id) ON DELETE CASCADE,
+        title VARCHAR(150) NOT NULL,
+        file_name VARCHAR(255) NOT NULL,
+        file_url VARCHAR(500),
+        google_drive_file_id VARCHAR(255),
+        is_public BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Create indexes for better performance
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_teacher_module_subjects_teacher_id ON teacher_module_subjects(teacher_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_teacher_module_topics_subject_id ON teacher_module_topics(subject_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_teacher_module_notes_topic_id ON teacher_module_notes(topic_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_teacher_module_notes_is_public ON teacher_module_notes(is_public);
+    `);
+
     console.log("✅ Database tables and indexes created successfully");
 
     // Check if admin user exists, if not create one

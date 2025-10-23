@@ -31,10 +31,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Handle profile.html which is in root, not in role folder
+  // Calculate depth - how many "../" we need to go back to reach the role folder
   let depth = 0;
   if (roleIndex !== -1) {
-    depth = pathParts.length - roleIndex - 2; // -2 because last is file, first is empty
+    // Count how many folders deep we are from the role folder
+    // pathParts: ["", "dashboards", "student", "quiz", "quiz.html"]
+    // roleIndex: 2 (index of "student")
+    // depth = 5 - 2 - 2 = 1 (we need 1 "../" to get back to /dashboards/student/)
+    depth = pathParts.length - roleIndex - 2;
   } else if (currentPage === "profile.html") {
     // Profile is in root, sidebar will be loaded from root too
     // Use userRole to determine which folder to go back to
@@ -69,8 +73,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const li = document.createElement("li");
 
         // Active page highlight
-        if (currentPage === item.link.split("/").pop())
-          li.classList.add("active");
+        // Check both direct filename match and parent folder match
+        const sidebarFileName = item.link.split("/").pop();
+        const sidebarFolder = item.link.split("/")[0]; // e.g., "quiz", "modulespace"
+        const currentFolder = pathParts[pathParts.length - 2]; // e.g., "quiz", "modulespace"
+
+        const isActive =
+          currentPage === sidebarFileName || // Direct match
+          (currentFolder && sidebarFolder && currentFolder === sidebarFolder); // Folder match
+
+        if (isActive) li.classList.add("active");
 
         // Calculate relative link
         let linkPath = item.link;
@@ -83,6 +95,9 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
 
+        console.log(
+          `[Sidebar] Current: ${currentPage}, Depth: ${depth}, Item: ${item.title}, Link: ${linkPath}`
+        );
         li.innerHTML = `<i class="${item.icon}"></i> <span>${item.title}</span>`;
         li.addEventListener("click", () => (window.location.href = linkPath));
         sidebarList.appendChild(li);

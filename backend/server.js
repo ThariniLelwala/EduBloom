@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const handleAuthRoutes = require("./routes/authRoutes");
 const handleStudentRoutes = require("./routes/studentRoutes");
+const handleTeacherRoutes = require("./routes/teacherRoutes");
 
 // Frontend path
 const frontendPath = path.join(__dirname, "../frontend");
@@ -45,10 +46,27 @@ const server = http.createServer((req, res) => {
   // API routes
   if (pathname.startsWith("/api/")) {
     // Check if it's a student module route (subjects, topics, notes) - these go to studentRoutes
-    if (pathname.match(/^\/api\/student\/(subjects|(?:subjects\/\d+\/))/)) {
+    if (
+      pathname.startsWith("/api/student/subjects") ||
+      (pathname.startsWith("/api/student/") && pathname.includes("/topics"))
+    ) {
       const studentResult = handleStudentRoutes(req, res);
       if (studentResult === null) {
         // If student routes don't handle it, fall back to auth routes
+        return handleAuthRoutes(req, res);
+      }
+      return;
+    }
+
+    // Check if it's a teacher module route (subjects, topics, notes) - these go to teacherRoutes
+    if (
+      pathname.startsWith("/api/teacher/subjects") ||
+      pathname.startsWith("/api/teacher/notes") ||
+      (pathname.startsWith("/api/teacher/") && pathname.includes("/notes"))
+    ) {
+      const teacherResult = handleTeacherRoutes(req, res);
+      if (teacherResult === null) {
+        // If teacher routes don't handle it, fall back to auth routes
         return handleAuthRoutes(req, res);
       }
       return;
