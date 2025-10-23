@@ -106,6 +106,20 @@ function handleAuthRoutes(req, res) {
       )(req, res);
     }
 
+    if (method === "POST" && pathname === "/api/parent/request-child-link") {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        parentController.requestChildLink
+      )(req, res);
+    }
+
+    if (method === "POST" && pathname === "/api/parent/remove-student-link") {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        parentController.removeStudentLink
+      )(req, res);
+    }
+
     // Teacher verification routes
     if (method === "GET" && pathname === "/api/teacher/verification-status") {
       return applyMiddleware(

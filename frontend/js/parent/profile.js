@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   loadProfileData();
   initializeBackgroundOptions();
   initializePasswordChangeModal();
+  initializeAddChildModal();
   initializeLogout();
 
   // Load profile data from localStorage or API
@@ -117,6 +118,65 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
             </div>
         `;
+
+    // Load linked students
+    loadLinkedStudents();
+  }
+
+  // Load linked students
+  async function loadLinkedStudents() {
+    const token = localStorage.getItem("authToken");
+    const linkedStudentsDiv = document.getElementById("linked-students");
+
+    if (!token) {
+      linkedStudentsDiv.innerHTML = `<p style="color: rgba(255,255,255,0.7); text-align: center;">No linked students found.</p>`;
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/parent/children", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await res.json();
+
+      if (res.ok && result.children) {
+        displayLinkedStudents(result.children);
+      } else {
+        linkedStudentsDiv.innerHTML = `<p style="color: rgba(255,255,255,0.7); text-align: center;">No linked students found.</p>`;
+      }
+    } catch (error) {
+      console.error("Failed to fetch linked students:", error);
+      linkedStudentsDiv.innerHTML = `<p style="color: rgba(255,255,255,0.7); text-align: center;">Failed to load linked students.</p>`;
+    }
+  }
+
+  // Display linked students
+  function displayLinkedStudents(children) {
+    const linkedStudentsDiv = document.getElementById("linked-students");
+
+    if (children.length === 0) {
+      linkedStudentsDiv.innerHTML = `<p style="color: rgba(255,255,255,0.7); text-align: center;">No linked students found.</p>`;
+      return;
+    }
+
+    const studentsHTML = children.map(child => `
+      <div class="linked-student">
+        <div class="student-info">
+          <strong>${child.username}</strong>
+          <p>${child.email} (${child.student_type})</p>
+        </div>
+        <button class="btn-remove" onclick="removeStudentLink(${child.id})">
+          <i class="fas fa-trash"></i> Remove
+        </button>
+      </div>
+    `).join('');
+
+    linkedStudentsDiv.innerHTML = studentsHTML;
   }
 
   // Show no profile data message
@@ -347,6 +407,131 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
+
+  // Initialize add child modal
+  function initializeAddChildModal() {
+    const modal = document.getElementById("addChildModal");
+    const openBtn = document.getElementById("addChildBtn");
+    const closeBtn = document.getElementById("closeAddChildModalBtn");
+    const cancelBtn = document.getElementById("cancelAddChildBtn");
+    const form = document.getElementById("addChildForm");
+    const submitBtn = document.getElementById("submitAddChildBtn");
+
+    // Open modal
+    if (openBtn) {
+      openBtn.addEventListener("click", () => {
+        modal.classList.add("show");
+        document.body.style.overflow = "hidden";
+      });
+    }
+
+    // Close modal functions
+    const closeModal = () => {
+      modal.classList.remove("show");
+      document.body.style.overflow = "";
+      form.reset();
+      clearErrors();
+    };
+
+    if (closeBtn) closeBtn.addEventListener("click", closeModal);
+    if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
+
+    // Close on outside click
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    // Form validation
+    const inputs = form.querySelectorAll("input");
+    inputs.forEach((input) => {
+      input.addEventListener("input", validateAddChildForm);
+    });
+
+    function validateAddChildForm() {
+      const studentIdentifier = document.getElementById("studentIdentifier").value;
+
+      clearErrors();
+
+      let isValid = true;
+
+      if (!studentIdentifier.trim()) {
+        showError("studentIdentifier", "Student identifier is required");
+        isValid = false;
+      }
+
+      submitBtn.disabled = !isValid;
+    }
+
+    // Form submission
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const studentIdentifier = document.getElementById("studentIdentifier").value.trim();
+
+      try {
+        const token = localStorage.getItem("authToken");
+
+        const res = await fetch("/api/parent/request-child-link", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ studentIdentifier }),
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+          showToast("Link request sent successfully!");
+          closeModal();
+        } else {
+          showError("studentIdentifier", result.error || "Failed to send link request");
+        }
+      } catch (error) {
+        console.error("Failed to send link request:", error);
+        showError("studentIdentifier", "Failed to send link request. Please try again.");
+      }
+    });
+  }
+
+  // Remove student link
+  async function removeStudentLink(studentId) {
+    if (!confirm('Are you sure you want to remove this student link?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("authToken");
+
+      const res = await fetch("/api/parent/remove-student-link", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ studentId }),
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        showToast("Student link removed successfully!");
+        // Reload the data
+        loadLinkedStudents();
+      } else {
+        showToast(result.error || "Failed to remove student link");
+      }
+    } catch (error) {
+      console.error("Failed to remove student link:", error);
+      showToast("Failed to remove student link. Please try again.");
+    }
+  }
+
+  // Make removeStudentLink globally available
+  window.removeStudentLink = removeStudentLink;
 
   // Initialize logout functionality
   function initializeLogout() {

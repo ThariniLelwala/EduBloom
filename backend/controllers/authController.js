@@ -258,13 +258,29 @@ class AuthController {
 
       // Verify that this link belongs to the current student and is pending
       const verifyResult = await db.query(
-        `SELECT * FROM parent_student_links WHERE id = $1 AND student_id = $2 AND status = 'pending'`,
+        `SELECT psl.*, u.username as parent_username, u.email as parent_email 
+         FROM parent_student_links psl
+         JOIN users u ON psl.parent_id = u.id
+         WHERE psl.id = $1 AND psl.student_id = $2 AND psl.status = 'pending'`,
         [linkId, user.id]
       );
 
       if (verifyResult.rows.length === 0) {
         res.writeHead(403, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: "Unauthorized or link not pending" }));
+        return;
+      }
+
+      // Check if student already has 2 accepted parents
+      const acceptedParentsCount = await db.query(
+        `SELECT COUNT(*) as count FROM parent_student_links 
+         WHERE student_id = $1 AND status = 'accepted'`,
+        [user.id]
+      );
+
+      if (parseInt(acceptedParentsCount.rows[0].count) >= 2) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "You can only have a maximum of 2 linked parents" }));
         return;
       }
 

@@ -134,7 +134,196 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
             </div>
         `;
+
+    // Load parent data
+    loadLinkedParents();
+    loadPendingRequests();
   }
+
+  // Load linked parents
+  async function loadLinkedParents() {
+    const token = localStorage.getItem("authToken");
+    const linkedParentsDiv = document.getElementById("linked-parents");
+
+    if (!token) {
+      linkedParentsDiv.innerHTML = `<p style="color: rgba(255,255,255,0.7); text-align: center;">No linked parents found.</p>`;
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/student/linked-parents", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await res.json();
+
+      if (res.ok && result.parents) {
+        displayLinkedParents(result.parents);
+      } else {
+        linkedParentsDiv.innerHTML = `<p style="color: rgba(255,255,255,0.7); text-align: center;">No linked parents found.</p>`;
+      }
+    } catch (error) {
+      console.error("Failed to fetch linked parents:", error);
+      linkedParentsDiv.innerHTML = `<p style="color: rgba(255,255,255,0.7); text-align: center;">Failed to load linked parents.</p>`;
+    }
+  }
+
+  // Display linked parents
+  function displayLinkedParents(parents) {
+    const linkedParentsDiv = document.getElementById("linked-parents");
+
+    if (parents.length === 0) {
+      linkedParentsDiv.innerHTML = `<p style="color: rgba(255,255,255,0.7); text-align: center;">No linked parents found.</p>`;
+      return;
+    }
+
+    const parentsHTML = parents.map(parent => `
+      <div class="linked-parent">
+        <div class="parent-info">
+          <strong>${parent.parent_username}</strong>
+          <p>${parent.parent_email}</p>
+        </div>
+        <button class="btn-remove" onclick="removeParentLink(${parent.link_id})">
+          <i class="fas fa-trash"></i> Remove
+        </button>
+      </div>
+    `).join('');
+
+    linkedParentsDiv.innerHTML = parentsHTML;
+  }
+
+  // Load pending parent requests
+  async function loadPendingRequests() {
+    const token = localStorage.getItem("authToken");
+    const pendingRequestsDiv = document.getElementById("pending-requests");
+
+    if (!token) {
+      pendingRequestsDiv.innerHTML = `<p style="color: rgba(255,255,255,0.7); text-align: center;">No pending requests.</p>`;
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/student/pending-parent-requests", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await res.json();
+
+      if (res.ok && result.pendingRequests) {
+        displayPendingRequests(result.pendingRequests);
+      } else {
+        pendingRequestsDiv.innerHTML = `<p style="color: rgba(255,255,255,0.7); text-align: center;">No pending requests.</p>`;
+      }
+    } catch (error) {
+      console.error("Failed to fetch pending requests:", error);
+      pendingRequestsDiv.innerHTML = `<p style="color: rgba(255,255,255,0.7); text-align: center;">Failed to load pending requests.</p>`;
+    }
+  }
+
+  // Display pending requests
+  function displayPendingRequests(requests) {
+    const pendingRequestsDiv = document.getElementById("pending-requests");
+
+    if (requests.length === 0) {
+      pendingRequestsDiv.innerHTML = `<p style="color: rgba(255,255,255,0.7); text-align: center;">No pending requests.</p>`;
+      return;
+    }
+
+    const requestsHTML = requests.map(request => `
+      <div class="parent-request">
+        <strong>${request.parent_username}</strong>
+        <p>${request.parent_email}</p>
+        <p>Requested on: ${new Date(request.created_at).toLocaleDateString()}</p>
+        <div class="request-actions">
+          <button class="btn-accept" onclick="handleParentRequest(${request.id}, 'accept')">
+            <i class="fas fa-check"></i> Accept
+          </button>
+          <button class="btn-reject" onclick="handleParentRequest(${request.id}, 'reject')">
+            <i class="fas fa-times"></i> Reject
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    pendingRequestsDiv.innerHTML = requestsHTML;
+  }
+
+  // Handle parent request (accept/reject)
+  async function handleParentRequest(linkId, action) {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      const res = await fetch(`/api/student/${action}-parent-link`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ linkId }),
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        showToast(`Parent request ${action}ed successfully!`);
+        // Reload the data
+        loadLinkedParents();
+        loadPendingRequests();
+      } else {
+        showToast(result.error || `Failed to ${action} request`);
+      }
+    } catch (error) {
+      console.error(`Failed to ${action} parent request:`, error);
+      showToast(`Failed to ${action} request. Please try again.`);
+    }
+  }
+
+  // Make handleParentRequest globally available
+  window.handleParentRequest = handleParentRequest;
+
+  // Remove parent link
+  async function removeParentLink(linkId) {
+    if (!confirm('Are you sure you want to remove this parent link?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("authToken");
+
+      const res = await fetch("/api/student/remove-parent-link", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ linkId }),
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        showToast("Parent link removed successfully!");
+        // Reload the data
+        loadLinkedParents();
+      } else {
+        showToast(result.error || "Failed to remove parent link");
+      }
+    } catch (error) {
+      console.error("Failed to remove parent link:", error);
+      showToast("Failed to remove parent link. Please try again.");
+    }
+  }
+
+  // Make removeParentLink globally available
+  window.removeParentLink = removeParentLink;
 
   // Show no profile data message
   function showNoProfileData() {
