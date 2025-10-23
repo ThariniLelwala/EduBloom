@@ -9,49 +9,16 @@ document.addEventListener("DOMContentLoaded", () => {
   let subjects = [];
   let editId = null;
 
-  // Load subjects from JSON and published teacher quizzes
-  async function loadSubjects() {
-    const res = await fetch("/data/quiz.json");
-    const data = await res.json();
-    subjects = data.subjects;
-
-    // Add published teacher quizzes
+  // Load subjects from localStorage (teacher-specific)
+  function loadSubjects() {
     const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-    if (teacherSubjects) {
-      const teacherData = JSON.parse(teacherSubjects);
-      teacherData.forEach((teacherSubject) => {
-        // Check if subject already exists, if not create it
-        let existingSubject = subjects.find(
-          (s) => s.name.toLowerCase() === teacherSubject.name.toLowerCase()
-        );
-        if (!existingSubject) {
-          existingSubject = {
-            id: Date.now() + Math.random(),
-            name: teacherSubject.name,
-            quizzes: [],
-          };
-          subjects.push(existingSubject);
-        }
-
-        // Add published quizzes from this teacher subject
-        teacherSubject.quizzes.forEach((quiz) => {
-          if (quiz.published && quiz.questions && quiz.questions.length > 0) {
-            // Check if quiz already exists (avoid duplicates)
-            const quizExists = existingSubject.quizzes.some(
-              (q) => q.name === quiz.name
-            );
-            if (!quizExists) {
-              existingSubject.quizzes.push({
-                ...quiz,
-                teacherQuiz: true, // Mark as teacher-created quiz
-              });
-            }
-          }
-        });
-      });
-    }
-
+    subjects = teacherSubjects ? JSON.parse(teacherSubjects) : [];
     renderSubjects();
+  }
+
+  // Save subjects to localStorage
+  function saveSubjects() {
+    localStorage.setItem("teacher_quiz_subjects", JSON.stringify(subjects));
   }
 
   function renderSubjects() {
@@ -95,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
       dropdown.querySelector(".delete").addEventListener("click", () => {
         if (confirm(`Delete "${subj.name}" and all its quizzes?`)) {
           subjects = subjects.filter((s) => s.id !== subj.id);
+          saveSubjects();
           renderSubjects();
         }
         dropdown.style.display = "none";
@@ -129,11 +97,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (editId) {
       const subj = subjects.find((s) => s.id === editId);
-      if (subj) subj.name = name; // Fixed: ensure subj exists
+      if (subj) subj.name = name;
     } else {
       subjects.push({ id: Date.now(), name, quizzes: [] });
     }
 
+    saveSubjects();
     modal.style.display = "none";
     renderSubjects();
   });

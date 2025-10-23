@@ -1,0 +1,134 @@
+/* Teacher Dashboard Specific Styles */
+
+/* Overview card specific styles */
+.chart-stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding-top: 12px;
+}
+
+.chart-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.chart-stat:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.chart-stat .stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #4ade80;
+  text-shadow: 0 2px 4px rgba(74, 222, 128, 0.3);
+}
+
+.chart-stat .stat-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/* Fix task item styling for dashboard */
+.task-item {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 10px 12px !important;
+  border-radius: 8px !important;
+  transition: background 0.2s ease !important;
+  position: relative !important;
+  list-style: none !important;
+}
+
+.task-item:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.task-checkbox {
+  width: 18px !important;
+  height: 18px !important;
+  cursor: pointer !important;
+  accent-color: var(--color-white) !important;
+  flex: 0 0 auto !important;
+}
+
+.task-item label {
+  cursor: pointer !important;
+  flex: 1 1 auto !important;
+  color: inherit !important;
+  transition: color 0.25s ease !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.task-item-actions {
+  display: flex !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+  align-items: center !important;
+}
+
+.task-item-actions i {
+  cursor: pointer !important;
+  font-size: 14px !important;
+  opacity: 0.7 !important;
+  transition: transform 0.2s ease, opacity 0.2s ease !important;
+  padding: 4px !important;
+  border-radius: 4px !important;
+}
+
+.task-item-actions i:hover {
+  transform: scale(1.1) !important;
+  opacity: 1 !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.task-item.completed label {
+  color: rgba(255, 255, 255, 0.55) !important;
+  text-decoration: line-through !important;
+  text-decoration-thickness: 2px !important;
+  text-decoration-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Visibility badges for notes */
+.visibility-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  display: inline-block;
+  letter-spacing: 0.5px;
+}
+
+.visibility-badge.visibility-public {
+  background: #d4edda;
+  color: #155724;
+}
+
+.visibility-badge.visibility-private {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .chart-stats {
+    grid-template-columns: 1fr;
+  }
+}

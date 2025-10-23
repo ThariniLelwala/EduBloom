@@ -40,10 +40,48 @@
   gap: 8px;
   font-weight: 400;
   font-size: 16px;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .subject-card .subject-header i {
   font-size: 18px;
+}
+
+/* Publish status indicator */
+.publish-status {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+.publish-status.published {
+  background: rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.publish-status.draft {
+  background: rgba(149, 165, 166, 0.2);
+  color: #95a5a6;
+  border: 1px solid rgba(149, 165, 166, 0.3);
+}
+
+/* Teacher badge for student view */
+.teacher-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(52, 152, 219, 0.2);
+  color: #3498db;
+  border: 1px solid rgba(52, 152, 219, 0.3);
+  font-weight: 600;
+  align-self: flex-start;
+  margin-top: 4px;
 }
 
 /* Dropdown menu */
@@ -251,6 +289,13 @@ input[type="radio"]:checked {
   gap: 8px;
   color: var(--color-white);
   margin: 8px;
+}
+
+/* Publish toggle in modal */
+.publish-toggle {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .answer-field .remove-answer {

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EduBloom - Quizzes</title>
+    <title>EduBloom - Teacher Quizzes</title>
     <script src="../../../js/sidebar.js"></script>
 
     <link rel="stylesheet" href="../../../css/style.css" />
@@ -30,50 +30,51 @@
     <div class="container">
       <div id="sidebar-container"></div>
       <main id="content">
-        <div class="header-row">
-          <h2 class="card-title">
-            <i class="fas fa-chevron-left" id="back-btn"></i>
-            <span id="subject-name">Quiz</span>
-          </h2>
-          <button
-            id="add-question-btn"
-            class="btn-primary"
-            style="display: none"
-          >
-            <i class="fas fa-plus"></i> Add Question
-          </button>
-        </div>
+        <h2 class="header-row">
+          <div class="card-title">
+            <i
+              class="fas fa-chevron-left"
+              id="back-btn"
+              onclick="window.location.href = './quiz.html';"
+            ></i>
+            <span id="subject-name">Quizzes</span>
+          </div>
+        </h2>
 
-        <div id="subjects-container" class="questions-list"></div>
+        <div id="subjects-container" class="subjects-grid">
+          <!-- Quiz cards rendered dynamically -->
+        </div>
       </main>
     </div>
 
-    <!-- Modal -->
-    <div id="question-modal" class="modal">
+    <!-- Modal for creating/editing quiz -->
+    <div id="subject-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h2 id="modal-title">Add Question</h2>
+          <h2 id="modal-title">Add Quiz</h2>
           <button class="modal-close" id="modal-close">&times;</button>
         </div>
         <div class="modal-body">
           <input
             type="text"
-            id="question-input"
-            placeholder="Enter question text"
+            id="subject-input"
+            placeholder="Enter quiz title"
           />
-
-          <div id="answers-container"></div>
-          <button id="add-answer-btn">+ Add Option</button>
+          <div class="publish-toggle">
+            <label class="checkbox-container">
+              <input type="checkbox" id="publish-checkbox" />
+              Publish to students
+            </label>
+          </div>
         </div>
         <div class="modal-footer">
-          <button id="save-btn" class="btn-primary">Save</button>
-          <button id="save-next-btn" class="btn-primary">Save & Next</button>
+          <button id="save-subject-btn" class="btn-primary">Save</button>
         </div>
       </div>
     </div>
 
     <script src="../../../js/topbar.js"></script>
-    <script src="../../../js/student/quiz/questions.js"></script>
+    <script src="../../../js/teacher/quiz/quiz-set.js"></script>
   </body>
 </html>
 
