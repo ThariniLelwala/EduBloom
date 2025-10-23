@@ -218,8 +218,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     testModal.style.display = "flex";
   }
 
-  function deleteTest(testId) {
-    if (confirm("Are you sure you want to delete this test?")) {
+  async function deleteTest(testId) {
+    const confirmed = await showConfirmation(
+      "Are you sure you want to delete this test?",
+      "Delete Test"
+    );
+    if (confirmed) {
       currentSubject.tests = currentSubject.tests.filter(
         (t) => t.id !== testId
       );

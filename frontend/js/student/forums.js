@@ -254,7 +254,7 @@ function approveTopic(topicId) {
 }
 
 // Add click handler for pending topics (simulate approval)
-document.addEventListener("click", function (e) {
+document.addEventListener("click", async function (e) {
   if (e.target.closest(".pending-topic-item")) {
     const topicItem = e.target.closest(".pending-topic-item");
     const topicTitle = topicItem.querySelector(
@@ -262,11 +262,11 @@ document.addEventListener("click", function (e) {
     ).textContent;
 
     // For demo purposes, show approval option
-    if (
-      confirm(
-        `Approve topic: "${topicTitle}"? (Demo - In real app, only admins can do this)`
-      )
-    ) {
+    const confirmed = await showConfirmation(
+      `Approve topic: "${topicTitle}"? (Demo - In real app, only admins can do this)`,
+      "Approve Topic"
+    );
+    if (confirmed) {
       // In real app, this would be done by admin only
       const pendingTopics = JSON.parse(
         localStorage.getItem("pendingTopics") || "[]"

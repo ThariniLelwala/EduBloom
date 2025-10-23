@@ -13,34 +13,81 @@ subjectHeading.textContent = quizName;
 let currentQuestions = [];
 let editingId = null; // Track which question is being edited
 
-function loadQuestions() {
-  const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-  const subjects = teacherSubjects ? JSON.parse(teacherSubjects) : [];
+async function loadQuestions() {
+  // Check if this is a shared quiz from JSON or teacher-created
+  const isSharedQuiz = quizId <= 399; // Assuming quiz.json quiz IDs are <= 399
 
-  const subject = subjects.find((s) => s.id === subjectId);
-  if (!subject) return;
+  if (isSharedQuiz) {
+    // Check if teacher has modified this shared quiz
+    const modifiedQuizzes =
+      localStorage.getItem("teacher_modified_quizzes") || "{}";
+    const quizzes = JSON.parse(modifiedQuizzes);
 
-  const quiz = subject.quizzes.find((q) => q.id === quizId);
-  if (!quiz) return;
+    if (quizzes[quizId]) {
+      // Load modified version
+      currentQuestions = quizzes[quizId].questions || [];
+    } else {
+      // Load from JSON file for shared quizzes
+      const res = await fetch("/data/quiz.json");
+      const data = await res.json();
 
-  currentQuestions = quiz.questions || [];
+      const subject = data.subjects.find((s) => s.id === subjectId);
+      if (!subject) return;
+
+      const quiz = subject.quizzes.find((q) => q.id === quizId);
+      if (!quiz) return;
+
+      currentQuestions = quiz.questions || [];
+    }
+  } else {
+    // Load from teacher localStorage for teacher-created quizzes
+    const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
+    const subjects = teacherSubjects ? JSON.parse(teacherSubjects) : [];
+
+    const subject = subjects.find((s) => s.id === subjectId);
+    if (!subject) return;
+
+    const quiz = subject.quizzes.find((q) => q.id === quizId);
+    if (!quiz) return;
+
+    currentQuestions = quiz.questions || [];
+  }
+
+  // Show add question button for all quizzes in teacher view
+  const addBtn = document.getElementById("add-question-btn");
+  if (addBtn) {
+    addBtn.style.display = "block";
+  }
+
   renderQuestions();
 }
 
 function saveQuestions() {
-  const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-  let subjects = teacherSubjects ? JSON.parse(teacherSubjects) : [];
+  const isSharedQuiz = quizId <= 399; // Assuming quiz.json quiz IDs are <= 399
 
-  const subjectIndex = subjects.findIndex((s) => s.id === subjectId);
-  if (subjectIndex === -1) return;
+  if (isSharedQuiz) {
+    // Save modifications to shared quizzes in localStorage
+    const modifiedQuizzes =
+      localStorage.getItem("teacher_modified_quizzes") || "{}";
+    const quizzes = JSON.parse(modifiedQuizzes);
+    quizzes[quizId] = { questions: currentQuestions };
+    localStorage.setItem("teacher_modified_quizzes", JSON.stringify(quizzes));
+  } else {
+    // Save teacher-created quizzes normally
+    const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
+    let subjects = teacherSubjects ? JSON.parse(teacherSubjects) : [];
 
-  const quizIndex = subjects[subjectIndex].quizzes.findIndex(
-    (q) => q.id === quizId
-  );
-  if (quizIndex === -1) return;
+    const subjectIndex = subjects.findIndex((s) => s.id === subjectId);
+    if (subjectIndex === -1) return;
 
-  subjects[subjectIndex].quizzes[quizIndex].questions = currentQuestions;
-  localStorage.setItem("teacher_quiz_subjects", JSON.stringify(subjects));
+    const quizIndex = subjects[subjectIndex].quizzes.findIndex(
+      (q) => q.id === quizId
+    );
+    if (quizIndex === -1) return;
+
+    subjects[subjectIndex].quizzes[quizIndex].questions = currentQuestions;
+    localStorage.setItem("teacher_quiz_subjects", JSON.stringify(subjects));
+  }
 }
 
 function renderQuestions() {
@@ -56,7 +103,8 @@ function renderQuestions() {
       <div class="question-actions">
         <i class="edit-btn fas fa-edit icon-btn"></i>
         <i class="delete-btn fas fa-trash icon-btn"></i>
-      </div></div>
+      </div>
+    </div>
       <ul class="answers">
         ${q.answers
           .map(
@@ -73,9 +121,9 @@ function renderQuestions() {
     });
 
     // Delete button with confirmation showing question text
-    card.querySelector(".delete-btn").addEventListener("click", () => {
+    card.querySelector(".delete-btn").addEventListener("click", async () => {
       if (
-        confirm(
+        await showConfirmation(
           `Are you sure you want to delete this question?\n\n"${q.question}"`
         )
       ) {

@@ -566,7 +566,11 @@ async function handleToggleFileVisibility(fileId, isPublic) {
  * Handle delete file
  */
 async function handleDeleteFile(fileId) {
-  if (!confirm("Are you sure you want to delete this file?")) {
+  const confirmed = await showConfirmation(
+    "Are you sure you want to delete this file?",
+    "Delete File"
+  );
+  if (!confirmed) {
     return;
   }
 
@@ -603,9 +607,11 @@ async function handleDeleteFile(fileId) {
  * Handle delete topic
  */
 async function handleDeleteTopic() {
-  if (
-    !confirm("Are you sure you want to delete this topic and all its files?")
-  ) {
+  const confirmed = await showConfirmation(
+    "Are you sure you want to delete this topic and all its files?",
+    "Delete Topic"
+  );
+  if (!confirmed) {
     return;
   }
 

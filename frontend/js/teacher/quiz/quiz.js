@@ -9,16 +9,37 @@ document.addEventListener("DOMContentLoaded", () => {
   let subjects = [];
   let editId = null;
 
-  // Load subjects from localStorage (teacher-specific)
-  function loadSubjects() {
-    const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-    subjects = teacherSubjects ? JSON.parse(teacherSubjects) : [];
-    renderSubjects();
+  // Load subjects from quiz.json (shared with students)
+  async function loadSubjects() {
+    try {
+      const res = await fetch("/data/quiz.json");
+      const data = await res.json();
+      subjects = data.subjects || [];
+
+      // Add any teacher-specific subjects from localStorage
+      const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
+      if (teacherSubjects) {
+        const teacherData = JSON.parse(teacherSubjects);
+        subjects = [...subjects, ...teacherData];
+      }
+
+      renderSubjects();
+    } catch (error) {
+      console.error("Error loading subjects:", error);
+      // Fallback to localStorage if quiz.json fails
+      const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
+      subjects = teacherSubjects ? JSON.parse(teacherSubjects) : [];
+      renderSubjects();
+    }
   }
 
-  // Save subjects to localStorage
+  // Save subjects to localStorage (only teacher-created subjects)
   function saveSubjects() {
-    localStorage.setItem("teacher_quiz_subjects", JSON.stringify(subjects));
+    const teacherSubjects = subjects.filter((subj) => subj.id > 3);
+    localStorage.setItem(
+      "teacher_quiz_subjects",
+      JSON.stringify(teacherSubjects)
+    );
   }
 
   function renderSubjects() {
@@ -27,6 +48,10 @@ document.addEventListener("DOMContentLoaded", () => {
     subjects.forEach((subj) => {
       const card = document.createElement("div");
       card.classList.add("subject-card");
+
+      // Check if this is a shared subject from quiz.json or teacher-created
+      const isSharedSubject = subj.id <= 3; // Assuming quiz.json subjects have IDs 1, 2, 3
+
       card.innerHTML = `
         <div class="subject-header">
           <i class="fas fa-folder"></i>
@@ -45,13 +70,20 @@ document.addEventListener("DOMContentLoaded", () => {
       const dots = card.querySelector(".dots");
       const dropdown = card.querySelector(".dropdown");
 
+      // Toggle dropdown
       dots.addEventListener("click", (e) => {
         e.stopPropagation();
         dropdown.style.display =
           dropdown.style.display === "block" ? "none" : "block";
       });
 
+      // Edit subject
       dropdown.querySelector(".edit").addEventListener("click", () => {
+        if (isSharedSubject) {
+          alert("Cannot edit shared subjects. Create a new subject instead.");
+          dropdown.style.display = "none";
+          return;
+        }
         editId = subj.id;
         modalTitle.textContent = "Edit Subject";
         input.value = subj.name;
@@ -59,8 +91,18 @@ document.addEventListener("DOMContentLoaded", () => {
         dropdown.style.display = "none";
       });
 
-      dropdown.querySelector(".delete").addEventListener("click", () => {
-        if (confirm(`Delete "${subj.name}" and all its quizzes?`)) {
+      // Delete subject
+      dropdown.querySelector(".delete").addEventListener("click", async () => {
+        if (isSharedSubject) {
+          alert("Cannot delete shared subjects.");
+          dropdown.style.display = "none";
+          return;
+        }
+        const confirmed = await showConfirmation(
+          `Delete "${subj.name}" and all its quizzes?`,
+          "Delete Subject"
+        );
+        if (confirmed) {
           subjects = subjects.filter((s) => s.id !== subj.id);
           saveSubjects();
           renderSubjects();
@@ -68,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
         dropdown.style.display = "none";
       });
 
-      // Navigate to quiz set page
+      // Navigate to quiz set page (click anywhere except dropdown)
       card.addEventListener("click", (e) => {
         if (e.target.closest(".dots") || e.target.closest(".dropdown")) return;
         window.location.href = `quiz-set.html?subjectId=${
@@ -96,6 +138,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!name) return;
 
     if (editId) {
+      // Check if trying to edit a shared subject
+      if (editId <= 3) {
+        alert("Cannot edit shared subjects. Create a new subject instead.");
+        modal.style.display = "none";
+        return;
+      }
       const subj = subjects.find((s) => s.id === editId);
       if (subj) subj.name = name;
     } else {
@@ -108,6 +156,14 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   closeBtn.addEventListener("click", () => (modal.style.display = "none"));
+
+  document.addEventListener("click", () => {
+    document
+      .querySelectorAll(".dropdown")
+      .forEach((dd) => (dd.style.display = "none"));
+  });
+
+  loadSubjects();
 
   document.addEventListener("click", () => {
     document

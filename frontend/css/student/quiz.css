@@ -32,6 +32,10 @@
   color: var(--color-text);
 }
 
+.subject-card:hover .subject-header i {
+  color: var(--color-text);
+}
+
 /* Card header with icon and title */
 .subject-card .subject-header {
   display: flex;
@@ -48,7 +52,36 @@
   font-size: 18px;
 }
 
+/* Status icon in header */
+.subject-card .subject-topics {
+  margin-top: 8px;
+  color: var(--color-white);
+  opacity: 0.8;
+  font-size: 12px;
+}
+
 /* Publish status indicator */
+.subject-card .publish-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.subject-card .publish-status.published {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+}
+
+.subject-card .publish-status.draft {
+  background: rgba(255, 152, 0, 0.2);
+  color: #ff9800;
+}
 .publish-status {
   font-size: 12px;
   padding: 2px 6px;
@@ -219,29 +252,19 @@
   width: max-content;
 }
 
-#add-answer-btn {
-  margin-top: 10px;
-  margin-left: 24px;
-  margin-right: 22px !important;
+.btn-secondary {
   background: transparent;
   border: 1px dashed rgba(255, 255, 255, 0.5);
   padding: 8px;
   border-radius: 8px;
   color: var(--color-white);
   cursor: pointer;
-  /* width: 100%; */
-  flex-grow: 1;
 }
 
 .btn-secondary.cancel-btn {
-  background: transparent;
-  border: 1px dashed rgba(255, 255, 255, 0.5);
-  padding: 8px;
   margin-top: 8px;
   margin-bottom: 8px;
   margin-right: 0px !important;
-  color: var(--color-white);
-  cursor: pointer;
   width: 100%;
   flex-grow: 1;
 }

@@ -92,8 +92,12 @@ document.addEventListener("DOMContentLoaded", () => {
         dropdown.style.display = "none";
       });
 
-      dropdown.querySelector(".delete").addEventListener("click", () => {
-        if (confirm(`Delete "${subj.name}" and all its quizzes?`)) {
+      dropdown.querySelector(".delete").addEventListener("click", async () => {
+        const confirmed = await showConfirmation(
+          `Delete "${subj.name}" and all its quizzes?`,
+          "Delete Subject"
+        );
+        if (confirmed) {
           subjects = subjects.filter((s) => s.id !== subj.id);
           renderSubjects();
         }

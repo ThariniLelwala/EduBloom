@@ -24,13 +24,17 @@ class TeacherNotesManager {
 
   setupEventListeners() {
     // Subject modal
-    document.getElementById("createSubjectBtn")?.addEventListener("click", () => {
-      this.openCreateSubjectModal();
-    });
+    document
+      .getElementById("createSubjectBtn")
+      ?.addEventListener("click", () => {
+        this.openCreateSubjectModal();
+      });
 
-    document.getElementById("submitSubjectBtn")?.addEventListener("click", () => {
-      this.handleCreateSubject();
-    });
+    document
+      .getElementById("submitSubjectBtn")
+      ?.addEventListener("click", () => {
+        this.handleCreateSubject();
+      });
 
     // Note modal
     document.getElementById("createNoteBtn")?.addEventListener("click", () => {
@@ -46,24 +50,31 @@ class TeacherNotesManager {
     });
 
     // File upload options (in files modal)
-    document.getElementById("uploadLocalFilesBtn")?.addEventListener("click", () => {
-      document.getElementById("noteFilesInput").click();
-    });
+    document
+      .getElementById("uploadLocalFilesBtn")
+      ?.addEventListener("click", () => {
+        document.getElementById("noteFilesInput").click();
+      });
 
-    document.getElementById("uploadGoogleDriveBtn")?.addEventListener("click", () => {
-      this.handleConnectAndUploadGoogleDrive();
-    });
+    document
+      .getElementById("uploadGoogleDriveBtn")
+      ?.addEventListener("click", () => {
+        this.handleConnectAndUploadGoogleDrive();
+      });
 
     // File input change handler
     const fileInput = document.getElementById("noteFilesInput");
     if (fileInput) {
-      fileInput.addEventListener("change", (e) => this.handleLocalFileUpload(e));
+      fileInput.addEventListener("change", (e) =>
+        this.handleLocalFileUpload(e)
+      );
     }
 
     // Close modals
     document.querySelectorAll(".modal-close").forEach((btn) => {
       btn.addEventListener("click", (e) => {
-        e.target.closest(".modal-content").closest(".modal").style.display = "none";
+        e.target.closest(".modal-content").closest(".modal").style.display =
+          "none";
       });
     });
   }
@@ -72,14 +83,25 @@ class TeacherNotesManager {
   async loadSubjects() {
     try {
       if (!this.authToken) {
-        console.error("❌ No auth token found. User must be logged in as teacher first.");
-        console.log("authToken from localStorage:", localStorage.getItem("authToken"));
-        console.log("userRole from localStorage:", localStorage.getItem("userRole"));
+        console.error(
+          "❌ No auth token found. User must be logged in as teacher first."
+        );
+        console.log(
+          "authToken from localStorage:",
+          localStorage.getItem("authToken")
+        );
+        console.log(
+          "userRole from localStorage:",
+          localStorage.getItem("userRole")
+        );
         return;
       }
 
-      console.log("🔄 Loading subjects with token:", this.authToken.substring(0, 20) + "...");
-      
+      console.log(
+        "🔄 Loading subjects with token:",
+        this.authToken.substring(0, 20) + "..."
+      );
+
       const response = await fetch("/api/teacher/subjects", {
         method: "GET",
         headers: {
@@ -89,7 +111,11 @@ class TeacherNotesManager {
       });
 
       if (!response.ok) {
-        console.error("Failed to load subjects:", response.status, response.statusText);
+        console.error(
+          "Failed to load subjects:",
+          response.status,
+          response.statusText
+        );
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
@@ -119,20 +145,32 @@ class TeacherNotesManager {
         <div class="subject-header">
           <h3 class="subject-title">${subject.name}</h3>
           <div class="subject-actions">
-            <button class="icon-btn edit-subject-btn" title="Edit" data-id="${subject.id}">
+            <button class="icon-btn edit-subject-btn" title="Edit" data-id="${
+              subject.id
+            }">
               ✎
             </button>
-            <button class="icon-btn delete-subject-btn" title="Delete" data-id="${subject.id}">
+            <button class="icon-btn delete-subject-btn" title="Delete" data-id="${
+              subject.id
+            }">
               🗑
             </button>
           </div>
         </div>
-        <p class="subject-description">${subject.description || "No description"}</p>
+        <p class="subject-description">${
+          subject.description || "No description"
+        }</p>
         <div class="subject-meta">
-          <span class="note-count">Notes: <span id="note-count-${subject.id}">0</span></span>
-          <span class="last-updated">Updated: ${new Date(subject.updated_at).toLocaleDateString()}</span>
+          <span class="note-count">Notes: <span id="note-count-${
+            subject.id
+          }">0</span></span>
+          <span class="last-updated">Updated: ${new Date(
+            subject.updated_at
+          ).toLocaleDateString()}</span>
         </div>
-        <button class="view-notes-btn" data-id="${subject.id}">View Notes →</button>
+        <button class="view-notes-btn" data-id="${
+          subject.id
+        }">View Notes →</button>
       </div>
     `
       )
@@ -257,20 +295,34 @@ class TeacherNotesManager {
         <div class="note-header">
           <h4 class="note-title">${note.title}</h4>
           <div class="note-actions">
-            <span class="visibility-badge visibility-${note.visibility}">${note.visibility}</span>
-            <button class="icon-btn edit-note-btn" title="Edit" data-id="${note.id}">
+            <span class="visibility-badge visibility-${note.visibility}">${
+          note.visibility
+        }</span>
+            <button class="icon-btn edit-note-btn" title="Edit" data-id="${
+              note.id
+            }">
               ✎
             </button>
-            <button class="icon-btn delete-note-btn" title="Delete" data-id="${note.id}">
+            <button class="icon-btn delete-note-btn" title="Delete" data-id="${
+              note.id
+            }">
               🗑
             </button>
           </div>
         </div>
-        ${note.description ? `<p class="note-description">${note.description}</p>` : ""}
+        ${
+          note.description
+            ? `<p class="note-description">${note.description}</p>`
+            : ""
+        }
         <div class="note-meta">
-          <span class="created-date">${new Date(note.created_at).toLocaleDateString()}</span>
+          <span class="created-date">${new Date(
+            note.created_at
+          ).toLocaleDateString()}</span>
         </div>
-        <button class="view-files-btn" data-id="${note.id}">View Files →</button>
+        <button class="view-files-btn" data-id="${
+          note.id
+        }">View Files →</button>
       </div>
     `
       )
@@ -334,7 +386,8 @@ class TeacherNotesManager {
 
     const title = document.getElementById("noteTitle")?.value;
     const description = document.getElementById("noteDescription")?.value;
-    const visibility = document.getElementById("noteVisibility")?.value || "private";
+    const visibility =
+      document.getElementById("noteVisibility")?.value || "private";
 
     if (!title) {
       alert("Please enter a note title");
@@ -374,7 +427,11 @@ class TeacherNotesManager {
   }
 
   async handleDeleteSubject(subjectId) {
-    if (!confirm("Are you sure you want to delete this subject and all its notes?")) {
+    const confirmed = await showConfirmation(
+      "Are you sure you want to delete this subject and all its notes?",
+      "Delete Subject"
+    );
+    if (!confirmed) {
       return;
     }
 
@@ -401,7 +458,11 @@ class TeacherNotesManager {
 
   async handleDeleteNote(noteId) {
     if (!this.selectedSubject) return;
-    if (!confirm("Are you sure you want to delete this note?")) {
+    const confirmed = await showConfirmation(
+      "Are you sure you want to delete this note?",
+      "Delete Note"
+    );
+    if (!confirmed) {
       return;
     }
 
@@ -435,17 +496,23 @@ class TeacherNotesManager {
     if (typeof window.GOOGLE_DRIVE_CONFIG === "undefined") {
       this.googleDriveRetries++;
       if (this.googleDriveRetries >= this.maxGoogleDriveRetries) {
-        console.warn("Google Drive config failed to load after retries. Google Drive features will be disabled.");
+        console.warn(
+          "Google Drive config failed to load after retries. Google Drive features will be disabled."
+        );
         return;
       }
-      console.debug(`Google Drive config not yet loaded. Retrying... (${this.googleDriveRetries}/${this.maxGoogleDriveRetries})`);
+      console.debug(
+        `Google Drive config not yet loaded. Retrying... (${this.googleDriveRetries}/${this.maxGoogleDriveRetries})`
+      );
       setTimeout(() => this.initGoogleDrive(), 500);
       return;
     }
 
     const config = this.getGoogleDriveConfig();
     if (!config.clientId) {
-      console.warn("Google Drive CLIENT_ID not configured. Google Drive features will be disabled.");
+      console.warn(
+        "Google Drive CLIENT_ID not configured. Google Drive features will be disabled."
+      );
       return;
     }
 
@@ -457,16 +524,14 @@ class TeacherNotesManager {
   getGoogleDriveConfig() {
     // Get from window.GOOGLE_DRIVE_CONFIG (loaded from googleDrive.config.js)
     const config = window.GOOGLE_DRIVE_CONFIG || {};
-    
+
     return {
       clientId: config.CLIENT_ID || "",
       apiKey: config.API_KEY || "",
       discoveryDocs: config.DISCOVERY_DOCS || [
         "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest",
       ],
-      scopes: config.SCOPES || [
-        "https://www.googleapis.com/auth/drive.file",
-      ],
+      scopes: config.SCOPES || ["https://www.googleapis.com/auth/drive.file"],
     };
   }
 
@@ -516,12 +581,14 @@ class TeacherNotesManager {
       const user = gapi.auth2.getAuthInstance().currentUser.get();
       if (user.isSignedIn()) {
         this.googleDriveConnected = true;
-        document.getElementById("connectGoogleDriveBtn").textContent = "✓ Connected";
+        document.getElementById("connectGoogleDriveBtn").textContent =
+          "✓ Connected";
         document.getElementById("connectGoogleDriveBtn").disabled = true;
       } else {
         await gapi.auth2.getAuthInstance().signIn();
         this.googleDriveConnected = true;
-        document.getElementById("connectGoogleDriveBtn").textContent = "✓ Connected";
+        document.getElementById("connectGoogleDriveBtn").textContent =
+          "✓ Connected";
         document.getElementById("connectGoogleDriveBtn").disabled = true;
       }
     } catch (error) {
@@ -669,7 +736,11 @@ class TeacherNotesManager {
 
   async handleDeleteFile(noteId, fileId) {
     if (!this.selectedSubject) return;
-    if (!confirm("Delete this file?")) return;
+    const confirmed = await showConfirmation(
+      "Delete this file?",
+      "Delete File"
+    );
+    if (!confirmed) return;
 
     try {
       const response = await fetch(
@@ -754,7 +825,9 @@ class TeacherNotesManager {
 
     const config = this.getGoogleDriveConfig();
     if (!config.clientId) {
-      alert("⚠️ Google Drive is not configured. Please configure it first in settings.");
+      alert(
+        "⚠️ Google Drive is not configured. Please configure it first in settings."
+      );
       return;
     }
 
@@ -768,7 +841,9 @@ class TeacherNotesManager {
   }
 
   initiateGoogleDriveUpload() {
-    alert("🔄 Initializing Google Drive upload...\n\nThis feature will allow you to upload files directly to Google Drive.");
+    alert(
+      "🔄 Initializing Google Drive upload...\n\nThis feature will allow you to upload files directly to Google Drive."
+    );
     // Implementation depends on Google Drive API setup
     // For now, this is a placeholder for Google Drive integration
   }

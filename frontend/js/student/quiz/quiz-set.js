@@ -101,13 +101,15 @@ document.addEventListener("DOMContentLoaded", async () => {
           dropdown.style.display = "none";
         });
 
-        dropdown.querySelector(".delete").addEventListener("click", () => {
-          if (confirm(`Delete "${quiz.name}"?`)) {
-            quizzes = quizzes.filter((q) => q.id !== quiz.id);
-            renderQuizzes();
-          }
-          dropdown.style.display = "none";
-        });
+        dropdown
+          .querySelector(".delete")
+          .addEventListener("click", async () => {
+            if (await showConfirmation(`Delete "${quiz.name}"?`)) {
+              quizzes = quizzes.filter((q) => q.id !== quiz.id);
+              renderQuizzes();
+            }
+            dropdown.style.display = "none";
+          });
       }
 
       // Navigate to questions page
@@ -160,7 +162,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       .forEach((dd) => (dd.style.display = "none"));
   });
 
-  renderQuizzes();
+  loadQuizzes();
 
   // ---------------- Take Quiz Logic ----------------
   const takeQuizBtn = document.getElementById("take-quiz-btn");

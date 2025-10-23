@@ -6,7 +6,7 @@
       "quizzes": [
         {
           "id": 101,
-          "name": "Geometry",
+          "name": "Geometry Basics",
           "questions": [
             {
               "id": 1,
@@ -19,18 +19,96 @@
               "question": "A square has how many sides?",
               "answers": ["3", "4", "5", "6"],
               "correct": "4"
+            },
+            {
+              "id": 3,
+              "question": "What is the area of a circle with radius 5?",
+              "answers": ["25π", "10π", "50π", "100π"],
+              "correct": "25π"
+            },
+            {
+              "id": 4,
+              "question": "How many sides does a hexagon have?",
+              "answers": ["5", "6", "7", "8"],
+              "correct": "6"
+            },
+            {
+              "id": 5,
+              "question": "What is the perimeter of a rectangle with length 8 and width 4?",
+              "answers": ["12", "24", "32", "64"],
+              "correct": "24"
             }
           ]
         },
         {
           "id": 102,
-          "name": "Algebra",
+          "name": "Algebra Fundamentals",
           "questions": [
             {
               "id": 1,
               "question": "Solve: 2x + 3 = 7",
               "answers": ["x=1", "x=2", "x=3", "x=4"],
               "correct": "x=2"
+            },
+            {
+              "id": 2,
+              "question": "What is the value of x in 5x - 10 = 0?",
+              "answers": ["x=1", "x=2", "x=3", "x=4"],
+              "correct": "x=2"
+            },
+            {
+              "id": 3,
+              "question": "Simplify: 3x + 2x",
+              "answers": ["5", "5x", "6x", "x"],
+              "correct": "5x"
+            },
+            {
+              "id": 4,
+              "question": "Solve: x² = 16",
+              "answers": ["x=2", "x=4", "x=4 or x=-4", "x=8"],
+              "correct": "x=4 or x=-4"
+            },
+            {
+              "id": 5,
+              "question": "What is the slope of the line y = 2x + 3?",
+              "answers": ["1", "2", "3", "6"],
+              "correct": "2"
+            }
+          ]
+        },
+        {
+          "id": 103,
+          "name": "Calculus Basics",
+          "questions": [
+            {
+              "id": 1,
+              "question": "What is the derivative of x²?",
+              "answers": ["x", "2x", "x²", "2"],
+              "correct": "2x"
+            },
+            {
+              "id": 2,
+              "question": "What is the integral of 2x?",
+              "answers": ["x²", "x² + C", "2", "4x"],
+              "correct": "x² + C"
+            },
+            {
+              "id": 3,
+              "question": "Find the limit of (x²-1)/(x-1) as x approaches 1",
+              "answers": ["0", "1", "2", "undefined"],
+              "correct": "2"
+            },
+            {
+              "id": 4,
+              "question": "What is the derivative of sin(x)?",
+              "answers": ["cos(x)", "-cos(x)", "sin(x)", "tan(x)"],
+              "correct": "cos(x)"
+            },
+            {
+              "id": 5,
+              "question": "What is the second derivative of x³?",
+              "answers": ["3x", "6x", "3x²", "9x²"],
+              "correct": "6x"
             }
           ]
         }
@@ -42,7 +120,7 @@
       "quizzes": [
         {
           "id": 201,
-          "name": "Physics",
+          "name": "Physics Concepts",
           "questions": [
             {
               "id": 1,
@@ -54,6 +132,132 @@
                 "3,000 km/s"
               ],
               "correct": "300,000 km/s"
+            },
+            {
+              "id": 2,
+              "question": "What is Newton's first law of motion?",
+              "answers": [
+                "F = ma",
+                "Objects in motion stay in motion unless acted upon by force",
+                "For every action, there is a reaction",
+                "Energy equals mass times velocity squared"
+              ],
+              "correct": "Objects in motion stay in motion unless acted upon by force"
+            },
+            {
+              "id": 3,
+              "question": "What is the SI unit of force?",
+              "answers": ["Joule", "Newton", "Watt", "Pascal"],
+              "correct": "Newton"
+            },
+            {
+              "id": 4,
+              "question": "What is acceleration due to gravity on Earth?",
+              "answers": ["5 m/s²", "9.8 m/s²", "15 m/s²", "20 m/s²"],
+              "correct": "9.8 m/s²"
+            },
+            {
+              "id": 5,
+              "question": "What type of energy does a moving object have?",
+              "answers": [
+                "Potential energy",
+                "Kinetic energy",
+                "Thermal energy",
+                "Chemical energy"
+              ],
+              "correct": "Kinetic energy"
+            }
+          ]
+        },
+        {
+          "id": 202,
+          "name": "Chemistry Essentials",
+          "questions": [
+            {
+              "id": 1,
+              "question": "What is the chemical formula for water?",
+              "answers": ["H₂O₂", "H₂O", "HO", "H₃O"],
+              "correct": "H₂O"
+            },
+            {
+              "id": 2,
+              "question": "What is the atomic number of Oxygen?",
+              "answers": ["6", "7", "8", "10"],
+              "correct": "8"
+            },
+            {
+              "id": 3,
+              "question": "What is pH scale used to measure?",
+              "answers": [
+                "Temperature",
+                "Acidity or alkalinity",
+                "Density",
+                "Pressure"
+              ],
+              "correct": "Acidity or alkalinity"
+            },
+            {
+              "id": 4,
+              "question": "What is the most abundant element in the atmosphere?",
+              "answers": ["Oxygen", "Carbon", "Nitrogen", "Hydrogen"],
+              "correct": "Nitrogen"
+            },
+            {
+              "id": 5,
+              "question": "What type of bond involves sharing of electrons?",
+              "answers": [
+                "Ionic bond",
+                "Covalent bond",
+                "Metallic bond",
+                "Hydrogen bond"
+              ],
+              "correct": "Covalent bond"
+            }
+          ]
+        },
+        {
+          "id": 203,
+          "name": "Biology Fundamentals",
+          "questions": [
+            {
+              "id": 1,
+              "question": "What is the powerhouse of the cell?",
+              "answers": ["Nucleus", "Mitochondria", "Ribosome", "Lysosome"],
+              "correct": "Mitochondria"
+            },
+            {
+              "id": 2,
+              "question": "What is the process by which plants make their own food?",
+              "answers": [
+                "Respiration",
+                "Photosynthesis",
+                "Fermentation",
+                "Digestion"
+              ],
+              "correct": "Photosynthesis"
+            },
+            {
+              "id": 3,
+              "question": "How many chromosomes do humans have?",
+              "answers": ["23", "46", "48", "52"],
+              "correct": "46"
+            },
+            {
+              "id": 4,
+              "question": "What is the basic unit of life?",
+              "answers": ["Atom", "Molecule", "Cell", "Tissue"],
+              "correct": "Cell"
+            },
+            {
+              "id": 5,
+              "question": "What is the main function of red blood cells?",
+              "answers": [
+                "Fight infections",
+                "Transport oxygen",
+                "Produce hormones",
+                "Regulate temperature"
+              ],
+              "correct": "Transport oxygen"
             }
           ]
         }
@@ -65,7 +269,7 @@
       "quizzes": [
         {
           "id": 301,
-          "name": "World History",
+          "name": "World History Overview",
           "questions": [
             {
               "id": 1,
@@ -77,6 +281,122 @@
                 "John Adams"
               ],
               "correct": "George Washington"
+            },
+            {
+              "id": 2,
+              "question": "In what year did World War II end?",
+              "answers": ["1943", "1944", "1945", "1946"],
+              "correct": "1945"
+            },
+            {
+              "id": 3,
+              "question": "Who was the first Emperor of Rome?",
+              "answers": ["Julius Caesar", "Nero", "Augustus", "Hadrian"],
+              "correct": "Augustus"
+            },
+            {
+              "id": 4,
+              "question": "In what year did the Berlin Wall fall?",
+              "answers": ["1987", "1988", "1989", "1990"],
+              "correct": "1989"
+            },
+            {
+              "id": 5,
+              "question": "Who was the first President of India?",
+              "answers": [
+                "Jawaharlal Nehru",
+                "Dr. Rajendra Prasad",
+                "Sardar Vallabhbhai Patel",
+                "Mahatma Gandhi"
+              ],
+              "correct": "Dr. Rajendra Prasad"
+            }
+          ]
+        },
+        {
+          "id": 302,
+          "name": "Ancient Civilizations",
+          "questions": [
+            {
+              "id": 1,
+              "question": "Which civilization built the Pyramids?",
+              "answers": [
+                "Mesopotamian",
+                "Egyptian",
+                "Indus Valley",
+                "Chinese"
+              ],
+              "correct": "Egyptian"
+            },
+            {
+              "id": 2,
+              "question": "What was the capital of the Roman Empire?",
+              "answers": ["Athens", "Alexandria", "Rome", "Constantinople"],
+              "correct": "Rome"
+            },
+            {
+              "id": 3,
+              "question": "Which river was the Indus Valley civilization centered around?",
+              "answers": ["Nile", "Tigris", "Indus", "Ganges"],
+              "correct": "Indus"
+            },
+            {
+              "id": 4,
+              "question": "What was the Great Wall of China built to protect against?",
+              "answers": ["Floods", "Invasions", "Earthquakes", "Tsunamis"],
+              "correct": "Invasions"
+            },
+            {
+              "id": 5,
+              "question": "Which ancient philosopher was the teacher of Alexander the Great?",
+              "answers": ["Plato", "Socrates", "Aristotle", "Pythagoras"],
+              "correct": "Aristotle"
+            }
+          ]
+        },
+        {
+          "id": 303,
+          "name": "Modern History",
+          "questions": [
+            {
+              "id": 1,
+              "question": "In what year did India gain independence?",
+              "answers": ["1945", "1946", "1947", "1948"],
+              "correct": "1947"
+            },
+            {
+              "id": 2,
+              "question": "Who was the first Prime Minister of India?",
+              "answers": [
+                "Sardar Patel",
+                "Jawaharlal Nehru",
+                "Lal Bahadur Shastri",
+                "Indira Gandhi"
+              ],
+              "correct": "Jawaharlal Nehru"
+            },
+            {
+              "id": 3,
+              "question": "In what year did the American Civil War end?",
+              "answers": ["1862", "1863", "1864", "1865"],
+              "correct": "1865"
+            },
+            {
+              "id": 4,
+              "question": "Who was the first President of South Africa post-apartheid?",
+              "answers": [
+                "Nelson Mandela",
+                "Thabo Mbeki",
+                "F.W. de Klerk",
+                "Cyril Ramaphosa"
+              ],
+              "correct": "Nelson Mandela"
+            },
+            {
+              "id": 5,
+              "question": "In what year did the Russian Revolution occur?",
+              "answers": ["1915", "1916", "1917", "1918"],
+              "correct": "1917"
             }
           ]
         }

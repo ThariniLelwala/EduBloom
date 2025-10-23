@@ -168,8 +168,12 @@ function displaySubjects(subjects) {
     });
 
     // Delete subject
-    dropdown.querySelector(".delete").addEventListener("click", () => {
-      if (confirm(`Delete "${subject.name}" and all its topics?`)) {
+    dropdown.querySelector(".delete").addEventListener("click", async () => {
+      const confirmed = await showConfirmation(
+        `Delete "${subject.name}" and all its topics?`,
+        "Delete Subject"
+      );
+      if (confirmed) {
         deleteSubject(subject.id);
       }
       dropdown.style.display = "none";

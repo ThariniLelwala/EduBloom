@@ -66,8 +66,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         dropdown.style.display = "none";
       });
 
-      dropdown.querySelector(".delete").addEventListener("click", () => {
-        if (confirm(`Delete "${set.name}"?`)) {
+      dropdown.querySelector(".delete").addEventListener("click", async () => {
+        const confirmed = await showConfirmation(
+          `Delete "${set.name}"?`,
+          "Delete Flashcard Set"
+        );
+        if (confirmed) {
           sets = sets.filter((s) => s.id !== set.id);
           renderSets();
         }

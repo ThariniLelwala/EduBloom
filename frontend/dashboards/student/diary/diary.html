@@ -116,6 +116,7 @@
     </div>
 
     <script src="../../../js/topbar.js"></script>
+    <script src="../../../js/confirmation-modal.js"></script>
     <script src="../../../js/bg-manager.js"></script>
     <script>
       // Mood value mapping (0-4 scale) - MUST be defined first
@@ -378,8 +379,12 @@
         window.location.href = "diary-entries.html";
       }
 
-      function deleteMood() {
-        if (confirm("Are you sure you want to delete your current mood?")) {
+      async function deleteMood() {
+        const confirmed = await showConfirmation(
+          "Are you sure you want to delete your current mood?",
+          "Delete Mood"
+        );
+        if (confirmed) {
           localStorage.removeItem("diaryMood");
           displayMoodAndEnergy();
           updateSummaryStats();

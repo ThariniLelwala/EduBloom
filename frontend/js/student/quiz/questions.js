@@ -89,12 +89,12 @@ function renderQuestions() {
       });
 
       // Delete button with confirmation showing question text
-      card.querySelector(".delete-btn").addEventListener("click", () => {
-        if (
-          confirm(
-            `Are you sure you want to delete this question?\n\n"${q.question}"`
-          )
-        ) {
+      card.querySelector(".delete-btn").addEventListener("click", async () => {
+        const confirmed = await showConfirmation(
+          `Are you sure you want to delete this question?\n\n"${q.question}"`,
+          "Delete Question"
+        );
+        if (confirmed) {
           currentQuestions = currentQuestions.filter(
             (ques) => ques.id !== q.id
           );
