@@ -92,10 +92,54 @@ function parseRequestBody(req) {
     req.on("data", (chunk) => (body += chunk));
     req.on("end", () => {
       try {
-        const parsed = JSON.parse(body);
-        resolve(parsed);
+        const contentType = req.headers["content-type"] || "";
+
+        // Handle multipart/form-data
+        if (contentType.includes("multipart/form-data")) {
+          // Simple form data parsing (without multer, just extract basic fields)
+          const formData = {};
+          const boundary = contentType.split("boundary=")[1];
+
+          if (boundary) {
+            const parts = body.split(`--${boundary}`);
+
+            for (const part of parts) {
+              // Extract field name and value
+              const nameMatch = part.match(/name="([^"]+)"/);
+              const valueMatch = part.match(/\r\n\r\n([\s\S]*?)\r\n/);
+
+              if (nameMatch && valueMatch) {
+                const fieldName = nameMatch[1];
+                const fieldValue = valueMatch[1];
+                formData[fieldName] = fieldValue;
+              }
+            }
+          }
+
+          resolve(formData);
+        } else if (contentType.includes("application/json")) {
+          // Handle JSON
+          const parsed = JSON.parse(body);
+          resolve(parsed);
+        } else if (contentType.includes("application/x-www-form-urlencoded")) {
+          // Handle URL-encoded form data
+          const params = new URLSearchParams(body);
+          const formData = {};
+          for (const [key, value] of params) {
+            formData[key] = value;
+          }
+          resolve(formData);
+        } else {
+          // Try to parse as JSON by default
+          try {
+            const parsed = JSON.parse(body);
+            resolve(parsed);
+          } catch (e) {
+            reject(new Error("Unable to parse request body"));
+          }
+        }
       } catch (err) {
-        reject(new Error("Invalid JSON"));
+        reject(err);
       }
     });
     req.on("error", (err) => reject(err));

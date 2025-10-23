@@ -157,6 +157,36 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_teacher_module_notes_is_public ON teacher_module_notes(is_public);
     `);
 
+    // Teacher Verifications table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS teacher_verifications (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'verified', 'rejected')),
+        appointment_letter BYTEA,
+        file_name VARCHAR(255),
+        message TEXT,
+        submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        verified_at TIMESTAMP,
+        reviewed_at TIMESTAMP,
+        rejection_reason TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_teacher_verifications_user_id ON teacher_verifications(user_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_teacher_verifications_status ON teacher_verifications(status);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_teacher_verifications_submitted_at ON teacher_verifications(submitted_at DESC);
+    `);
+
     console.log("✅ Database tables and indexes created successfully");
 
     // Check if admin user exists, if not create one

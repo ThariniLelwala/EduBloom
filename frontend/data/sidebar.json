@@ -60,7 +60,7 @@
     {
       "title": "Profile",
       "icon": "fas fa-user",
-      "link": "../../profile.html"
+      "link": "profile.html"
     }
   ],
   "student_university": [
@@ -114,7 +114,7 @@
     {
       "title": "Profile",
       "icon": "fas fa-user",
-      "link": "../../profile.html"
+      "link": "profile.html"
     }
   ],
   "student": [
@@ -178,7 +178,7 @@
     {
       "title": "Profile",
       "icon": "fas fa-user",
-      "link": "../../profile.html"
+      "link": "profile.html"
     }
   ],
   "parent": [
@@ -202,7 +202,7 @@
     {
       "title": "Profile",
       "icon": "fas fa-user",
-      "link": "../../profile.html"
+      "link": "profile.html"
     }
   ],
   "teacher": [
@@ -232,7 +232,7 @@
     {
       "title": "Profile",
       "icon": "fas fa-user",
-      "link": "../../profile.html"
+      "link": "profile.html"
     }
   ]
 }

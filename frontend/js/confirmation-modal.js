@@ -68,7 +68,8 @@ function showConfirmation(message, confirmText = "Delete") {
     document.getElementById("confirmation-confirm").textContent = confirmText;
 
     confirmationResolve = resolve;
-    confirmationModal.style.display = "flex";
+    confirmationModal.classList.add("show");
+    document.body.style.overflow = "hidden";
   });
 }
 
@@ -78,7 +79,8 @@ function showConfirmation(message, confirmText = "Delete") {
  */
 function resolveConfirmation(result) {
   if (confirmationModal) {
-    confirmationModal.style.display = "none";
+    confirmationModal.classList.remove("show");
+    document.body.style.overflow = "";
   }
   if (confirmationResolve) {
     confirmationResolve(result);
