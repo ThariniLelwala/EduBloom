@@ -215,9 +215,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // Apply background
   function applyBackground(bgId, customUrl = null) {
     const bgImage = document.querySelector(".bg-image");
+    let bgUrl;
 
     if (bgId === "custom" && customUrl) {
-      bgImage.style.backgroundImage = `url(${customUrl})`;
+      bgUrl = customUrl;
     } else {
       // Default backgrounds
       const bgUrls = {
@@ -228,13 +229,27 @@ document.addEventListener("DOMContentLoaded", function () {
         bg5: "../../../assets/images/bg5.jpg",
       };
 
-      const bgUrl = bgUrls[bgId] || bgUrls["bg1"];
-      bgImage.style.backgroundImage = `url(${bgUrl})`;
+      bgUrl = bgUrls[bgId] || bgUrls["bg1"];
     }
 
-    bgImage.style.backgroundSize = "cover";
-    bgImage.style.backgroundPosition = "center";
-    bgImage.style.backgroundRepeat = "no-repeat";
+    // Update main background
+    if (bgImage) {
+      bgImage.style.backgroundImage = `url(${bgUrl})`;
+      bgImage.style.backgroundSize = "cover";
+      bgImage.style.backgroundPosition = "center";
+      bgImage.style.backgroundRepeat = "no-repeat";
+    }
+
+    // Update welcome image
+    const welcomeImages = document.querySelectorAll(".welcome-image");
+    if (welcomeImages.length > 0) {
+      welcomeImages.forEach((el) => {
+        el.style.backgroundImage = `url(${bgUrl})`;
+        el.style.backgroundSize = "cover";
+        el.style.backgroundPosition = "center";
+        el.style.backgroundRepeat = "no-repeat";
+      });
+    }
   }
 
   // Initialize password change modal
