@@ -1,11 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <a href="dashboards/student/dashboard.html">Go to dashboard</a>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom</title>
+  </head>
+  <body>
+    <script>
+      // Redirect based on login status and role
+      document.addEventListener("DOMContentLoaded", function () {
+        // Check if user is logged in
+        const userRole = localStorage.getItem("userRole");
+        const authToken = localStorage.getItem("authToken");
+
+        if (!userRole || !authToken) {
+          // Not logged in - redirect to login page
+          window.location.href = "login.html";
+          return;
+        }
+
+        // User is logged in - redirect to appropriate dashboard based on role
+        switch (userRole) {
+          case "student":
+            window.location.href = "dashboards/student/dashboard.html";
+            break;
+          case "teacher":
+            window.location.href = "dashboards/teacher/dashboard.html";
+            break;
+          case "parent":
+            window.location.href = "dashboards/parent/dashboard.html";
+            break;
+          default:
+            // Unknown role - redirect to login
+            window.location.href = "login.html";
+        }
+      });
+    </script>
+  </body>
 </html>

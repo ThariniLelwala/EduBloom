@@ -197,11 +197,7 @@
   ],
   "teacher": [
     { "title": "Dashboard", "icon": "fas fa-home", "link": "dashboard.html" },
-    {
-      "title": "Notes",
-      "icon": "fas fa-note-sticky",
-      "link": "notes.html"
-    },
+
     {
       "title": "Quiz",
       "icon": "fas fa-clipboard-question",
