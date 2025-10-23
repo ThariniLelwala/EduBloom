@@ -368,8 +368,12 @@ function displayTopics() {
     });
 
     // Delete topic
-    dropdown.querySelector(".delete").addEventListener("click", () => {
-      if (confirm(`Delete "${topic.name}" and all its files?`)) {
+    dropdown.querySelector(".delete").addEventListener("click", async () => {
+      const confirmed = await showConfirmation(
+        `Delete "${topic.name}" and all its files?"`,
+        "Delete Topic"
+      );
+      if (confirmed) {
         deleteTopic(topic.id);
       }
       dropdown.style.display = "none";
@@ -877,7 +881,8 @@ function downloadFile(url, fileName) {
  * Delete file (note)
  */
 async function deleteFile(fileId) {
-  if (!confirm("Delete this file?")) return;
+  const confirmed = await showConfirmation("Delete this file?", "Delete File");
+  if (!confirmed) return;
 
   try {
     const authToken = getAuthToken();

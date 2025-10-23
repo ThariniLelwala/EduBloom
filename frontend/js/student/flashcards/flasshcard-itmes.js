@@ -59,16 +59,18 @@ function renderCards() {
     });
 
     // Delete button with confirmation
-    cardElement.querySelector(".delete-btn").addEventListener("click", () => {
-      if (
-        confirm(
-          `Are you sure you want to delete this flashcard?\n\n"${card.question}"`
-        )
-      ) {
-        currentCards = currentCards.filter((c) => c.id !== card.id);
-        renderCards();
-      }
-    });
+    cardElement
+      .querySelector(".delete-btn")
+      .addEventListener("click", async () => {
+        const confirmed = await showConfirmation(
+          `Are you sure you want to delete this flashcard?\n\n"${card.question}"`,
+          "Delete Flashcard"
+        );
+        if (confirmed) {
+          currentCards = currentCards.filter((c) => c.id !== card.id);
+          renderCards();
+        }
+      });
 
     container.appendChild(cardElement);
   });

@@ -79,6 +79,11 @@ function setupNavigation() {
       showNotification("Teacher Quizzes feature coming soon!", "info");
     }, 1000);
   };
+
+  window.viewAllTeachers = function () {
+    // Navigate to teacher profiles section
+    window.location.href = "view-teachers.html";
+  };
 }
 
 function showNotification(message, type = "info") {
@@ -150,5 +155,15 @@ document.addEventListener("click", function (e) {
     const subjectName = subject.querySelector(".subject-name").textContent;
     showNotification(`Opening teacher quizzes for ${subjectName}`, "info");
     // Could navigate to specific subject teacher quizzes
+  }
+});
+
+// Teacher items interaction
+document.addEventListener("click", function (e) {
+  if (e.target.closest(".teacher-item")) {
+    const teacher = e.target.closest(".teacher-item");
+    const teacherName = teacher.querySelector(".teacher-name").textContent;
+    showNotification(`Viewing profile for ${teacherName}`, "info");
+    // Could navigate to specific teacher profile
   }
 });

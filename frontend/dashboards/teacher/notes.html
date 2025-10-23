@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Teacher Notes</title>
+    <script src="../../js/sidebar.js"></script>
+    <script src="../../config/googleDrive.config.js"></script>
+
+    <!-- Check if logged in as teacher -->
+    <script>
+      function checkTeacherAccess() {
+        const userRole = localStorage.getItem("userRole");
+        const authToken = localStorage.getItem("authToken");
+
+        if (!authToken || userRole !== "teacher") {
+          console.warn("Not authenticated as teacher. Redirecting to login...");
+          window.location.href = "../../login.html";
+        }
+      }
+
+      // Check on page load
+      checkTeacherAccess();
+    </script>
+
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/student/modulespace.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- Sidebar + Content -->
+    <div class="container">
+      <div id="sidebar-container"></div>
+      <main id="content">
+        <!-- Welcome Card -->
+        <div class="card welcome full">
+          <div class="welcome-content">
+            <h1 class="heading">
+              <i class="fas fa-book"></i> Notes Management
+            </h1>
+            <div>
+              Create subjects and organize your teaching notes with visibility
+              control.
+            </div>
+          </div>
+          <div class="welcome-image"></div>
+        </div>
+
+        <!-- Subjects View -->
+        <div id="subjectsView" class="view-container">
+          <div class="view-header">
+            <h2>Your Subjects</h2>
+            <div class="view-actions">
+              <button id="createSubjectBtn" class="btn btn-primary">
+                <i class="fas fa-plus"></i> New Subject
+              </button>
+              <button id="connectGoogleDriveBtn" class="btn btn-secondary">
+                <i class="fas fa-cloud"></i> Connect Google Drive
+              </button>
+            </div>
+          </div>
+          <div id="subjectsContainer" class="subjects-grid">
+            <!-- Subject cards rendered here -->
+          </div>
+        </div>
+
+        <!-- Notes View -->
+        <div id="notesView" class="view-container" style="display: none">
+          <div class="view-header">
+            <button
+              id="backToSubjectsBtn"
+              class="btn btn-text"
+              onclick="window.notesManager.backToSubjects()"
+            >
+              ← Back to Subjects
+            </button>
+            <h2 id="notesViewTitle">Notes</h2>
+            <div class="view-actions">
+              <button id="createNoteBtn" class="btn btn-primary">
+                <i class="fas fa-plus"></i> New Note
+              </button>
+            </div>
+          </div>
+          <div id="notesContainer" class="notes-grid">
+            <!-- Note cards rendered here -->
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Create Subject Modal -->
+    <div id="createSubjectModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Create New Subject</h3>
+          <span class="modal-close">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="subjectName">Subject Name *</label>
+            <input
+              type="text"
+              id="subjectName"
+              placeholder="e.g., Mathematics 101"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="subjectDescription">Description</label>
+            <textarea
+              id="subjectDescription"
+              placeholder="Subject description (optional)"
+              rows="3"
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            onclick="document.getElementById('createSubjectModal').style.display='none'"
+          >
+            Cancel
+          </button>
+          <button id="submitSubjectBtn" class="btn btn-primary">
+            Create Subject
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Note Modal -->
+    <div id="createNoteModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Create New Note</h3>
+          <span class="modal-close">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="noteTitle">Note Title *</label>
+            <input
+              type="text"
+              id="noteTitle"
+              placeholder="e.g., Chapter 5 Summary"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="noteDescription">Description</label>
+            <textarea
+              id="noteDescription"
+              placeholder="Note description (optional)"
+              rows="3"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="noteVisibility">Visibility</label>
+            <select id="noteVisibility">
+              <option value="private">Private (Only visible to you)</option>
+              <option value="public">Public (Visible to students)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            onclick="document.getElementById('createNoteModal').style.display='none'"
+          >
+            Cancel
+          </button>
+          <button id="submitNoteBtn" class="btn btn-primary">
+            Create Note
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Files Modal -->
+    <div id="filesModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Note Files</h3>
+          <span class="modal-close">&times;</span>
+        </div>
+        <div class="modal-body">
+          <!-- File Upload Section -->
+          <div class="file-upload-section">
+            <h4>Add Files to This Note</h4>
+            <div class="file-upload-options">
+              <button
+                id="uploadLocalFilesBtn"
+                class="btn btn-secondary"
+                title="Store files locally"
+              >
+                <i class="fas fa-folder"></i> Local Upload
+              </button>
+              <button
+                id="uploadGoogleDriveBtn"
+                class="btn btn-secondary"
+                title="Store files on Google Drive"
+              >
+                <i class="fas fa-cloud"></i> Google Drive
+              </button>
+            </div>
+
+            <!-- Local file input (hidden) -->
+            <input
+              type="file"
+              id="noteFilesInput"
+              multiple
+              accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.jpg,.png"
+              style="display: none"
+            />
+            <small id="uploadHelp" style="display: none; margin-top: 8px">
+              Supported formats: PDF, DOC, PPT, XLS, TXT, JPG, PNG
+            </small>
+          </div>
+
+          <!-- Files List -->
+          <div id="filesContainer" style="margin-top: 20px">
+            <!-- Files rendered here -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            onclick="document.getElementById('filesModal').style.display='none'"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/confirmation-modal.js"></script>
+    <script src="../../js/teacher/notes.js"></script>
+  </body>
+</html>

@@ -16,11 +16,43 @@ document.addEventListener("DOMContentLoaded", async () => {
   let quizzes = [];
   let editId = null;
 
-  // Load data from JSON
-  const res = await fetch("/data/quiz.json");
-  const data = await res.json();
-  const subject = data.subjects.find((s) => s.id === subjectId);
-  if (subject) quizzes = subject.quizzes;
+  // Load data from JSON and published teacher quizzes
+  async function loadQuizzes() {
+    const res = await fetch("/data/quiz.json");
+    const data = await res.json();
+    const subject = data.subjects.find((s) => s.id === subjectId);
+
+    if (subject) {
+      quizzes = subject.quizzes || [];
+    } else {
+      quizzes = [];
+    }
+
+    // Add published teacher quizzes for this subject
+    const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
+    if (teacherSubjects) {
+      const teacherData = JSON.parse(teacherSubjects);
+      const teacherSubject = teacherData.find(
+        (s) => s.name.toLowerCase() === subjectName.toLowerCase()
+      );
+      if (teacherSubject) {
+        teacherSubject.quizzes.forEach((quiz) => {
+          if (quiz.published && quiz.questions && quiz.questions.length > 0) {
+            // Check if quiz already exists (avoid duplicates)
+            const quizExists = quizzes.some((q) => q.name === quiz.name);
+            if (!quizExists) {
+              quizzes.push({
+                ...quiz,
+                teacherQuiz: true, // Mark as teacher-created quiz
+              });
+            }
+          }
+        });
+      }
+    }
+
+    renderQuizzes();
+  }
 
   function renderQuizzes() {
     container.innerHTML = "";
@@ -28,45 +60,57 @@ document.addEventListener("DOMContentLoaded", async () => {
     quizzes.forEach((quiz) => {
       const card = document.createElement("div");
       card.classList.add("subject-card");
+      const isTeacherQuiz = quiz.teacherQuiz;
       card.innerHTML = `
         <div class="subject-header">
           <i class="fas fa-file-alt"></i>
           <span>${quiz.name}</span>
+          ${isTeacherQuiz ? '<div class="teacher-badge">Teacher</div>' : ""}
         </div>
-        <i class="fas fa-ellipsis-v dots"></i>
+        ${!isTeacherQuiz ? '<i class="fas fa-ellipsis-v dots"></i>' : ""}
+        ${
+          !isTeacherQuiz
+            ? `
         <div class="dropdown">
           <ul>
             <li class="edit">Edit</li>
             <li class="delete">Delete</li>
           </ul>
         </div>
+        `
+            : ""
+        }
       `;
       container.appendChild(card);
 
-      const dots = card.querySelector(".dots");
-      const dropdown = card.querySelector(".dropdown");
+      if (!isTeacherQuiz) {
+        const dots = card.querySelector(".dots");
+        const dropdown = card.querySelector(".dropdown");
 
-      dots.addEventListener("click", (e) => {
-        e.stopPropagation();
-        dropdown.style.display =
-          dropdown.style.display === "block" ? "none" : "block";
-      });
+        dots.addEventListener("click", (e) => {
+          e.stopPropagation();
+          dropdown.style.display =
+            dropdown.style.display === "block" ? "none" : "block";
+        });
 
-      dropdown.querySelector(".edit").addEventListener("click", () => {
-        editId = quiz.id;
-        modalTitle.textContent = "Edit Quiz";
-        input.value = quiz.name;
-        modal.style.display = "flex";
-        dropdown.style.display = "none";
-      });
+        dropdown.querySelector(".edit").addEventListener("click", () => {
+          editId = quiz.id;
+          modalTitle.textContent = "Edit Quiz";
+          input.value = quiz.name;
+          modal.style.display = "flex";
+          dropdown.style.display = "none";
+        });
 
-      dropdown.querySelector(".delete").addEventListener("click", () => {
-        if (confirm(`Delete "${quiz.name}"?`)) {
-          quizzes = quizzes.filter((q) => q.id !== quiz.id);
-          renderQuizzes();
-        }
-        dropdown.style.display = "none";
-      });
+        dropdown
+          .querySelector(".delete")
+          .addEventListener("click", async () => {
+            if (await showConfirmation(`Delete "${quiz.name}"?`)) {
+              quizzes = quizzes.filter((q) => q.id !== quiz.id);
+              renderQuizzes();
+            }
+            dropdown.style.display = "none";
+          });
+      }
 
       // Navigate to questions page
       card.addEventListener("click", (e) => {
@@ -75,11 +119,13 @@ document.addEventListener("DOMContentLoaded", async () => {
           quiz.id
         }&quizName=${encodeURIComponent(
           quiz.name
-        )}&subjectName=${encodeURIComponent(subjectName)}`;
+        )}&subjectName=${encodeURIComponent(subjectName)}${
+          isTeacherQuiz ? "&teacherQuiz=true" : ""
+        }`;
       });
     });
 
-    // Add Quiz card
+    // Add Quiz card (only for student-created quizzes)
     const addCard = document.createElement("div");
     addCard.classList.add("subject-card", "add-card");
     addCard.innerHTML = `<i class="fas fa-plus"></i><span>Add Quiz</span>`;
@@ -116,7 +162,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       .forEach((dd) => (dd.style.display = "none"));
   });
 
-  renderQuizzes();
+  loadQuizzes();
 
   // ---------------- Take Quiz Logic ----------------
   const takeQuizBtn = document.getElementById("take-quiz-btn");

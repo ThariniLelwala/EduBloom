@@ -380,7 +380,11 @@ async function acceptParentLink(linkId) {
 
 // Function to reject a parent link request
 async function rejectParentLink(linkId) {
-  if (!confirm("Are you sure you want to reject this parent link request?")) {
+  const confirmed = await showConfirmation(
+    "Are you sure you want to reject this parent link request?",
+    "Reject Parent Link"
+  );
+  if (!confirmed) {
     return;
   }
 
@@ -500,7 +504,11 @@ async function loadLinkedParents() {
 
 // Function to remove a parent link
 async function removeParentLink(linkId) {
-  if (!confirm("Are you sure you want to remove this parent link?")) {
+  const confirmed = await showConfirmation(
+    "Are you sure you want to remove this parent link?",
+    "Remove Parent Link"
+  );
+  if (!confirmed) {
     return;
   }
 

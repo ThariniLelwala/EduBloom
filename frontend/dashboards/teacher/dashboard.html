@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teacher Dashboard</title>
+    <script src="../../js/sidebar.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/dashboard/progress.css" />
+    <style>
+      /* Overview card specific styles */
+      .chart-stats {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding-top: 12px;
+      }
+
+      .chart-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.2s ease;
+        text-align: center;
+      }
+
+      .chart-stat:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+      }
+
+      .chart-stat .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #4ade80;
+        text-shadow: 0 2px 4px rgba(74, 222, 128, 0.3);
+      }
+
+      .chart-stat .stat-label {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+      }
+
+      /* Fix task item styling for dashboard */
+      .task-item {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+        padding: 10px 12px !important;
+        border-radius: 8px !important;
+        transition: background 0.2s ease !important;
+        position: relative !important;
+        list-style: none !important;
+      }
+
+      .task-item:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+      }
+
+      .task-checkbox {
+        width: 18px !important;
+        height: 18px !important;
+        cursor: pointer !important;
+        accent-color: var(--color-white) !important;
+        flex: 0 0 auto !important;
+      }
+
+      .task-item label {
+        cursor: pointer !important;
+        flex: 1 1 auto !important;
+        color: inherit !important;
+        transition: color 0.25s ease !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .task-item-actions {
+        display: flex !important;
+        gap: 6px !important;
+        flex-shrink: 0 !important;
+        align-items: center !important;
+      }
+
+      .task-item-actions i {
+        cursor: pointer !important;
+        font-size: 14px !important;
+        opacity: 0.7 !important;
+        transition: transform 0.2s ease, opacity 0.2s ease !important;
+        padding: 4px !important;
+        border-radius: 4px !important;
+      }
+
+      .task-item-actions i:hover {
+        transform: scale(1.1) !important;
+        opacity: 1 !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+      }
+
+      .task-item.completed label {
+        color: rgba(255, 255, 255, 0.55) !important;
+        text-decoration: line-through !important;
+        text-decoration-thickness: 2px !important;
+        text-decoration-color: rgba(255, 255, 255, 0.7) !important;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .chart-stats {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="../../css/student/calendar.css" />
+    <link rel="stylesheet" href="../../css/student/diary.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+
+    <div class="container">
+      <!-- Sidebar -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main content -->
+      <main id="content">
+        <div class="card-grid">
+          <!-- Welcome Card -->
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading" id="welcome-heading">Welcome Teacher</h1>
+              <div>
+                "Contribute valuable content and engage with the learning
+                community."
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+
+          <!-- Today's Tasks Card -->
+          <div class="card w1">
+            <div class="card-header">
+              <h3>Today's Tasks</h3>
+            </div>
+            <ul id="dashboard-tasks-list"></ul>
+            <button class="btn-secondary" id="dashboard-add-btn">
+              + Add Task
+            </button>
+          </div>
+
+          <!-- Content Management Card -->
+          <div class="card w1">
+            <div class="card-title">
+              <i class="fas fa-upload"></i>
+              <h3>Content Management</h3>
+            </div>
+            <ul class="quick-actions">
+              <li>
+                <a href="#"> <i class="fas fa-file-alt"></i> Upload Notes </a>
+              </li>
+              <li>
+                <a href="quiz/quiz.html">
+                  <i class="fas fa-question-circle"></i> Create Quiz</a
+                >
+              </li>
+              <li>
+                <a href="forum/forum.html">
+                  <i class="fas fa-comments"></i> Manage Forums</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- Overview Card -->
+          <div class="card w1">
+            <div class="card-title">
+              <i class="fas fa-chart-line"></i>
+              <h3>Overview</h3>
+            </div>
+            <div class="chart-stats">
+              <div class="chart-stat">
+                <div class="stat-value" id="quiz-attempts">0</div>
+                <div class="stat-label">Quiz Attempts</div>
+              </div>
+              <div class="chart-stat">
+                <div class="stat-value" id="forum-posts">0</div>
+                <div class="stat-label">Forum Posts</div>
+              </div>
+              <div class="chart-stat">
+                <div class="stat-value" id="reviews-count">0</div>
+                <div class="stat-label">Reviews</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calendar Card -->
+          <div class="card calendar-card w2">
+            <div class="calendar-header">
+              <button class="cal-nav" id="prevMonth">&lt;</button>
+              <h3 id="monthYear"></h3>
+              <button class="cal-nav" id="nextMonth">&gt;</button>
+            </div>
+            <div class="calendar-grid">
+              <div class="calendar-day">Sun</div>
+              <div class="calendar-day">Mon</div>
+              <div class="calendar-day">Tue</div>
+              <div class="calendar-day">Wed</div>
+              <div class="calendar-day">Thu</div>
+              <div class="calendar-day">Fri</div>
+              <div class="calendar-day">Sat</div>
+              <div id="calendarDays"></div>
+            </div>
+          </div>
+
+          <!-- Upcoming Events Card -->
+          <div class="card w1" id="upcoming-events">
+            <h3>Upcoming Events</h3>
+            <ul id="events-list"></ul>
+            <button class="btn-secondary add-deadline-btn">+ Add Event</button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- ===== Add/Edit/Delete Modals ===== -->
+    <div id="task-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Add Task</h2>
+          <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="task-input" placeholder="Enter task..." />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="modal-cancel">Cancel</button>
+          <button class="btn-primary" id="modal-save">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="edit-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Edit Task</h2>
+          <button class="modal-close" id="edit-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="edit-input" placeholder="Edit text..." />
+          <input type="date" id="edit-date" />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="edit-cancel">Cancel</button>
+          <button class="btn-primary" id="edit-save">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="delete-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Delete Task</h2>
+          <button class="modal-close" id="delete-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete this task?</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="delete-cancel">Cancel</button>
+          <button class="btn-primary" id="delete-confirm">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deadline Modal -->
+    <div id="deadline-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Add Event</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="deadline-input" placeholder="Event title" />
+          <input type="date" id="deadline-date" />
+        </div>
+        <div class="modal-footer">
+          <button id="modal-save-deadline" class="btn-primary">Save</button>
+          <button class="modal-cancel btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JS -->
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+    <script src="../../js/teacher/calendar.js"></script>
+    <script>
+      // Load tasks and update welcome message
+      document.addEventListener("DOMContentLoaded", function () {
+        loadDashboardTasks();
+        updateWelcomeMessage();
+        loadOverviewStats();
+      });
+
+      // Update welcome message with teacher's name
+      function updateWelcomeMessage() {
+        const username = localStorage.getItem("username");
+        const welcomeHeading = document.getElementById("welcome-heading");
+        if (username) {
+          welcomeHeading.textContent = `Welcome ${username}`;
+        }
+      }
+
+      // Task management functions (similar to student dashboard)
+      let currentType = "todo";
+      let editContext = { type: null, index: null };
+      let deleteContext = { type: null, index: null };
+
+      async function loadDashboardTasks() {
+        try {
+          // For now, use localStorage or default tasks
+          let tasks = JSON.parse(localStorage.getItem("teacherTasks")) || {
+            todo: [
+              { task: "Create a new quiz for Mathematics", done: false },
+              { task: "Upload study notes for Science", done: true },
+            ],
+          };
+          localStorage.setItem("teacherTasks", JSON.stringify(tasks));
+          renderDashboardTasks();
+          bindDashboardEvents();
+        } catch (err) {
+          console.error("Error loading dashboard tasks:", err);
+        }
+      }
+
+      function renderDashboardTasks() {
+        const tasks =
+          JSON.parse(localStorage.getItem("teacherTasks"))?.todo || [];
+        const list = document.getElementById("dashboard-tasks-list");
+        if (!list) return;
+
+        list.innerHTML = "";
+
+        if (tasks.length === 0) {
+          list.innerHTML = `<li>No tasks for today 🎉</li>`;
+          return;
+        }
+
+        tasks.forEach((task, index) => {
+          const li = document.createElement("li");
+          li.className = "task-item";
+          if (task.done) li.classList.add("completed");
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.className = "task-checkbox";
+          checkbox.id = `dash-task-${index}`;
+          checkbox.checked = !!task.done;
+
+          const label = document.createElement("label");
+          label.htmlFor = checkbox.id;
+          label.textContent = task.task;
+
+          checkbox.addEventListener("change", () => {
+            task.done = checkbox.checked;
+            li.classList.toggle("completed", checkbox.checked);
+            saveTasks();
+          });
+
+          const actions = document.createElement("div");
+          actions.className = "task-item-actions";
+
+          const editBtn = document.createElement("i");
+          editBtn.className = "fa fa-pencil";
+          editBtn.title = "Edit";
+          editBtn.addEventListener("click", () => openEditModal("todo", index));
+
+          const deleteBtn = document.createElement("i");
+          deleteBtn.className = "fa fa-trash";
+          deleteBtn.title = "Delete";
+          deleteBtn.addEventListener("click", () =>
+            openDeleteModal("todo", index)
+          );
+
+          actions.appendChild(editBtn);
+          actions.appendChild(deleteBtn);
+
+          li.appendChild(checkbox);
+          li.appendChild(label);
+          li.appendChild(actions);
+          list.appendChild(li);
+        });
+      }
+
+      function saveTasks() {
+        const tasks = JSON.parse(localStorage.getItem("teacherTasks"));
+        localStorage.setItem("teacherTasks", JSON.stringify(tasks));
+      }
+
+      function bindDashboardEvents() {
+        const modal = document.getElementById("task-modal");
+        const modalClose = document.getElementById("modal-close");
+        const modalCancel = document.getElementById("modal-cancel");
+        const modalSave = document.getElementById("modal-save");
+        const modalInput = document.getElementById("task-input");
+        const modalTitle = document.getElementById("modal-title");
+
+        const editModal = document.getElementById("edit-modal");
+        const editInput = document.getElementById("edit-input");
+        const editCancel = document.getElementById("edit-cancel");
+        const editClose = document.getElementById("edit-modal-close");
+        const editSave = document.getElementById("edit-save");
+
+        const deleteModal = document.getElementById("delete-modal");
+        const deleteConfirm = document.getElementById("delete-confirm");
+        const deleteCancel = document.getElementById("delete-cancel");
+        const deleteClose = document.getElementById("delete-modal-close");
+
+        function openModal(m) {
+          m.classList.add("show");
+        }
+        function closeModal(m) {
+          m.classList.remove("show");
+        }
+
+        const addBtn = document.getElementById("dashboard-add-btn");
+        if (addBtn) {
+          addBtn.addEventListener("click", () => {
+            currentType = "todo";
+            modalTitle.textContent = "Add Task";
+            modalInput.value = "";
+            openModal(modal);
+            modalInput.focus();
+          });
+        }
+
+        [modalClose, modalCancel].forEach((btn) =>
+          btn?.addEventListener("click", () => closeModal(modal))
+        );
+
+        modalSave.addEventListener("click", () => {
+          const text = modalInput.value.trim();
+          if (!text) return;
+
+          let tasks = JSON.parse(localStorage.getItem("teacherTasks")) || {
+            todo: [],
+          };
+          tasks.todo.push({ task: text, done: false });
+          localStorage.setItem("teacherTasks", JSON.stringify(tasks));
+
+          renderDashboardTasks();
+          closeModal(modal);
+        });
+
+        [editCancel, editClose].forEach((btn) =>
+          btn?.addEventListener("click", () => closeModal(editModal))
+        );
+
+        editSave.addEventListener("click", () => {
+          if (!editContext) return;
+
+          const { type, index } = editContext;
+          const tasks = JSON.parse(localStorage.getItem("teacherTasks"));
+          const newText = editInput.value.trim();
+          if (!newText) return;
+
+          tasks[type][index].task = newText;
+          localStorage.setItem("teacherTasks", JSON.stringify(tasks));
+
+          renderDashboardTasks();
+          closeModal(editModal);
+          editContext = { type: null, index: null };
+        });
+
+        [deleteCancel, deleteClose].forEach((btn) =>
+          btn?.addEventListener("click", () => closeModal(deleteModal))
+        );
+
+        deleteConfirm.addEventListener("click", () => {
+          const { type, index } = deleteContext;
+          const tasks = JSON.parse(localStorage.getItem("teacherTasks"));
+          tasks[type].splice(index, 1);
+          localStorage.setItem("teacherTasks", JSON.stringify(tasks));
+          renderDashboardTasks();
+          closeModal(deleteModal);
+        });
+      }
+
+      function openEditModal(type, index) {
+        const editModal = document.getElementById("edit-modal");
+        const editInput = document.getElementById("edit-input");
+        editContext = { type, index };
+
+        const tasks = JSON.parse(localStorage.getItem("teacherTasks"));
+        editInput.value = tasks[type][index].task;
+        // Set title for tasks
+        document.querySelector("#edit-modal .modal-header h2").textContent =
+          "Edit Task";
+        editModal.classList.add("show");
+      }
+
+      function openDeleteModal(type, index) {
+        deleteContext = { type, index };
+        const deleteModal = document.getElementById("delete-modal");
+        deleteModal.classList.add("show");
+      }
+
+      // Load overview statistics
+      function loadOverviewStats() {
+        // Quiz attempts - count from student quiz results
+        const quizAttempts = getQuizAttemptsCount();
+        document.getElementById("quiz-attempts").textContent = quizAttempts;
+
+        // Forum posts - count from forum data
+        const forumPosts = getForumPostsCount();
+        document.getElementById("forum-posts").textContent = forumPosts;
+
+        // Reviews - count from review data
+        const reviewsCount = getReviewsCount();
+        document.getElementById("reviews-count").textContent = reviewsCount;
+      }
+
+      // Get quiz attempts count (students who took published teacher quizzes)
+      function getQuizAttemptsCount() {
+        // For now, simulate data - in real app this would come from backend
+        // Count how many students have taken published quizzes
+        const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
+        if (!teacherSubjects) return 0;
+
+        const subjects = JSON.parse(teacherSubjects);
+        let totalAttempts = 0;
+
+        // Simulate student attempts based on published quizzes
+        subjects.forEach((subject) => {
+          subject.quizzes.forEach((quiz) => {
+            if (quiz.published && quiz.questions && quiz.questions.length > 0) {
+              // Simulate 3-8 students per published quiz
+              totalAttempts += Math.floor(Math.random() * 6) + 3;
+            }
+          });
+        });
+
+        return totalAttempts;
+      }
+
+      // Get forum posts count
+      function getForumPostsCount() {
+        // For now, simulate forum engagement data
+        // In real app, this would count posts in teacher-managed forums
+        const forumData = localStorage.getItem("forum_posts");
+        if (forumData) {
+          const posts = JSON.parse(forumData);
+          return posts.length || 0;
+        }
+
+        // Simulate forum activity
+        return Math.floor(Math.random() * 50) + 20;
+      }
+
+      // Get reviews count
+      function getReviewsCount() {
+        // For now, simulate review data
+        // In real app, this would count reviews for teacher's content
+        const reviewData = localStorage.getItem("content_reviews");
+        if (reviewData) {
+          const reviews = JSON.parse(reviewData);
+          return reviews.length || 0;
+        }
+
+        // Simulate reviews for published content
+        const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
+        if (!teacherSubjects) return 0;
+
+        const subjects = JSON.parse(teacherSubjects);
+        let publishedQuizzes = 0;
+
+        subjects.forEach((subject) => {
+          subject.quizzes.forEach((quiz) => {
+            if (quiz.published) publishedQuizzes++;
+          });
+        });
+
+        // Simulate 1-3 reviews per published quiz
+        return publishedQuizzes * (Math.floor(Math.random() * 3) + 1);
+      }
+    </script>
+  </body>
+</html>

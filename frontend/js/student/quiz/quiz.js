@@ -9,11 +9,48 @@ document.addEventListener("DOMContentLoaded", () => {
   let subjects = [];
   let editId = null;
 
-  // Load subjects from JSON
+  // Load subjects from JSON and published teacher quizzes
   async function loadSubjects() {
     const res = await fetch("/data/quiz.json");
     const data = await res.json();
     subjects = data.subjects;
+
+    // Add published teacher quizzes
+    const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
+    if (teacherSubjects) {
+      const teacherData = JSON.parse(teacherSubjects);
+      teacherData.forEach((teacherSubject) => {
+        // Check if subject already exists, if not create it
+        let existingSubject = subjects.find(
+          (s) => s.name.toLowerCase() === teacherSubject.name.toLowerCase()
+        );
+        if (!existingSubject) {
+          existingSubject = {
+            id: Date.now() + Math.random(),
+            name: teacherSubject.name,
+            quizzes: [],
+          };
+          subjects.push(existingSubject);
+        }
+
+        // Add published quizzes from this teacher subject
+        teacherSubject.quizzes.forEach((quiz) => {
+          if (quiz.published && quiz.questions && quiz.questions.length > 0) {
+            // Check if quiz already exists (avoid duplicates)
+            const quizExists = existingSubject.quizzes.some(
+              (q) => q.name === quiz.name
+            );
+            if (!quizExists) {
+              existingSubject.quizzes.push({
+                ...quiz,
+                teacherQuiz: true, // Mark as teacher-created quiz
+              });
+            }
+          }
+        });
+      });
+    }
+
     renderSubjects();
   }
 
@@ -55,8 +92,12 @@ document.addEventListener("DOMContentLoaded", () => {
         dropdown.style.display = "none";
       });
 
-      dropdown.querySelector(".delete").addEventListener("click", () => {
-        if (confirm(`Delete "${subj.name}" and all its quizzes?`)) {
+      dropdown.querySelector(".delete").addEventListener("click", async () => {
+        const confirmed = await showConfirmation(
+          `Delete "${subj.name}" and all its quizzes?`,
+          "Delete Subject"
+        );
+        if (confirmed) {
           subjects = subjects.filter((s) => s.id !== subj.id);
           renderSubjects();
         }

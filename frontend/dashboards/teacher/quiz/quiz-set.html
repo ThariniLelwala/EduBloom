@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Teacher Quizzes</title>
+    <script src="../../../js/sidebar.js"></script>
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/topbar.css" />
+    <link rel="stylesheet" href="../../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/cards.css" />
+    <link rel="stylesheet" href="../../../css/student/quiz.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- topbar
+    <script>
+      createTopbar();
+    </script> -->
+
+    <!-- sidebar + content -->
+    <div class="container">
+      <div id="sidebar-container"></div>
+      <main id="content">
+        <h2 class="header-row">
+          <div class="card-title">
+            <i
+              class="fas fa-chevron-left"
+              id="back-btn"
+              onclick="window.location.href = './quiz.html';"
+            ></i>
+            <span id="subject-name">Quizzes</span>
+          </div>
+        </h2>
+
+        <div id="subjects-container" class="subjects-grid">
+          <!-- Quiz cards rendered dynamically -->
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal for creating/editing quiz -->
+    <div id="subject-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Add Quiz</h2>
+          <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="subject-input"
+            placeholder="Enter quiz title"
+          />
+          <div class="publish-toggle">
+            <label class="checkbox-container">
+              <input type="checkbox" id="publish-checkbox" />
+              Publish to students
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="save-subject-btn" class="btn-primary">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../../js/topbar.js"></script>
+    <script src="../../../js/confirmation-modal.js"></script>
+    <script src="../../../js/teacher/quiz/quiz-set.js"></script>
+  </body>
+</html>
+
+<script src="../../../js/bg-manager.js"></script>

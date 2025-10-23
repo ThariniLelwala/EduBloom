@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Subject</title>
+    <script src="../../../js/sidebar.js"></script>
+    <script src="../../../config/googleDrive.config.js"></script>
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/topbar.css" />
+    <link rel="stylesheet" href="../../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/cards.css" />
+    <link rel="stylesheet" href="../../../css/student/quiz.css" />
+    <link rel="stylesheet" href="../../../css/student/subject.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- sidebar + content -->
+    <div class="container">
+      <div id="sidebar-container"></div>
+      <main id="content">
+        <!-- Header with back button and subject name -->
+        <h2 class="header-row">
+          <div class="card-title">
+            <i
+              class="fas fa-chevron-left"
+              id="back-btn"
+              onclick="window.location.href = './modulespace.html';"
+            ></i>
+            <span id="subject-name">Subject</span>
+          </div>
+        </h2>
+
+        <!-- Topics container -->
+        <div id="topics-container" class="subjects-grid">
+          <!-- Topics will be rendered here -->
+        </div>
+      </main>
+    </div>
+
+    <!-- Create Topic Modal -->
+    <div id="topic-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="topic-modal-title">Add Topic</h2>
+          <button class="modal-close" id="topic-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="topic-name"
+            placeholder="Enter topic name"
+            maxlength="50"
+          />
+        </div>
+        <div class="modal-footer">
+          <button id="save-topic" class="btn-primary">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Topic Menu Modal (for viewing/managing topic files) -->
+    <div id="topic-menu-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="topic-menu-title">
+            Topic: <span id="topic-menu-name"></span>
+          </h2>
+          <button class="modal-close" id="topic-menu-modal-close">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Drag and drop area for PDF files inside modal -->
+          <div id="drag-drop-area" class="upload-area">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Drag & drop PDF files here</p>
+            <p style="font-size: 0.9em; color: #999">or click to browse</p>
+            <input
+              type="file"
+              id="file-input"
+              accept=".pdf"
+              multiple
+              style="display: none"
+            />
+            <button
+              class="btn-secondary"
+              onclick="document.getElementById('file-input').click()"
+            >
+              Browse Files
+            </button>
+
+            <!-- Upload loading indicator -->
+            <div
+              id="upload-indicator"
+              class="upload-loading"
+              style="display: none"
+            >
+              <div class="spinner"></div>
+              <p>Uploading files...</p>
+            </div>
+          </div>
+
+          <!-- Files list -->
+          <div id="topic-files-list" class="files-list">
+            <!-- Files for this topic -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="close-topic-menu" class="btn-primary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add File Modal -->
+    <div id="add-file-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>File Visibility</h2>
+          <button class="modal-close" id="add-file-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <input
+              type="checkbox"
+              id="file-public-toggle"
+              style="width: 20px; height: 20px; cursor: pointer"
+            />
+            <label for="file-public-toggle" style="cursor: pointer; margin: 0">
+              Make this file public
+            </label>
+          </div>
+          <p
+            style="
+              margin-top: 10px;
+              font-size: 0.9rem;
+              color: rgba(255, 255, 255, 0.7);
+            "
+          >
+            Public files can be accessed by students.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button id="cancel-file" class="btn-secondary">Cancel</button>
+          <button id="save-file" class="btn-primary">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../../js/topbar.js"></script>
+    <script src="../../../js/confirmation-modal.js"></script>
+    <script src="../../../js/teacher/subject.js"></script>
+    <script src="../../../js/bg-manager.js"></script>
+
+    <!-- Google APIs -->
+    <script async defer src="https://apis.google.com/js/platform.js"></script>
+    <script async src="https://accounts.google.com/gsi/client"></script>
+  </body>
+</html>

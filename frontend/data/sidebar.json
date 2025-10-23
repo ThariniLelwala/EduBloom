@@ -55,7 +55,7 @@
     {
       "title": "Profile",
       "icon": "fas fa-user",
-      "link": "../../profile.html"
+      "link": "profile.html"
     }
   ],
   "student_university": [
@@ -109,7 +109,7 @@
     {
       "title": "Profile",
       "icon": "fas fa-user",
-      "link": "../../profile.html"
+      "link": "profile.html"
     }
   ],
   "student": [
@@ -128,6 +128,11 @@
       "title": "Quiz",
       "icon": "fas fa-clipboard-question",
       "link": "quiz/quiz.html"
+    },
+    {
+      "title": "Forums",
+      "icon": "fas fa-users",
+      "link": "forums.html"
     },
     {
       "title": "Flash Cards",
@@ -168,7 +173,7 @@
     {
       "title": "Profile",
       "icon": "fas fa-user",
-      "link": "../../profile.html"
+      "link": "profile.html"
     }
   ],
   "parent": [
@@ -192,32 +197,42 @@
     {
       "title": "Profile",
       "icon": "fas fa-user",
-      "link": "../../profile.html"
+      "link": "profile.html"
     }
   ],
   "teacher": [
     { "title": "Dashboard", "icon": "fas fa-home", "link": "dashboard.html" },
-    {
-      "title": "Pomodoro Timer",
-      "icon": "fas fa-alarm-clock",
-      "link": "pomodoro.html"
-    },
+
     {
       "title": "Quiz",
       "icon": "fas fa-clipboard-question",
       "link": "quiz/quiz.html"
     },
     {
-      "title": "Flash Cards",
-      "icon": "fas fa-bolt",
-      "link": "flashcards.html"
+      "title": "Forums",
+      "icon": "fas fa-users",
+      "link": "forum/forum.html"
     },
     { "title": "Calendar", "icon": "fas fa-calendar", "link": "calendar.html" },
-    { "title": "Diary", "icon": "fas fa-book-open", "link": "diary.html" },
     {
-      "title": "Progress",
+      "title": "Module Space",
+      "icon": "fas fa-cloud-arrow-up",
+      "link": "modulespace/modulespace.html"
+    },
+    {
+      "title": "Overview",
       "icon": "fas fa-chart-line",
-      "link": "progress.html"
+      "link": "overview.html"
+    },
+    {
+      "title": "Teacher Profile",
+      "icon": "fas fa-user-graduate",
+      "link": "teacher-profile.html"
+    },
+    {
+      "title": "Profile",
+      "icon": "fas fa-user",
+      "link": "profile.html"
     }
   ]
 }

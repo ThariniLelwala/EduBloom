@@ -45,7 +45,7 @@
   max-height: 250px; /* show a good chunk */
   overflow-y: auto; /* scroll if too many */
   display: none;
-  z-index: 1000 !important;
+  z-index: 9999 !important;
 }
 
 /* Show dropdown */

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Teacher Quiz Questions</title>
+    <script src="../../../js/sidebar.js"></script>
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/topbar.css" />
+    <link rel="stylesheet" href="../../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/cards.css" />
+    <link rel="stylesheet" href="../../../css/student/quiz.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- topbar
+    <script>
+      createTopbar();
+    </script> -->
+
+    <!-- sidebar + content -->
+    <div class="container">
+      <div id="sidebar-container"></div>
+      <main id="content">
+        <div class="header-row">
+          <h2 class="card-title">
+            <i class="fas fa-chevron-left" id="back-btn"></i>
+            <span id="subject-name">Quiz</span>
+          </h2>
+          <button id="add-question-btn" class="btn-primary">
+            <i class="fas fa-plus"></i> Add Question
+          </button>
+        </div>
+
+        <div id="subjects-container" class="questions-list"></div>
+      </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="question-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Add Question</h2>
+          <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="question-input"
+            placeholder="Enter question text"
+          />
+
+          <div id="answers-container"></div>
+          <button id="add-answer-btn" class="btn-secondary">
+            + Add Option
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button id="save-btn" class="btn-primary">Save</button>
+          <button id="save-next-btn" class="btn-primary">Save & Next</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../../js/topbar.js"></script>
+    <script src="../../../js/confirmation-modal.js"></script>
+    <script src="../../../js/teacher/quiz/questions.js"></script>
+  </body>
+</html>
+
+<script src="../../../js/bg-manager.js"></script>

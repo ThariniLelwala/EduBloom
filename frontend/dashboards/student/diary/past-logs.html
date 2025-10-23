@@ -105,6 +105,7 @@
 
     <!-- Scripts -->
     <script src="../../../js/topbar.js"></script>
+    <script src="../../../js/confirmation-modal.js"></script>
     <script src="../../../js/bg-manager.js"></script>
     <script>
       let allEntries = [];
@@ -235,8 +236,12 @@
       }
 
       // Delete entry
-      function deleteEntry(entryId) {
-        if (confirm("Are you sure you want to delete this diary entry?")) {
+      async function deleteEntry(entryId) {
+        const confirmed = await showConfirmation(
+          "Are you sure you want to delete this diary entry?",
+          "Delete Diary Entry"
+        );
+        if (confirmed) {
           const updatedEntries = allEntries.filter(
             (entry) => entry.id !== entryId
           );

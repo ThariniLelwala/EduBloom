@@ -7,6 +7,7 @@ const subjectId = parseInt(params.get("subjectId")) || 1;
 const subjectName = params.get("subjectName") || "Unknown Subject";
 const quizId = parseInt(params.get("quizId")) || 0;
 const quizName = params.get("quizName") || "Quiz";
+const isTeacherQuiz = params.get("teacherQuiz") === "true";
 
 subjectHeading.textContent = quizName;
 
@@ -14,16 +15,39 @@ let currentQuestions = [];
 let editingId = null; // Track which question is being edited
 
 async function loadQuestions() {
-  const res = await fetch("/data/quiz.json");
-  const data = await res.json();
+  if (isTeacherQuiz) {
+    // Load from teacher localStorage
+    const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
+    const subjects = teacherSubjects ? JSON.parse(teacherSubjects) : [];
+    const subject = subjects.find(
+      (s) => s.name.toLowerCase() === subjectName.toLowerCase()
+    );
+    if (subject) {
+      const quiz = subject.quizzes.find((q) => q.id === quizId);
+      if (quiz) {
+        currentQuestions = quiz.questions || [];
+      }
+    }
+  } else {
+    // Load from JSON file
+    const res = await fetch("/data/quiz.json");
+    const data = await res.json();
 
-  const subject = data.subjects.find((s) => s.id === subjectId);
-  if (!subject) return;
+    const subject = data.subjects.find((s) => s.id === subjectId);
+    if (!subject) return;
 
-  const quiz = subject.quizzes.find((q) => q.id === quizId);
-  if (!quiz) return;
+    const quiz = subject.quizzes.find((q) => q.id === quizId);
+    if (!quiz) return;
 
-  currentQuestions = quiz.questions || [];
+    currentQuestions = quiz.questions || [];
+  }
+
+  // Show/hide add question button based on quiz type
+  const addBtn = document.getElementById("add-question-btn");
+  if (addBtn) {
+    addBtn.style.display = isTeacherQuiz ? "none" : "block";
+  }
+
   renderQuestions();
 }
 
@@ -37,10 +61,17 @@ function renderQuestions() {
       <div class="question-text">
       ${i + 1}. ${q.question}
       </div>
+      ${
+        !isTeacherQuiz
+          ? `
       <div class="question-actions">
         <i class="edit-btn fas fa-edit icon-btn"></i>
         <i class="delete-btn fas fa-trash icon-btn"></i>
-      </div></div>
+      </div>
+      `
+          : ""
+      }
+    </div>
       <ul class="answers">
         ${q.answers
           .map(
@@ -51,22 +82,26 @@ function renderQuestions() {
       </ul>
     `;
 
-    // Edit button
-    card.querySelector(".edit-btn").addEventListener("click", () => {
-      openEditModal(q.id);
-    });
+    if (!isTeacherQuiz) {
+      // Edit button
+      card.querySelector(".edit-btn").addEventListener("click", () => {
+        openEditModal(q.id);
+      });
 
-    // Delete button with confirmation showing question text
-    card.querySelector(".delete-btn").addEventListener("click", () => {
-      if (
-        confirm(
-          `Are you sure you want to delete this question?\n\n"${q.question}"`
-        )
-      ) {
-        currentQuestions = currentQuestions.filter((ques) => ques.id !== q.id);
-        renderQuestions();
-      }
-    });
+      // Delete button with confirmation showing question text
+      card.querySelector(".delete-btn").addEventListener("click", async () => {
+        const confirmed = await showConfirmation(
+          `Are you sure you want to delete this question?\n\n"${q.question}"`,
+          "Delete Question"
+        );
+        if (confirmed) {
+          currentQuestions = currentQuestions.filter(
+            (ques) => ques.id !== q.id
+          );
+          renderQuestions();
+        }
+      });
+    }
 
     container.appendChild(card);
   });

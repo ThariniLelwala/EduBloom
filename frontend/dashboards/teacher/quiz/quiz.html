@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Teacher Quiz Subjects</title>
+    <script src="../../../js/sidebar.js"></script>
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/topbar.css" />
+    <link rel="stylesheet" href="../../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/cards.css" />
+    <link rel="stylesheet" href="../../../css/student/quiz.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- topbar
+    <script>
+      createTopbar();
+    </script> -->
+
+    <!-- sidebar + content -->
+    <div class="container">
+      <div id="sidebar-container"></div>
+      <main id="content">
+        <div class="card welcome full">
+          <div class="welcome-content">
+            <h1 class="heading">
+              <i class="fas fa-chalkboard-teacher"></i>Quiz Management
+            </h1>
+            <div>
+              "Create subjects, build quizzes, and publish to students."
+            </div>
+          </div>
+          <div class="welcome-image"></div>
+        </div>
+
+        <div id="subjects-container" class="subjects-grid">
+          <!-- Cards rendered dynamically -->
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="subject-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Add Subject</h2>
+          <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            id="subject-input"
+            placeholder="Enter subject name"
+          />
+        </div>
+        <div class="modal-footer">
+          <button id="save-subject-btn" class="btn-primary">Save</button>
+        </div>
+      </div>
+    </div>
+    <script src="../../../js/teacher/quiz/quiz.js"></script>
+    <script src="../../../js/confirmation-modal.js"></script>
+    <script src="../../../js/topbar.js"></script>
+  </body>
+</html>
+
+<script src="../../../js/bg-manager.js"></script>

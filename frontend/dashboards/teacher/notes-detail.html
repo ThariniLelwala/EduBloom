@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Note Collection</title>
+    <script src="../../js/sidebar.js"></script>
+    <script src="../../config/googleDrive.config.js"></script>
+
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/student/quiz.css" />
+    <link rel="stylesheet" href="../../css/student/clock.css" />
+    <link rel="stylesheet" href="../../css/student/subject.css" />
+    <link rel="stylesheet" href="../../css/teacher/notes-detail.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- sidebar + content -->
+    <div class="container">
+      <div id="sidebar-container"></div>
+      <main id="content">
+        <!-- Header with back button and collection name -->
+        <h2 class="header-row">
+          <div class="card-title">
+            <i
+              class="fas fa-chevron-left"
+              id="back-btn"
+              onclick="window.location.href = './notes.html';"
+            ></i>
+            <span id="collection-name">Notes Collection</span>
+          </div>
+        </h2>
+
+        <!-- Collection Info Bar -->
+        <div class="collection-info-bar">
+          <div class="info-section">
+            <label>Visibility:</label>
+            <span id="visibility-badge" class="visibility-badge">Public</span>
+          </div>
+          <div class="info-section">
+            <label>Files:</label>
+            <span id="file-count-badge" class="file-count">0 files</span>
+          </div>
+          <button id="collection-menu-btn" class="btn-icon-menu">
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+        </div>
+
+        <!-- Collection menu dropdown -->
+        <div id="collection-menu" class="dropdown-menu" style="display: none;">
+          <ul>
+            <li id="edit-visibility-btn"><i class="fas fa-eye"></i> Edit Visibility</li>
+            <li id="delete-collection-btn"><i class="fas fa-trash"></i> Delete Collection</li>
+          </ul>
+        </div>
+
+        <!-- Notes container -->
+        <div id="notes-file-container" class="notes-file-list">
+          <!-- Notes will be rendered here -->
+        </div>
+      </main>
+    </div>
+
+    <!-- Upload Notes Modal -->
+    <div id="upload-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Upload Notes to Collection</h2>
+          <button class="modal-close" id="upload-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <!-- Drag and drop area for files -->
+          <div id="drag-drop-area" class="upload-area">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Drag & drop PDF or DOC files here</p>
+            <p style="font-size: 0.9em; color: #999">or click to browse</p>
+            <input
+              type="file"
+              id="file-input"
+              accept=".pdf,.doc,.docx,.ppt,.pptx"
+              multiple
+              style="display: none"
+            />
+            <button
+              class="btn-secondary"
+              onclick="document.getElementById('file-input').click()"
+            >
+              Browse Files
+            </button>
+
+            <!-- Upload loading indicator -->
+            <div
+              id="upload-indicator"
+              class="upload-loading"
+              style="display: none"
+            >
+              <div class="spinner"></div>
+              <p>Uploading files...</p>
+            </div>
+          </div>
+
+          <!-- Files list -->
+          <div id="upload-files-list" class="files-list">
+            <!-- Selected files will be shown here -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="cancel-upload" class="btn-secondary">Cancel</button>
+          <button id="confirm-upload" class="btn-primary">Upload</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Visibility Modal -->
+    <div id="visibility-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Edit Collection Visibility</h2>
+          <button class="modal-close" id="visibility-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="visibility-options">
+            <label class="radio-label">
+              <input type="radio" name="collection-visibility" value="private" />
+              <i class="fas fa-lock"></i>
+              <span>Private</span>
+              <p>Only you can see this collection</p>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="collection-visibility" value="public" />
+              <i class="fas fa-globe"></i>
+              <span>Public</span>
+              <p>All students can see this collection</p>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="visibility-cancel" class="btn-secondary">Cancel</button>
+          <button id="visibility-save" class="btn-primary">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirmation Modal for Delete -->
+    <div id="confirm-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Confirm Delete</h2>
+          <button class="modal-close" id="confirm-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p id="confirm-message">Are you sure you want to delete this collection?</p>
+        </div>
+        <div class="modal-footer">
+          <button id="confirm-cancel" class="btn-secondary">Cancel</button>
+          <button id="confirm-delete" class="btn-danger">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/teacher/notes-detail.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+
+    <!-- Google APIs -->
+    <script async defer src="https://apis.google.com/js/platform.js"></script>
+    <script async src="https://accounts.google.com/gsi/client"></script>
+  </body>
+</html>

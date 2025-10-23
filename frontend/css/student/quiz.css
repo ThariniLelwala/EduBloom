@@ -32,6 +32,10 @@
   color: var(--color-text);
 }
 
+.subject-card:hover .subject-header i {
+  color: var(--color-text);
+}
+
 /* Card header with icon and title */
 .subject-card .subject-header {
   display: flex;
@@ -40,10 +44,77 @@
   gap: 8px;
   font-weight: 400;
   font-size: 16px;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .subject-card .subject-header i {
   font-size: 18px;
+}
+
+/* Status icon in header */
+.subject-card .subject-topics {
+  margin-top: 8px;
+  color: var(--color-white);
+  opacity: 0.8;
+  font-size: 12px;
+}
+
+/* Publish status indicator */
+.subject-card .publish-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.subject-card .publish-status.published {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+}
+
+.subject-card .publish-status.draft {
+  background: rgba(255, 152, 0, 0.2);
+  color: #ff9800;
+}
+.publish-status {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+.publish-status.published {
+  background: rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.publish-status.draft {
+  background: rgba(149, 165, 166, 0.2);
+  color: #95a5a6;
+  border: 1px solid rgba(149, 165, 166, 0.3);
+}
+
+/* Teacher badge for student view */
+.teacher-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(52, 152, 219, 0.2);
+  color: #3498db;
+  border: 1px solid rgba(52, 152, 219, 0.3);
+  font-weight: 600;
+  align-self: flex-start;
+  margin-top: 4px;
 }
 
 /* Dropdown menu */
@@ -181,29 +252,19 @@
   width: max-content;
 }
 
-#add-answer-btn {
-  margin-top: 10px;
-  margin-left: 24px;
-  margin-right: 22px !important;
+.btn-secondary {
   background: transparent;
   border: 1px dashed rgba(255, 255, 255, 0.5);
   padding: 8px;
   border-radius: 8px;
   color: var(--color-white);
   cursor: pointer;
-  /* width: 100%; */
-  flex-grow: 1;
 }
 
 .btn-secondary.cancel-btn {
-  background: transparent;
-  border: 1px dashed rgba(255, 255, 255, 0.5);
-  padding: 8px;
   margin-top: 8px;
   margin-bottom: 8px;
   margin-right: 0px !important;
-  color: var(--color-white);
-  cursor: pointer;
   width: 100%;
   flex-grow: 1;
 }
@@ -251,6 +312,13 @@ input[type="radio"]:checked {
   gap: 8px;
   color: var(--color-white);
   margin: 8px;
+}
+
+/* Publish toggle in modal */
+.publish-toggle {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .answer-field .remove-answer {

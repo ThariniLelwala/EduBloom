@@ -35,7 +35,11 @@
             <i class="fas fa-chevron-left" id="back-btn"></i>
             <span id="subject-name">Quiz</span>
           </h2>
-          <button id="add-question-btn" class="btn-primary">
+          <button
+            id="add-question-btn"
+            class="btn-primary"
+            style="display: none"
+          >
             <i class="fas fa-plus"></i> Add Question
           </button>
         </div>
@@ -59,7 +63,9 @@
           />
 
           <div id="answers-container"></div>
-          <button id="add-answer-btn">+ Add Option</button>
+          <button id="add-answer-btn" class="btn-secondary">
+            + Add Option
+          </button>
         </div>
         <div class="modal-footer">
           <button id="save-btn" class="btn-primary">Save</button>
@@ -69,6 +75,7 @@
     </div>
 
     <script src="../../../js/topbar.js"></script>
+    <script src="../../../js/confirmation-modal.js"></script>
     <script src="../../../js/student/quiz/questions.js"></script>
   </body>
 </html>

@@ -1,0 +1,157 @@
+/* Teacher Overview Page Styles */
+
+/* Quiz Details Table */
+.quiz-details-table {
+  margin-top: 16px;
+}
+
+.quiz-details-table table {
+  width: 100%;
+  border-collapse: collapse;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.quiz-details-table th,
+.quiz-details-table td {
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.quiz-details-table th {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+}
+
+.quiz-details-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.status-published {
+  color: var(--color-white);
+  font-weight: 600;
+}
+
+.status-draft {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+}
+
+/* Top Quizzes List */
+.top-quizzes-list {
+  margin-top: 16px;
+}
+
+.top-quiz-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.top-quiz-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.quiz-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quiz-name {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.quiz-stats {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.quiz-score {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-white);
+}
+
+/* Activity List */
+.activity-list {
+  margin-top: 16px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.activity-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.activity-item i {
+  color: var(--color-white);
+  margin-top: 2px;
+  min-width: 16px;
+}
+
+.activity-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.activity-content span {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.activity-content small {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+}
+
+/* Chart containers */
+.chart-container {
+  position: relative;
+  height: 250px;
+  margin: 16px 0;
+  padding: 12px 0;
+}
+
+.chart-container canvas {
+  max-height: 250px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .quiz-details-table {
+    overflow-x: auto;
+  }
+
+  .quiz-details-table table {
+    min-width: 600px;
+  }
+
+  .chart-container {
+    height: 200px;
+  }
+}

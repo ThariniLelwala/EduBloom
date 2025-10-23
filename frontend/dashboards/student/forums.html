@@ -58,65 +58,14 @@
             </div>
           </div>
 
-          <!-- Popular Topics Card -->
+          <!-- Available Forums Card -->
           <div class="card w2 h2">
             <div class="card-title">
-              <i class="fas fa-fire"></i>
-              <h3>Popular Topics</h3>
+              <i class="fas fa-comments"></i>
+              <h3>Available Forums</h3>
             </div>
-            <div class="topics-list" id="popular-topics">
-              <div class="topic-item">
-                <div class="topic-header">
-                  <span class="topic-title"
-                    >Best Resources for Machine Learning</span
-                  >
-                  <span class="topic-category">Resources</span>
-                </div>
-                <div class="topic-meta">
-                  <span class="topic-author">by Alex Rodriguez</span>
-                  <span class="topic-stats">
-                    <i class="fas fa-eye"></i> 67 •
-                    <i class="fas fa-reply"></i> 23
-                  </span>
-                </div>
-                <div class="topic-preview">
-                  Sharing the best online resources for ML...
-                </div>
-              </div>
-
-              <div class="topic-item">
-                <div class="topic-header">
-                  <span class="topic-title">Welcome to Computer Science</span>
-                  <span class="topic-category">General</span>
-                </div>
-                <div class="topic-meta">
-                  <span class="topic-author">by Sarah Chen</span>
-                  <span class="topic-stats">
-                    <i class="fas fa-eye"></i> 45 •
-                    <i class="fas fa-reply"></i> 12
-                  </span>
-                </div>
-                <div class="topic-preview">
-                  New to CS? Let's share our experiences...
-                </div>
-              </div>
-
-              <div class="topic-item">
-                <div class="topic-header">
-                  <span class="topic-title">Help with Calculus Problem</span>
-                  <span class="topic-category">Q&A</span>
-                </div>
-                <div class="topic-meta">
-                  <span class="topic-author">by Mike Johnson</span>
-                  <span class="topic-stats">
-                    <i class="fas fa-eye"></i> 32 •
-                    <i class="fas fa-reply"></i> 8
-                  </span>
-                </div>
-                <div class="topic-preview">
-                  Stuck on integration by parts...
-                </div>
-              </div>
+            <div class="topics-list" id="available-forums">
+              <!-- Forums will be loaded here -->
             </div>
           </div>
 
@@ -199,48 +148,41 @@
       </main>
     </div>
 
-    <!-- Create Topic Modal -->
-    <div id="create-topic-modal" class="modal">
+    <!-- Forum Detail Modal -->
+    <div id="forum-detail-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Create New Topic</h2>
-          <button class="modal-close" onclick="closeModal()">&times;</button>
+          <h2 id="forum-detail-title">Forum Title</h2>
+          <button class="modal-close" onclick="closeForumModal()">
+            &times;
+          </button>
         </div>
         <div class="modal-body">
-          <p
-            style="
-              color: rgba(255, 255, 255, 0.7);
-              font-size: 0.9rem;
-              margin-bottom: 16px;
-            "
-          >
-            <i class="fas fa-info-circle"></i> Your topic will be reviewed by an
-            admin before being published.
-          </p>
-          <input
-            type="text"
-            id="topic-title"
-            placeholder="Topic title"
-            maxlength="100"
-          />
-          <select id="topic-category" class="custom-select">
-            <option value="">Select Category</option>
-            <option value="resources">Resources</option>
-            <option value="general">General</option>
-            <option value="questions">Q&A</option>
-          </select>
-          <textarea
-            id="topic-content"
-            placeholder="Describe your topic..."
-            rows="4"
-            maxlength="500"
-          ></textarea>
-        </div>
-        <div class="modal-footer">
-          <button class="btn-secondary" onclick="closeModal()">Cancel</button>
-          <button class="btn-primary" onclick="submitTopic()">
-            Create Topic
-          </button>
+          <div class="forum-meta">
+            <span id="forum-author">by Teacher</span>
+            <span id="forum-date">Date</span>
+            <div id="forum-tags" class="tags-display"></div>
+          </div>
+          <div class="forum-description" id="forum-description">
+            Forum description here...
+          </div>
+          <div class="replies-section">
+            <h3>Replies</h3>
+            <div id="replies-list">
+              <!-- Replies will be loaded here -->
+            </div>
+            <div class="add-reply">
+              <textarea
+                id="reply-content"
+                placeholder="Add your reply..."
+                rows="3"
+                maxlength="500"
+              ></textarea>
+              <button class="btn-primary" onclick="addReply()">
+                Post Reply
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -249,6 +191,8 @@
     <script src="../../js/topbar.js"></script>
     <script src="../../js/bg-manager.js"></script>
     <script src="../../js/custom-select.js"></script>
+    <script src="../../js/confirmation-modal.js"></script>
+    <script src="../../js/role-check.js"></script>
     <script src="../../js/student/forums.js"></script>
   </body>
 </html>
