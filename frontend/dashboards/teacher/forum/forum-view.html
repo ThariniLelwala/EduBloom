@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Browse Forums</title>
+    <script src="../../../js/sidebar.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/topbar.css" />
+    <link rel="stylesheet" href="../../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/cards.css" />
+    <link rel="stylesheet" href="../../../css/custom-select.css" />
+    <link rel="stylesheet" href="../../../css/student/forums.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+    <div id="topbar-container"></div>
+
+    <div class="container">
+      <!-- Sidebar -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main content -->
+      <main id="content">
+        <h2 class="header-row">
+          <div class="card-title">
+            <i
+              class="fas fa-chevron-left"
+              id="back-btn"
+              onclick="window.location.href = 'forum.html';"
+            ></i>
+            <span>Browse All Forums</span>
+          </div>
+        </h2>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input
+              type="text"
+              id="forum-search"
+              placeholder="Search forums by title or tags..."
+              class="search-input"
+            />
+          </div>
+        </div>
+
+        <div class="card-grid">
+          <!-- My Forums Card -->
+          <div class="card w2 h2">
+            <div class="card-title">
+              <i class="fas fa-user"></i>
+              <h3>My Forums</h3>
+            </div>
+            <div class="topics-list" id="my-forums">
+              <!-- User's forums will be loaded here -->
+            </div>
+          </div>
+
+          <!-- All Forums Card -->
+          <div class="card w3 h2">
+            <div class="card-title">
+              <i class="fas fa-comments"></i>
+              <h3>All Forums</h3>
+            </div>
+            <div class="topics-list" id="all-forums">
+              <!-- Forums will be loaded here -->
+            </div>
+          </div>
+
+          <!-- Forum Stats Card -->
+          <div class="card w1">
+            <div class="card-title">
+              <i class="fas fa-chart-bar"></i>
+              <h3>Platform Statistics</h3>
+            </div>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-number" id="total-forums">0</div>
+                <div class="stat-label">Total Forums</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-number" id="total-teachers">0</div>
+                <div class="stat-label">Active Teachers</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-number" id="total-replies">0</div>
+                <div class="stat-label">Total Replies</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Forum Detail Modal -->
+    <div id="forum-detail-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Forum Details</h2>
+          <button class="modal-close" onclick="closeForumModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="forum-meta">
+            <span id="forum-author">by Teacher</span>
+            <span id="forum-date">Date</span>
+            <div id="forum-tags" class="tags-display"></div>
+          </div>
+          <div class="forum-content">
+            <h3 id="forum-title-display">Forum Title</h3>
+            <div class="forum-description" id="forum-description-display">
+              Forum description here...
+            </div>
+          </div>
+          <div class="forum-actions" id="forum-actions">
+            <button
+              class="btn-secondary"
+              onclick="editForum()"
+              id="edit-forum-btn"
+            >
+              Edit Forum
+            </button>
+          </div>
+          <div class="forum-edit" id="forum-edit" style="display: none">
+            <input
+              type="text"
+              id="edit-forum-title"
+              placeholder="Forum title"
+              maxlength="100"
+            />
+            <textarea
+              id="edit-forum-description"
+              placeholder="Forum description"
+              rows="4"
+              maxlength="500"
+            ></textarea>
+            <div class="tags-section">
+              <label>Tags (for easy lookup)</label>
+              <div class="tags-input-container">
+                <input
+                  type="text"
+                  id="edit-tag-input"
+                  placeholder="Add tag (letters only, max 20 chars)"
+                  maxlength="20"
+                />
+                <button
+                  type="button"
+                  id="edit-add-tag-btn"
+                  class="btn-secondary"
+                >
+                  <i class="fas fa-plus"></i> Add
+                </button>
+              </div>
+              <div id="edit-tags-list" class="tags-display"></div>
+            </div>
+            <div class="edit-actions">
+              <button class="btn-secondary" onclick="cancelEdit()">
+                Cancel
+              </button>
+              <button class="btn-primary" onclick="saveForumEdit()">
+                Save Changes
+              </button>
+            </div>
+          </div>
+          <div class="replies-section">
+            <h3>Replies</h3>
+            <div id="replies-list">
+              <!-- Replies will be loaded here -->
+            </div>
+            <div class="add-reply">
+              <textarea
+                id="reply-content"
+                placeholder="Add your reply..."
+                rows="3"
+                maxlength="500"
+              ></textarea>
+              <button class="btn-primary" onclick="addReply()">
+                Post Reply
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../../js/topbar.js"></script>
+    <script src="../../../js/bg-manager.js"></script>
+    <script src="../../../js/confirmation-modal.js"></script>
+    <script src="../../../js/teacher/forum/forum-view.js"></script>
+  </body>
+</html>
