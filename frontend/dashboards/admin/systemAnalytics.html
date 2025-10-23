@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom Dashboard</title>
+    <script src="../../js/sidebar.js"></script>
+    <script src="../../js/topbar.js"></script>
+    
+
+    <link rel="stylesheet" href="../../css/style.css" />
+     <link rel="stylesheet" href="../../css/dashboard/user.css" />
+     <link rel="stylesheet" href="../../css/dashboard/action-btn.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- sidebar + content -->
+    <div class="container">
+      <div id="sidebar-container"><!-- Sidebar Start -->
+<!-- Sidebar End -->
+</div>
+      <main id="content">
+        <div class="card-grid">
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">System Analysis</h1>
+              <div>
+                Insights that guide progress - turning numbers into smarter actions.
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+          <!-- Total Users -->
+          <!-- Top 4 Analytics Cards -->
+        <div class="card w3">
+          <div class="card1">
+            <div class="heading">Active Learners</div>
+            <h2 id="activeLearners">0</h2>
+          </div>
+          <div class="card1">
+            <div class="heading">Active Forums</div>
+            <h2 id="activeForums">0</h2>
+          </div>
+          <div class="card1">
+            <div class="heading">New Registrations</div>
+            <h2 id="newRegistrations">0</h2>
+          </div>
+          <div class="card1">
+            <div class="heading">Today Logins</div>
+            <h2 id="todayLogins">0</h2>
+          </div>
+        </div>
+
+
+          <!-- Active Today -->
+          <div class="card w1">
+            <h4>User Growth</h4>
+            <canvas id="userGrowthChart"></canvas>
+          </div>
+          <div class="card w1">
+            <h4> Daily Logins</h4>
+            <canvas id="dailyLoginChart"></canvas>
+          </div>
+          <div class="card w1">
+            <h4>Content Upload Trend</h4>
+            <canvas id="contentUploadChart"></canvas>
+          </div>
+          <div class="card w1">
+            <h4>Most Active Users</h4>
+            <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Activity Count</th>
+          </tr>
+        </thead>
+        <tbody id="activeUserTable">
+          <!-- JS will fill this -->
+        </tbody>
+      </table>
+          </div>
+          <div class="card w1">
+            <h4> Calendar</h4>
+            <div id="calendar"></div>
+          </div>
+          <div class="card w1">
+            <h4>Busiest Time of Day</h4>
+            <table>
+        <thead>
+          <tr>
+            <th>Time Range</th>
+            <th>Requests</th>
+          </tr>
+        </thead>
+        <tbody id="busiestTimeTable">
+          <!-- JS will fill this -->
+        </tbody>
+      </table>
+          </div>
+        </div>
+      </main>     
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../../js/systemAnalytics.js"></script>
+  </body>
+</html>
+<script src="../../js/sidebar.js"></script>
+<script src="../../js/topbar.js"></script>
+<script src="../../../js/bg-manager.js"></script>

@@ -62,5 +62,46 @@
       "icon": "fas fa-chart-line",
       "link": "progress.html"
     }
+  ],
+  "admin": [
+    { "title": "Dashboard",
+      "icon": "fas fa-home",
+      "link": "dashboard.html"
+    },
+    {
+      "title": "User Management",
+      "icon": "fa-solid fa-users",
+      "link": "userManagement.html"
+    },
+    {
+      "title": "Content Moderation",
+      "icon": "fa-solid fa-folder-open",
+      "link": "contentModeration.html"
+    },
+    {
+      "title": "System Analytics",
+      "icon": "fas fa-chart-line",
+      "link": "systemAnalytics.html"
+    },
+    {
+      "title": "Forum Management",
+      "icon": "fas fa-file-text",
+      "link": "forumManagement.html"
+    },
+    {
+      "title": "Settings",
+      "icon": "fas fa-cog",
+      "link": "Settings/settings.html"
+    },
+    {
+      "title": "Help",
+      "icon": "fa-solid fa-circle-question",
+      "link": "Help/help.html"
+    },
+    {
+      "title": "System Annoucements",
+      "icon": "fa-solid fa-bullhorn",
+      "link": "systemAnnoucements.html"
+    }
   ]
 }

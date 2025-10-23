@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom Dashboard</title>
+    <!-- <script src="../../js/sidebar.js"></script>
+    <script src="../../js/topbar.js"></script> -->
+
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/dashboard/user.css" />
+    <link rel="stylesheet" href="../../css/dashboard/action-btn.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+  
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+     <style>
+      .card { padding: 20px; margin-top: 20px; }
+      .add-announcement input, .add-announcement textarea {
+        padding: 8px;
+        margin-right: 10px;
+        width: 60%;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+      }
+      .add-announcement button {
+        padding: 8px 15px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        background-color: #4CAF50;
+        color: white;
+      }
+      .add-announcement button:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-image"></div>
+    <div class="container">
+      <div id="sidebar-container"><!-- Sidebar Start -->
+<!-- Sidebar End -->
+</div>
+      <main id="content">
+        <div class="card-grid">
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">System Annoucements</h1>
+              <div>
+                Reach every learner with updates that inspire and inform.
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+        </div>
+        <!-- body -->
+
+         <div class="card w3">
+            <h3>Add annoucement</h3>
+        <!-- Add Announcement -->
+          <div class="add-announcement">
+            <input type="text" id="announcementTitle" placeholder="Announcement Title" />
+            <textarea id="announcementBody" rows="3" placeholder="Write your announcement..."></textarea>
+            <button id="addAnnouncementBtn">Send Announcement</button>
+          </div>
+        </div>
+          <!-- Announcement Table -->
+           <div class="card w3">
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Announcement</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="announcementTable">
+              <!-- Announcements will be added here dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+
+    <script src="/js/sidebar.js"></script>
+    <script src="/js/topbar.js"></script>
+    <script>
+      const addBtn = document.getElementById("addAnnouncementBtn");
+      const table = document.getElementById("announcementTable");
+
+      // Add Announcement
+      addBtn.addEventListener("click", () => {
+        const title = document.getElementById("announcementTitle").value.trim();
+        const body = document.getElementById("announcementBody").value.trim();
+        const date = new Date().toISOString().split("T")[0];
+
+        if (!title || !body) {
+          alert("Please enter both title and announcement.");
+          return;
+        }
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${title}</td>
+          <td>${body}</td>
+          <td>${date}</td>
+          <td>
+            <button class="action-btn delete-btn">Delete</button>
+          </td>
+        `;
+        table.appendChild(row);
+
+        document.getElementById("announcementTitle").value = "";
+        document.getElementById("announcementBody").value = "";
+      });
+
+      // Delete Announcement
+      table.addEventListener("click", (e) => {
+        if (e.target.classList.contains("delete-btn")) {
+          const row = e.target.closest("tr");
+          row.remove();
+        }
+      });
+    </script>
+    </div>
+  </body>
+</html>
+
+
+<script src="../../js/sidebar.js"></script>
+<script src="../../../js/bg-manager.js"></script>
+

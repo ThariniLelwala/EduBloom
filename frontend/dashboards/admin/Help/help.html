@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom Dashboard - Help</title>
+
+    
+
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/dashboard/help.css" />
+    <link rel="stylesheet" href="/css/dashboard/user.css" />
+    <link rel="stylesheet" href="/css/topbar.css" />
+    <link rel="stylesheet" href="/css/sidebar.css" />
+    <link rel="stylesheet" href="/css/cards.css" />
+  
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+
+    <div class="container">
+      <div id="sidebar-container"></div>
+
+      <main id="content">
+        <div class="card-grid">
+          <!-- Page Header -->
+           <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">Help & Support</h1>
+              <div>
+                Every question matters — guiding users toward smooth learning.
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+          <div class="control-bar">
+          <!-- Action Buttons -->
+          <div class="card-title">
+            <!-- Search Bar -->
+          <div class="card-title" style="position: relative; display: inline-block;">
+            <i class="fas fa-search"
+              style="position: absolute; left: 10px; top: 40%; transform: translateY(-50%); color: #ccc;"></i>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search help topics..."
+              style="padding-left: 35px; width: 25vw;"
+            />
+          </div>
+            <div class="help-actions">
+              <button class="btn-primary" style="width:200px;" onclick="window.location.href='helpDesk.html'">
+                <i class="fas fa-headset"></i> Help Desk
+              </button>
+              <button class="btn-primary" style=" width:200px;" onclick="window.location.href='faqManager.html'">
+                <i class="fas fa-question-circle"></i> FAQ Management
+              </button>
+            </div>
+          </div>
+          </div>
+         
+          <!-- FAQ Section -->
+          <div class="card w3">
+            
+            <h3>Frequently Asked Questions</h3>
+            <div id="faqList">
+            <div class="faq-item">
+              <button class="faq-question">How to manage users?</button>
+              <div class="faq-answer">
+                <p>
+                  Go to the "User Management" section from the sidebar. From there, you can view, edit, suspend, or delete users.
+                  Use the search bar to quickly find specific users.
+                </p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">How to approve content?</button>
+              <div class="faq-answer">
+                <p>
+                  Navigate to the “Content Review” page. Select pending content and click the “Approve” or “Reject” button to finalize moderation.
+                </p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">How to change system settings?</button>
+              <div class="faq-answer">
+                <p>
+                  Click on your profile icon and go to “Settings.” You can update appearance, email preferences, and notification options there.
+                </p>
+              </div>
+            </div>
+            </div>
+          </div>
+        
+        </div>
+      </main>
+    </div>
+    <script src="/js/sidebar.js"></script>
+    <script src="/js/topbar.js"></script>
+     <script src="../../../js/help.js"></script>
+
+    
+    <script src="../../../js/bg-manager.js"></script>
+  </body>
+  
+</html>

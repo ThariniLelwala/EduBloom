@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom Settings</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/topbar.css" />
+    <link rel="stylesheet" href="/css/sidebar.css" />
+    <link rel="stylesheet" href="/css/cards.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+        .setting-item{
+            margin-top: 20px;
+            margin-left: 30px;
+        }
+    </style>
+  </head>
+    <body>
+        <div class="bg-image"></div>
+    
+        <!-- sidebar + content -->
+        <div class="container">
+        <div id="sidebar-container"><!-- Sidebar Start -->
+<!-- Sidebar End -->
+</div>
+<main id="content">
+<div class="card w3" style="padding:20px; margin-top: 20px;">
+            <h3>General Settings</h3>
+            <div class="setting-item">
+                <label>Admin Name:</label>
+                <input type="text" id="systemName" placeholder="Update name" style="margin-top: 8px;">
+                <label>Bio :</label>
+                <input type="text" id="systemBio" placeholder="Update Bio" style="margin-top: 8px;">
+                <label>e-Mail:</label>
+                <input type="email" id="systemMail" placeholder="Update mail" style="margin-top: 8px;">
+                <label>Phone Number:</label>
+                <input type="tel" id="systemContact" placeholder="Update phone Number" style="margin-top: 8px;">
+                <label>Birthday:</label>
+                <input type="date" id="systemBd" placeholder="Update Birthday" style="margin-top: 8px;">
+            </div>  
+        </div>
+        <button class="btn-primary" style="float: right; margin-right: 10px; width:300px;" onclick="location.href='settings.html'">
+        Back to Settings
+      </button>
+        </main>
+        </div>
+    <script src="/js/sidebar.js"></script>
+    <script src="/js/topbar.js"></script>
+     <script src="/js/settings.js"></script>
+     <script src="../../../js/bg-manager.js"></script>
+    
+  </body>
+</html>

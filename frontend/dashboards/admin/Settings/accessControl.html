@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom Settings</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/topbar.css" />
+    <link rel="stylesheet" href="/css/sidebar.css" />
+    <link rel="stylesheet" href="/css/cards.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="/css/dashboard/action-btn.css" />
+    <style>
+        .setting-item{
+            margin-top: 20px;
+            margin-left: 30px;
+        }
+        
+    </style>
+  </head>
+    <body>
+        <div class="bg-image"></div>
+    
+        <!-- sidebar + content -->
+        <div class="container">
+        <div id="sidebar-container"><!-- Sidebar Start -->
+<!-- Sidebar End -->
+</div>
+<main id="content">
+<!-- Teacher Registration Approval -->
+<div class="card w3" style="padding:20px; margin-top: 20px;">
+  <h3 id="teacher-approval">Teacher Registration Approval</h3>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>Teacher Name</th>
+        <th>Address</th>
+        <th>Email</th>
+        <th>Appointment Letter</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="teacherTable">
+      <tr>
+        <td>R. Perera</td>
+        <td>Colombo</td>
+        <td>r.perera@example.com</td>
+        <td><a href="/uploads/appointment_rperera.docx" target="_blank">View Letter</a></td>
+        <td>
+          <button class="btn-small btn-approve">Approve</button>
+          <button class="btn-small btn-delete">Reject</button>
+        </td>
+      </tr>
+      <tr>
+        <td>K. Silva</td>
+        <td>Kandy</td>
+        <td>k.silva@example.com</td>
+        <td><a href="/uploads/appointment_ksilva.docx" target="_blank">View Letter</a></td>
+        <td>
+          <button class="btn-small btn-approve">Approve</button>
+          <button class="btn-small btn-delete">Reject</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- forum admin approval -->
+ <div class="card w3" style="margin-top: 20px;">
+  <h3>Forum Admin Requests</h3>
+  <table id="forumRequestTable">
+    <thead>
+      <tr>
+        <th>Student Name</th>
+        <th>Email</th>
+        <th>Forum</th>
+        <th>Request Date</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>John Doe</td>
+        <td>john@example.com</td>
+        <td>Science Forum</td>
+        <td>2025-10-23 10:45</td>
+        <td class="text-warning">Pending</td>
+        <td>
+          <button class="btn-small btn-approve" data-id="1">Approve</button>
+          <button class="btn-small btn-delete" data-id="1">Reject</button>
+        </td>
+      </tr>
+        <td>Emma Watson</td>
+        <td>emma@example.com</td>
+        <td>Science Forum</td>
+        <td>2025-10-23 11:30</td>
+        <td class="text-warning">Pending</td>
+        <td>
+          <button class="btn-small btn-approve" data-id="4">Approve</button>
+          <button class="btn-small btn-delete" data-id="4">Reject</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Robert Brown</td>
+        <td>robert@example.com</td>
+        <td>Literature Forum</td>
+        <td>2025-10-20 14:50</td>
+        <td class="text-warning">Pending</td>
+        <td>
+          <button class="btn-small btn-approve" data-id="5">Approve</button>
+          <button class="btn-small btn-delete" data-id="5">Reject</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ======================================================= -->
+ <div class="card w3" style="padding:20px; margin-top: 20px;">
+    <h3 style=" margin-bottom: 20px;">System Settings</h3>
+    <label for="systemName" style="margin-left: 20px;">System Name:</label>
+    <input type="text" id="systemName" placeholder="Enter new system name" style="margin-left: 20px;" />
+    <button id="updateBtn" class="btn-secondary" style="width: 250px; display: block; margin-left: auto;">
+    Save Changes
+    </button>
+
+
+ </div>
+
+        <button class="btn-primary" style="float: right; margin-right: 10px; width:300px;" onclick="location.href='settings.html'">
+        Back to Settings
+      </button>
+        </main>
+        </div>
+    <script src="/js/sidebar.js"></script>
+    <script src="/js/topbar.js"></script>
+     <script src="/js/settings.js"></script>
+     <script src="../../../js/bg-manager.js"></script>
+    
+  </body>
+</html>

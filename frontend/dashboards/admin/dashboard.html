@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom Dashboard</title>
+    <!-- <script src="../../js/sidebar.js"></script>
+    <script src="../../js/topbar.js"></script> -->
+
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/dashboard/user.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+  
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+      .card-icon {
+        font-size: 28px;
+        color: #f9f9f9;
+        margin-bottom: 10px;
+        margin-left: 10px;
+      }
+      .card-small {
+        display: flex;
+        align-items: center;
+        margin:20px;
+        border-radius: 12px;
+        box-shadow: 0 6px 6px rgba(240, 236, 236, 0.1);
+        gap: 20px;
+        width: 200px;
+        height: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-image"></div>
+    <div class="container">
+      <div id="sidebar-container"><!-- Sidebar Start -->
+<!-- Sidebar End -->
+</div>
+      <main id="content">
+        <div class="card-grid">
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">System Overview</h1>
+              <div>
+                EduBloom is running smoothly with 1,234 active users today.
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+
+          <!-- Total Users -->
+        
+          <div class="card w1">
+            <h4>Total Users</h4>
+            <div class="card-small">
+            <div class="card-icon">
+                      <i class="fas fa-user-check"></i>
+            </div>
+            <p id="totalLearners"> 1,245</p>
+            </div>
+          </div>
+
+          <!-- Active Learners Today -->
+          <div class="card w1">
+            <h4>Active Learners Today</h4>
+            <div class="card-small">
+            <div class="card-icon">
+              <i class="fas fa-user-graduate"></i>
+            </div>
+            <p id="activeToday">128</p>
+            </div>
+          </div>
+
+          <!-- Courses / Subjects -->
+          <div class="card w1">
+            <h4>Subjects / Courses</h4>
+            <div class="card-small">
+            <div class="card-icon">
+              <i class="fas fa-book"></i>
+            </div>
+            <p id="totalSubjects">52</p>
+            </div>
+          </div>
+
+          <!-- Study Sessions -->
+          <div class="card w1">
+            <h4>Study Forums</h4>
+            <div class="card-small">
+            <div class="card-icon">
+              <i class="fas fa-stopwatch"></i>
+            </div>
+            <p id="studySessions">98</p>
+            </div>
+          </div>
+
+          <!-- Forum Discussions -->
+          <div class="card w1">
+            <h4>Help Desk Issues Count</h4>
+            <div class="card-small">
+            <div class="card-icon">
+              <i class="fas fa-comments"></i>
+            </div>
+            <p id="forumDiscussions">06</p>
+            </div>
+          </div>
+
+          <!-- Pending Reports -->
+          <div class="card w1">
+            <h4>Pending Reports</h4>
+            <div class="card-small">
+            <div class="card-icon">
+              <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <p id="pendingReports">05</p>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="card w1">
+            <div class="button-list">
+            <div class="heading">Quick Actions</div>
+              <div>
+                <button class="btn" onclick="location.href='userManagement.html'">User Management</button>
+                <button class="btn" onclick="location.href='contentModeration.html'">Moderate Content</button>
+                <button class="btn" onclick="location.href='systemAnalytics.html'">System Analytics</button>
+                <button class="btn" onclick="location.href='forumManagement.html'">Forum Management</button>
+                <button class="btn" onclick="location.href='Settings/accessControl.html'">Access Control</button>
+                <button class="btn" onclick="location.href='Help/helpDesk.html'">Help Desk</button>
+              </div>
+          </div>
+        </div>
+        <!-- activities -->
+          <div class="card w1">
+  <div class="heading">Recently System Activity</div>
+  <div class="button-list">
+    <button class="enter-blocks">User @nethmi sent a request to Forum Admin</button>
+    <button class="enter-blocks">Teacher approval has been submitted</button>
+    <button class="enter-blocks">Teacher @kavindu created a new forum “Web Development Basics”</button>
+    <button class="enter-blocks">User @amali updated profile information</button>
+  </div>
+</div>
+
+        <!-- moderation queue -->
+          <div class="card w1">
+  <div class="heading">Moderation Queue</div>
+
+  <div class="enter-blocks">
+    <span class="type">Report</span>
+    <p>Inappropriate comment in forum <strong>#124</strong></p>
+    <small>5 mins ago</small>
+  </div>
+  <div class="enter-blocks">
+    <span class="type">User</span>
+    <p>User <strong>@Ravi</strong> flagged for spam</p>
+    <small>1 hr ago</small>
+  </div>
+</div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
+
+<script src="../../js/topbar.js"></script>
+<script src="../../js/sidebar.js"></script>
+<script src="../../../js/bg-manager.js"></script>
+

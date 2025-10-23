@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom Dashboard</title>
+    <script src="../../js/sidebar.js"></script>
+    <script src="../../js/topbar.js"></script>
+    
+    <link rel="stylesheet" href="../../css/style.css" />
+     <link rel="stylesheet" href="../../css/dashboard/user.css" />
+     <link rel="stylesheet" href="../../css/dashboard/action-btn.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+  
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- topbar -->
+    
+
+    <!-- sidebar + content -->
+    <div class="container">
+      <div id="sidebar-container"><!-- Sidebar Start -->
+<!-- Sidebar End -->
+    </div>
+      <main id="content">
+        <div class="card-grid">
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">User Management</h1>
+              <div>
+                Empowering connections - every user counts in the learning journey.
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+
+          <!-- User Stats main bar-->
+          <div class="card w3">
+            <div class="card1">
+              <div class="heading">Total Users</div>
+              <h2 id="totalUsers">0</h2>
+            </div>
+          <div class="card1">
+            <div class="heading">Active Users</div>
+            <h2 id="activeUsers">0</h2>
+          </div>
+          <div class="card1">
+            <div class="heading">Suspended Users</div>
+            <h2 id="suspendedUsers">0</h2>
+          </div>
+          <div class="card1">
+            <div class="heading">Daily Registrations</div>
+            <h2 id="newUsers">0</h2>
+          </div>
+        </div>
+      <!-- search,filter,add user & User Table -->
+  <div class="card full">
+        <div class="control-bar">
+          <div class="card-title"  style="position: relative; display: inline-block;">
+            <i class="fas fa-search" style="position: absolute; left: 10px; top: 40%; transform: translateY(-50%); color: #ccc;"></i>
+            <input type="text" id="searchInput" placeholder="Place by name or mail..."  style="padding-left: 35px;width: 25vw;"/>
+        </div>
+        <select id="roleFilter" class="custom-select-display" style="width: 120px; margin-left: 10px;">
+          <option value="" class="option">All roles</option>
+          <option value="student" class="option">Student</option>
+          <option value="moderator" class="option">Teacher</option>
+          <option value="user" class="option">Parent</option>
+        </select>  
+        <select id="statusFilter" class="custom-select-display" style="width: 120px; margin-left: 10px;">
+          <option value="" class="option">Status</option>
+          <option value="active" class="option">Active</option>
+          <option value="suspended" class="option">Suspended</option>
+        </select>      
+        <button class="btn-primary" style="float: right; margin-right: 10px; width:125px;">
+          <i class="fa-solid fa-plus"></i>Add User</i>
+        </button>
+        <button class="btn-secondary" id="bulkDeleteBtn" style="width:130px;">
+          <i class="fa-solid fa-trash"></i> Bulk Delete
+        </button>
+      </div>      
+    <div class="card full">
+      <table id="userTable">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="selectAll"></th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Actions</th>
+         </tr>
+        </thead>
+        <tbody>
+          <!-- JS will inject rows -->
+        </tbody>
+      </table>
+    </div>
+  </div>  
+  </div>
+</main>               
+</div>
+</div>    
+</body>
+</html>
+<script src="../../js/sidebar.js"></script>
+<script src="../../js/topbar.js"></script>
+<script src="../../js/custom-select.js"></script>
+<script src="../../js/userManagement.js"></script>
+<script src="../../../js/bg-manager.js"></script>

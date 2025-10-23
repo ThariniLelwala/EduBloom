@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom Dashboard</title>
+    <script src="../../js/sidebar.js"></script>
+    <script src="../../js/topbar.js"></script>
+
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/dashboard/user.css" />
+    <link rel="stylesheet" href="../../css/dashboard/action-btn.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+  
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <!-- sidebar + content -->
+    <div class="container">
+      <div id="sidebar-container"><!-- Sidebar Start -->
+<!-- Sidebar End -->
+</div>
+      <main id="content">
+        <div class="card-grid">
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">Content Moderation</h1>
+              <div>
+                Keeping discussions clean, respectful, and focused on growth.
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+          <!-- Total contents, main bar-->
+          <div class="card w3">
+            <div class="card1">
+                <div class="heading">Total posts</div>
+                <h2 id="totalUsers">0</h2>
+            </div>
+            <div class="card1">
+                <div class="heading">Today's posts</div>
+                <h2 id="activeUsers">0</h2>
+            </div>
+            <div class="card1">
+                <div class="heading">Engaged Users</div>
+                <h2 id="suspendedUsers">0</h2>
+            </div>
+            <div class="card1">
+                <div class="heading">Rejected Contents</div>
+                <h2 id="newUsers">0</h2>
+            </div>
+            <div class="card1">
+                <div class="heading">Pending Reviews</div>
+                <h2 id="newUsers">0</h2>
+            </div>
+          </div>
+          <div class="card w3">
+            <div class="control-bar"> 
+            <div class="card-title"  style="position: relative; display: inline-block;">
+            <i class="fas fa-search" style="position: absolute; left: 10px; top: 40%; transform: translateY(-50%); color: #ccc;"></i>
+            <input type="text" id="searchInput" placeholder="Search by content id..."  style="padding-left: 35px;width: 25vw;"/>
+        </div>
+        <select id="statusFilter" class="custom-select-display" style="width: 120px; margin-left: 10px;">
+          <option value="" class="option">All types</option>
+          <option value="plagarism" class="option">Plagerism</option>
+          <option value="misinformation" class="option">Misinformation</option>
+        </select>
+        <div style="float: right; margin-right: 10px; width:300px;">
+            <div class="btn-secondary" style=" height:40px;">
+               <div class="heading"> <i class="fas fa-flag"></i> Flag Contents:</div>
+            </div>
+            </div>
+            </div>
+
+          <!-- User Table -->
+          <div class="card w3">
+  <table id="userTable">
+    <thead>
+      <tr>
+        <th>Content ID</th>
+        <th>Author</th>
+        <th>Forum ID</th>
+        <th>Flagged By</th>
+        <th>Type</th>
+        <th>Reason</th>
+        <th>View</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- JS will inject rows -->
+    </tbody>
+  </table>
+</div>
+
+<!-- Section to show content details -->
+<div id="contentDetails" class="enter-blocks" style="display: none; margin-top: 20px;">
+  <h3>Flagged Content</h3>
+  <p id="contentText">Select a content to view details.</p>
+
+  <div class="action-buttons" style="margin-top: 20px; display: flex; gap: 10px;">
+    <button class="btn-secondary icon-btn" id="deleteContentBtn">Delete Content</button>
+    <button class="btn-secondary icon-btn" id="rejectReportBtn">Reject Report</button>
+    <button class="btn-secondary icon-btn" id="warnUserBtn">Warn User</button>
+    <button class="btn-secondary icon-btn" id="deleteUserBtn">Delete User</button>
+  </div>
+</div>
+
+          </div>
+        </div>
+      </main>     
+    </div>
+  </body>
+</html>
+<script src="../../js/topbar.js"></script>
+<script src="../../js/sidebar.js"></script>
+<script src="../../../js/bg-manager.js"></script>
+<script src="../../js/contentModeration.js"></script>
+

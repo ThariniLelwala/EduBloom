@@ -1,0 +1,171 @@
+ <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom Settings</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/topbar.css" />
+    <link rel="stylesheet" href="/css/sidebar.css" />
+    <link rel="stylesheet" href="/css/dashboard/user.css" />
+    <link rel="stylesheet" href="/css/cards.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+        .setting-item{
+            margin-top: 20px;
+            margin-left: 30px;
+        }
+        textarea {
+        margin-top: 5px;
+        font-size: large;
+        }
+        .icon-btn{
+          height:80px;
+        }
+        .icon-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+        transform: translateX(4px);
+        }
+        .account-info{
+           margin: 0; 
+           padding: 10px; 
+           background-color: rgba((255, 255, 255, 0.1)); 
+           border-radius: 4px;
+           border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        label{
+            font-weight: bold;
+            display: block; 
+            margin-bottom: 5px;
+        }
+        .info-row{
+            margin-bottom: 15px;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="bg-image"></div>
+    <div class="toast" id="toast"></div>
+
+    <!-- sidebar + content -->
+    <div class="container">
+      <div id="sidebar-container"></div>
+      <main id="content">
+        <div class="card-grid">
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">Settings</h1>
+              <div>
+                Shape the system your way - fine-tune EduBloom to perfection.
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+          <div class="card w3">
+            <div class="icon-btn card1" onclick="window.location.href='#acc'">
+              <div class="heading">Account settings</div>
+            </div>
+            <div class="icon-btn card1" onclick="window.location.href='#pwd'">
+              <div class="heading">Privacy settings</div>
+            </div>
+          <div class="icon-btn card1" onclick="window.location.href='accessControl.html#access'">
+            <div class="heading">Control Access</div>
+          </div>
+          <div class="icon-btn card1" onclick="window.location.href='appearanceSettings.html'">
+            <div class="heading">Theme Settings</div>
+          </div>
+          <div class="icon-btn card1" onclick="window.location.href='accessControl.html#notifications'">
+            <div class="heading">System Settings</div>
+          </div>
+        </div>
+          <div class="card full">
+          <div class="control-bar">
+          <div class="card-title"  style="position: relative; display: inline-block;">
+            <i class="fas fa-search" style="position: absolute; left: 10px; top: 40%; transform: translateY(-50%); color: #ccc;"></i>
+            <input type="text" id="searchInput" placeholder="Search setting options..."  style="padding-left: 35px;width: 25vw;"/>
+        </div>     
+        </div>
+        <div class="card w3" style="padding:20px; margin-top: 20px;">
+    <button class="btn-primary" style="float: right; margin-right: 10px; width:300px;" onclick="location.href='updateAcc.html'">
+        <i class="fa-solid fa-plus"></i> Go to update account details
+    </button>
+    <h3 id="acc">Account Settings</h3>
+    <div class="setting-item">
+        <div class="info-row">
+            <label>Admin Name:</label>
+            <p id="adminName" class="account-info">Sandamali Susanthika</p>
+        </div>
+        
+        <div class="info-row">
+            <label>Bio:</label>
+            <p id="adminBio" class="account-info">No one can beat</p>
+        </div>
+        
+        <div class="info-row">
+            <label>E-Mail:</label>
+            <p id="adminEmail" class="account-info">sandamali@admin.gmail.com</p>
+        </div>
+        
+        <div class="info-row" >
+            <label>Phone Number:</label>
+            <p id="adminPhone" class="account-info">0112755149</p>
+        </div>
+        
+        <div class="info-row">
+            <label>Birthday:</label>
+            <p id="adminBirthday" class="account-info">03/11/2003</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Function to load account details when page loads
+    function loadAccountDetails() {
+        // Retrieve saved data from sessionStorage or use default values
+        const adminName = sessionStorage.getItem('adminName') || 'Sandamali Susanthika';
+        const adminBio = sessionStorage.getItem('adminBio') || 'No one can beat';
+        const adminEmail = sessionStorage.getItem('adminEmail') || 'sandamali@admin.gmail.com';
+        const adminPhone = sessionStorage.getItem('adminPhone') || '0112755149';
+        const adminBirthday = sessionStorage.getItem('adminBirthday') || '03/11/2003';
+        
+        // Display the data
+        document.getElementById('adminName').textContent = adminName;
+        document.getElementById('adminBio').textContent = adminBio;
+        document.getElementById('adminEmail').textContent = adminEmail;
+        document.getElementById('adminPhone').textContent = adminPhone;
+        document.getElementById('adminBirthday').textContent = adminBirthday;
+    }
+    
+    // Load details when page loads
+    window.addEventListener('DOMContentLoaded', loadAccountDetails);
+</script>
+        <div class="card w3" style="padding:20px; margin-top: 20px;">
+            <button class="btn-primary" style="float: right; margin-right: 10px; width:300px;" onclick="changePassword()">
+                    <i class="fa-solid fa-plus"></i>Change Password</i>
+                </button>
+            <h3 id="pwd">Privacy Settings</h3>
+            <div class="setting-item">
+                <label>Change Password:</label>                
+                <input type="password" id="currentPassword" placeholder="Current Password" style="margin-top: 8px;">
+                <input type="password" id="newPassword" placeholder="New Password" style="margin-top: 8px;">
+                <input type="password" id="confirmPassword" placeholder="Confirm New Password" style="margin-top: 8px;">
+                
+            </div>
+    </div>
+        </div>
+      </main>
+    </div>
+    <script src="/js/sidebar.js"></script>
+    <script src="/js/topbar.js"></script>
+     <script src="/js/settings.js"></script>
+     <script src="../../../js/bg-manager.js"></script>
+    
+  </body>
+</html>

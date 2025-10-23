@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom FAQ Management</title>
+
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/topbar.css" />
+    <link rel="stylesheet" href="/css/sidebar.css" />
+    <link rel="stylesheet" href="/css/cards.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="/css/dashboard/action-btn.css" />
+    
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+
+    <div class="container">
+      <div id="sidebar-container"></div>
+
+      <main id="content">
+        <div class="card w3">
+          <h3>FAQ Management</h3>
+
+          <!-- Add New FAQ -->
+          <div class="add-faq" style="margin-bottom: 15px;">
+            <input type="text" id="faqQuestion" placeholder="Enter question" />
+            <input type="text" id="faqAnswer" placeholder="Enter answer" />
+            <button id="addFaqBtn" class=" btn-small btn-approve">Add FAQ</button>
+          </div>
+          </div>
+
+          <div class="card w3" style="margin-top: 20px;">
+          <h3>Recent FAQ</h3>
+          <!-- FAQ Table -->
+          <table>
+            <thead>
+              <tr>
+                <th>Question</th>
+                <th>Answer</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="faqTable">
+              <tr>
+                <td>How to manage users?</td>
+                <td>Go to the User Management section to edit or delete users.</td>
+                <td>
+                  <button class="btn-small btn-view">Edit</button>
+                  <button class="btn-small btn-delete">Delete</button>
+                </td>
+              </tr>
+              <tr>
+                <td>How to approve content?</td>
+                <td>Use the Content Review page to approve or reject submissions.</td>
+                <td>
+                  <button class="btn-small btn-view">Edit</button>
+                  <button class="btn-small btn-delete">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <button class="btn-primary" style="float: right; margin-top: 15px; width: 300px;" onclick="location.href='help.html'">
+          Back to Help
+        </button>
+      </main>
+    </div>
+
+    <script src="/js/sidebar.js"></script>
+    <script src="/js/topbar.js"></script>
+    <script>
+      // Add new FAQ
+      const addBtn = document.getElementById("addFaqBtn");
+      const faqTable = document.getElementById("faqTable");
+
+      addBtn.addEventListener("click", () => {
+        const question = document.getElementById("faqQuestion").value.trim();
+        const answer = document.getElementById("faqAnswer").value.trim();
+
+        if (question && answer) {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${question}</td>
+            <td>${answer}</td>
+            <td>
+              <button class="action-btn edit-btn">Edit</button>
+              <button class="action-btn delete-btn">Delete</button>
+            </td>
+          `;
+          faqTable.appendChild(row);
+
+          document.getElementById("faqQuestion").value = "";
+          document.getElementById("faqAnswer").value = "";
+        } else {
+          alert("Please enter both question and answer.");
+        }
+      });
+
+      // Delete FAQ
+      faqTable.addEventListener("click", (e) => {
+        if (e.target.classList.contains("delete-btn")) {
+          e.target.closest("tr").remove();
+        } else if (e.target.classList.contains("edit-btn")) {
+          const row = e.target.closest("tr");
+          const q = row.cells[0].textContent;
+          const a = row.cells[1].textContent;
+          const newQ = prompt("Edit Question:", q);
+          const newA = prompt("Edit Answer:", a);
+          if (newQ !== null && newA !== null) {
+            row.cells[0].textContent = newQ;
+            row.cells[1].textContent = newA;
+          }
+        }
+      });
+    </script>
+    <script src="../../../js/bg-manager.js"></script>
+  </body>
+</html>

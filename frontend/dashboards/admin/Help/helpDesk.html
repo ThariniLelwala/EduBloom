@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom Help Desk</title>
+
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/topbar.css" />
+    <link rel="stylesheet" href="/css/sidebar.css" />
+    <link rel="stylesheet" href="/css/cards.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="/css/dashboard/action-btn.css" />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+
+    <div class="container">
+      <div id="sidebar-container"></div>
+
+      <main id="content">
+        <div class="card w3">
+          <h3>Help Desk - User Tickets</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>User Name</th>
+                <th>Email</th>
+                <th>Subject / Issue</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>R. Perera</td>
+                <td>r.perera@example.com</td>
+                <td>Unable to reset password</td>
+                <td>2025-10-22</td>
+                <td>Open</td>
+                <td>
+                  <button class="btn-small btn-view">View / Reply</button>
+                  <button class="btn-small btn-delete">Close</button>
+                </td>
+              </tr>
+              <tr>
+                <td>K. Silva</td>
+                <td>k.silva@example.com</td>
+                <td>Issue with uploading assignment</td>
+                <td>2025-10-21</td>
+                <td>In Progress</td>
+                <td>
+                  <button class="btn-small btn-view">View / Reply</button>
+                  <button class="btn-small btn-delete">Close</button>
+                </td>
+              </tr>
+              <!-- Add more tickets dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <button class="btn-primary" style="float: right; margin-right: 10px; width:300px;" onclick="location.href='help.html'">
+          Back to Help
+        </button>
+      </main>
+    </div>
+
+    <script src="/js/sidebar.js"></script>
+    <script src="/js/topbar.js"></script>
+    <script src="../../../js/bg-manager.js"></script>
+  </body>
+</html>
