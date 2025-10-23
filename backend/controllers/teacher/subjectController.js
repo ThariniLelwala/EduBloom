@@ -1,17 +1,17 @@
-// controllers/studentController.js
-const studentService = require("../services/studentService");
-const { parseRequestBody } = require("../middleware/authMiddleware");
+// controllers/teacher/subjectController.js
+const subjectService = require("../../services/teacher/subjectService");
+const { parseRequestBody } = require("../../middleware/authMiddleware");
 
-class StudentController {
+class SubjectController {
   /**
    * Create a new subject
-   * POST /api/student/subjects/create
+   * POST /api/teacher/subjects/create
    */
   async createSubject(req, res) {
     try {
       const data = await parseRequestBody(req);
       const { name, description } = data;
-      const studentId = req.user.id;
+      const teacherId = req.user.id;
 
       if (!name) {
         res.writeHead(400, { "Content-Type": "application/json" });
@@ -19,8 +19,8 @@ class StudentController {
         return;
       }
 
-      const subject = await studentService.createSubject(
-        studentId,
+      const subject = await subjectService.createSubject(
+        teacherId,
         name,
         description || null
       );
@@ -39,13 +39,13 @@ class StudentController {
   }
 
   /**
-   * Get all subjects for the student
-   * GET /api/student/subjects
+   * Get all subjects for the teacher
+   * GET /api/teacher/subjects
    */
   async getSubjects(req, res) {
     try {
-      const studentId = req.user.id;
-      const subjects = await studentService.getStudentSubjects(studentId);
+      const teacherId = req.user.id;
+      const subjects = await subjectService.getTeacherSubjects(teacherId);
 
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(
@@ -62,11 +62,11 @@ class StudentController {
 
   /**
    * Get a specific subject with its topics
-   * GET /api/student/subjects/:subjectId
+   * GET /api/teacher/subjects/:subjectId
    */
   async getSubject(req, res) {
     try {
-      const studentId = req.user.id;
+      const teacherId = req.user.id;
       const pathname = req.url.split("?")[0];
       const subjectId = parseInt(pathname.split("/").pop());
 
@@ -76,9 +76,9 @@ class StudentController {
         return;
       }
 
-      const subject = await studentService.getSubjectWithTopics(
+      const subject = await subjectService.getSubjectWithTopics(
         subjectId,
-        studentId
+        teacherId
       );
 
       res.writeHead(200, { "Content-Type": "application/json" });
@@ -96,12 +96,12 @@ class StudentController {
 
   /**
    * Update a subject
-   * PUT /api/student/subjects/:subjectId
+   * PUT /api/teacher/subjects/:subjectId
    */
   async updateSubject(req, res) {
     try {
       const data = await parseRequestBody(req);
-      const studentId = req.user.id;
+      const teacherId = req.user.id;
       const pathname = req.url.split("?")[0];
       const subjectId = parseInt(pathname.split("/").pop());
 
@@ -111,9 +111,9 @@ class StudentController {
         return;
       }
 
-      const subject = await studentService.updateSubject(
+      const subject = await subjectService.updateSubject(
         subjectId,
-        studentId,
+        teacherId,
         data
       );
 
@@ -132,11 +132,11 @@ class StudentController {
 
   /**
    * Delete a subject
-   * DELETE /api/student/subjects/:subjectId
+   * DELETE /api/teacher/subjects/:subjectId
    */
   async deleteSubject(req, res) {
     try {
-      const studentId = req.user.id;
+      const teacherId = req.user.id;
       const pathname = req.url.split("?")[0];
       const subjectId = parseInt(pathname.split("/").pop());
 
@@ -146,7 +146,7 @@ class StudentController {
         return;
       }
 
-      const result = await studentService.deleteSubject(subjectId, studentId);
+      const result = await subjectService.deleteSubject(subjectId, teacherId);
 
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
@@ -158,13 +158,13 @@ class StudentController {
 
   /**
    * Create a topic within a subject
-   * POST /api/student/subjects/:subjectId/topics/create
+   * POST /api/teacher/subjects/:subjectId/topics/create
    */
   async createTopic(req, res) {
     try {
       const data = await parseRequestBody(req);
       const { name, description } = data;
-      const studentId = req.user.id;
+      const teacherId = req.user.id;
       const pathname = req.url.split("?")[0];
       const subjectId = parseInt(pathname.split("/")[4]);
 
@@ -180,9 +180,9 @@ class StudentController {
         return;
       }
 
-      const topic = await studentService.createTopic(
+      const topic = await subjectService.createTopic(
         subjectId,
-        studentId,
+        teacherId,
         name,
         description || null
       );
@@ -202,11 +202,11 @@ class StudentController {
 
   /**
    * Get topics for a subject
-   * GET /api/student/subjects/:subjectId/topics
+   * GET /api/teacher/subjects/:subjectId/topics
    */
   async getTopics(req, res) {
     try {
-      const studentId = req.user.id;
+      const teacherId = req.user.id;
       const pathname = req.url.split("?")[0];
       const subjectId = parseInt(pathname.split("/")[4]);
 
@@ -216,7 +216,7 @@ class StudentController {
         return;
       }
 
-      const topics = await studentService.getTopics(subjectId, studentId);
+      const topics = await subjectService.getTopics(subjectId, teacherId);
 
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(
@@ -233,11 +233,11 @@ class StudentController {
 
   /**
    * Delete a topic
-   * DELETE /api/student/subjects/:subjectId/topics/:topicId
+   * DELETE /api/teacher/subjects/:subjectId/topics/:topicId
    */
   async deleteTopic(req, res) {
     try {
-      const studentId = req.user.id;
+      const teacherId = req.user.id;
       const pathname = req.url.split("?")[0];
       const parts = pathname.split("/");
       const subjectId = parseInt(parts[4]);
@@ -249,137 +249,10 @@ class StudentController {
         return;
       }
 
-      const result = await studentService.deleteTopic(
+      const result = await subjectService.deleteTopic(
         topicId,
         subjectId,
-        studentId
-      );
-
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify(result));
-    } catch (err) {
-      res.writeHead(400, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: err.message }));
-    }
-  }
-
-  /**
-   * Add a module note (PDF file)
-   * POST /api/student/subjects/:subjectId/topics/:topicId/notes/create
-   */
-  async addModuleNote(req, res) {
-    try {
-      const data = await parseRequestBody(req);
-      const { title, file_name, file_url, google_drive_file_id } = data;
-      const studentId = req.user.id;
-      const pathname = req.url.split("?")[0];
-      const parts = pathname.split("/");
-      const subjectId = parseInt(parts[4]);
-      const topicId = parseInt(parts[6]);
-
-      if (!subjectId || isNaN(subjectId) || !topicId || isNaN(topicId)) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "Invalid subject or topic ID" }));
-        return;
-      }
-
-      if (!title || !file_name) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "Title and file name are required" }));
-        return;
-      }
-
-      const note = await studentService.addModuleNote(
-        topicId,
-        subjectId,
-        studentId,
-        title,
-        file_name,
-        file_url || null,
-        google_drive_file_id || null
-      );
-
-      res.writeHead(201, { "Content-Type": "application/json" });
-      res.end(
-        JSON.stringify({
-          message: "Module note added successfully",
-          note,
-        })
-      );
-    } catch (err) {
-      res.writeHead(400, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: err.message }));
-    }
-  }
-
-  /**
-   * Get module notes for a topic
-   * GET /api/student/subjects/:subjectId/topics/:topicId/notes
-   */
-  async getModuleNotes(req, res) {
-    try {
-      const studentId = req.user.id;
-      const pathname = req.url.split("?")[0];
-      const parts = pathname.split("/");
-      const subjectId = parseInt(parts[4]);
-      const topicId = parseInt(parts[6]);
-
-      if (!subjectId || isNaN(subjectId) || !topicId || isNaN(topicId)) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "Invalid subject or topic ID" }));
-        return;
-      }
-
-      const notes = await studentService.getModuleNotes(
-        topicId,
-        subjectId,
-        studentId
-      );
-
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(
-        JSON.stringify({
-          message: "Module notes retrieved successfully",
-          notes,
-        })
-      );
-    } catch (err) {
-      res.writeHead(400, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: err.message }));
-    }
-  }
-
-  /**
-   * Delete a module note
-   * DELETE /api/student/subjects/:subjectId/topics/:topicId/notes/:noteId
-   */
-  async deleteModuleNote(req, res) {
-    try {
-      const studentId = req.user.id;
-      const pathname = req.url.split("?")[0];
-      const parts = pathname.split("/");
-      const subjectId = parseInt(parts[4]);
-      const topicId = parseInt(parts[6]);
-      const noteId = parseInt(parts[8]);
-
-      if (
-        !subjectId ||
-        isNaN(subjectId) ||
-        !topicId ||
-        isNaN(topicId) ||
-        !noteId ||
-        isNaN(noteId)
-      ) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "Invalid IDs" }));
-        return;
-      }
-
-      const result = await studentService.deleteModuleNote(
-        noteId,
-        topicId,
-        subjectId,
-        studentId
+        teacherId
       );
 
       res.writeHead(200, { "Content-Type": "application/json" });
@@ -391,4 +264,4 @@ class StudentController {
   }
 }
 
-module.exports = new StudentController();
+module.exports = new SubjectController();

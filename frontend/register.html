@@ -26,12 +26,52 @@
         <h2 class="signText">Sign Up</h2>
         <input type="text" name="username" placeholder="Username" required />
         <input type="email" name="email" placeholder="Email" required />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          required
-        />
+        <div style="position: relative; margin-bottom: 10px">
+          <input
+            type="password"
+            name="password"
+            id="passwordInput"
+            placeholder="Password (min 8 chars, uppercase, number, special char)"
+            required
+          />
+          <div
+            id="passwordStrengthIndicator"
+            style="margin-top: 5px; font-size: 12px; display: none"
+          >
+            <div style="margin-bottom: 5px">
+              <div
+                style="
+                  background: #e0e0e0;
+                  height: 4px;
+                  border-radius: 2px;
+                  overflow: hidden;
+                "
+              >
+                <div
+                  id="strengthBar"
+                  style="
+                    background: #ccc;
+                    height: 100%;
+                    width: 0%;
+                    transition: width 0.3s, background 0.3s;
+                  "
+                ></div>
+              </div>
+            </div>
+            <div id="strengthText" style="color: #666"></div>
+            <div id="requirementsList" style="margin-top: 5px; color: #666">
+              <div><span id="req-length">✗</span> At least 8 characters</div>
+              <div>
+                <span id="req-upper">✗</span> At least one uppercase letter
+              </div>
+              <div><span id="req-number">✗</span> At least one number</div>
+              <div>
+                <span id="req-special">✗</span> At least one special character
+                (!@#$%^&*)
+              </div>
+            </div>
+          </div>
+        </div>
         <select name="role" class="custom-select" required id="roleSelect">
           <option value="">Select Role</option>
           <option value="student_school">School Student</option>
@@ -64,6 +104,96 @@
       const studentIdentifierInput = document.getElementById(
         "studentIdentifierInput"
       );
+      const passwordInput = document.getElementById("passwordInput");
+      const strengthIndicator = document.getElementById(
+        "passwordStrengthIndicator"
+      );
+      const strengthBar = document.getElementById("strengthBar");
+      const strengthText = document.getElementById("strengthText");
+
+      // Password validation requirements
+      const passwordRequirements = {
+        length: /^.{8,}$/, // At least 8 characters
+        uppercase: /[A-Z]/, // At least one uppercase
+        number: /\d/, // At least one number
+        special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, // At least one special character
+      };
+
+      // Function to validate password strength
+      function validatePasswordStrength(password) {
+        const checks = {
+          length: passwordRequirements.length.test(password),
+          uppercase: passwordRequirements.uppercase.test(password),
+          number: passwordRequirements.number.test(password),
+          special: passwordRequirements.special.test(password),
+        };
+
+        // Update UI indicators
+        document.getElementById("req-length").textContent = checks.length
+          ? "✓"
+          : "✗";
+        document.getElementById("req-length").style.color = checks.length
+          ? "green"
+          : "red";
+
+        document.getElementById("req-upper").textContent = checks.uppercase
+          ? "✓"
+          : "✗";
+        document.getElementById("req-upper").style.color = checks.uppercase
+          ? "green"
+          : "red";
+
+        document.getElementById("req-number").textContent = checks.number
+          ? "✓"
+          : "✗";
+        document.getElementById("req-number").style.color = checks.number
+          ? "green"
+          : "red";
+
+        document.getElementById("req-special").textContent = checks.special
+          ? "✓"
+          : "✗";
+        document.getElementById("req-special").style.color = checks.special
+          ? "green"
+          : "red";
+
+        // Calculate strength
+        const met = Object.values(checks).filter(Boolean).length;
+        const strength = (met / 4) * 100;
+
+        // Update strength bar
+        strengthBar.style.width = strength + "%";
+        if (strength < 50) {
+          strengthBar.style.background = "#f44336"; // Red
+          strengthText.textContent = "Weak";
+          strengthText.style.color = "#f44336";
+        } else if (strength < 100) {
+          strengthBar.style.background = "#ff9800"; // Orange
+          strengthText.textContent = "Fair";
+          strengthText.style.color = "#ff9800";
+        } else {
+          strengthBar.style.background = "#4caf50"; // Green
+          strengthText.textContent = "Strong";
+          strengthText.style.color = "#4caf50";
+        }
+
+        return (
+          checks.length && checks.uppercase && checks.number && checks.special
+        );
+      }
+
+      // Show/hide password strength indicator
+      passwordInput.addEventListener("focus", () => {
+        strengthIndicator.style.display = "block";
+      });
+
+      passwordInput.addEventListener("input", () => {
+        if (passwordInput.value) {
+          validatePasswordStrength(passwordInput.value);
+        } else {
+          strengthIndicator.style.display = "none";
+        }
+      });
 
       // Show/hide fields based on role selection
       roleSelect.addEventListener("change", (e) => {
@@ -81,6 +211,14 @@
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
+
+        // Validate password strength
+        if (!validatePasswordStrength(passwordInput.value)) {
+          messageDiv.textContent =
+            "Password does not meet all strength requirements. Please check the requirements below the password field.";
+          messageDiv.style.color = "red";
+          return;
+        }
 
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());

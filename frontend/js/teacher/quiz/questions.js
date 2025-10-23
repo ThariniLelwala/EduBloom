@@ -13,80 +13,30 @@ subjectHeading.textContent = quizName;
 let currentQuestions = [];
 let editingId = null; // Track which question is being edited
 
-async function loadQuestions() {
-  // Check if this is a shared quiz from JSON or teacher-created
-  const isSharedQuiz = quizId <= 399; // Assuming quiz.json quiz IDs are <= 399
-
-  if (isSharedQuiz) {
-    // Check if teacher has modified this shared quiz
-    const modifiedQuizzes =
-      localStorage.getItem("teacher_modified_quizzes") || "{}";
-    const quizzes = JSON.parse(modifiedQuizzes);
-
-    if (quizzes[quizId]) {
-      // Load modified version
-      currentQuestions = quizzes[quizId].questions || [];
-    } else {
-      // Load from JSON file for shared quizzes
-      const res = await fetch("/data/quiz.json");
-      const data = await res.json();
-
-      const subject = data.subjects.find((s) => s.id === subjectId);
-      if (!subject) return;
-
-      const quiz = subject.quizzes.find((q) => q.id === quizId);
-      if (!quiz) return;
-
-      currentQuestions = quiz.questions || [];
-    }
-  } else {
-    // Load from teacher localStorage for teacher-created quizzes
-    const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-    const subjects = teacherSubjects ? JSON.parse(teacherSubjects) : [];
-
-    const subject = subjects.find((s) => s.id === subjectId);
-    if (!subject) return;
-
-    const quiz = subject.quizzes.find((q) => q.id === quizId);
-    if (!quiz) return;
-
-    currentQuestions = quiz.questions || [];
+function checkAuth() {
+  const token = localStorage.getItem("authToken");
+  const userRole = localStorage.getItem("userRole");
+  if (!token) {
+    showMessage("Please log in to access quizzes.", "error");
+    setTimeout(() => (window.location.href = "/login.html"), 2000);
+    return false;
   }
-
-  // Show add question button for all quizzes in teacher view
-  const addBtn = document.getElementById("add-question-btn");
-  if (addBtn) {
-    addBtn.style.display = "block";
+  if (userRole !== "teacher") {
+    showMessage("Only teachers can access this page.", "error");
+    setTimeout(() => (window.location.href = "/"), 2000);
+    return false;
   }
-
-  renderQuestions();
+  return true;
 }
 
-function saveQuestions() {
-  const isSharedQuiz = quizId <= 399; // Assuming quiz.json quiz IDs are <= 399
-
-  if (isSharedQuiz) {
-    // Save modifications to shared quizzes in localStorage
-    const modifiedQuizzes =
-      localStorage.getItem("teacher_modified_quizzes") || "{}";
-    const quizzes = JSON.parse(modifiedQuizzes);
-    quizzes[quizId] = { questions: currentQuestions };
-    localStorage.setItem("teacher_modified_quizzes", JSON.stringify(quizzes));
-  } else {
-    // Save teacher-created quizzes normally
-    const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-    let subjects = teacherSubjects ? JSON.parse(teacherSubjects) : [];
-
-    const subjectIndex = subjects.findIndex((s) => s.id === subjectId);
-    if (subjectIndex === -1) return;
-
-    const quizIndex = subjects[subjectIndex].quizzes.findIndex(
-      (q) => q.id === quizId
-    );
-    if (quizIndex === -1) return;
-
-    subjects[subjectIndex].quizzes[quizIndex].questions = currentQuestions;
-    localStorage.setItem("teacher_quiz_subjects", JSON.stringify(subjects));
+async function loadQuestions() {
+  try {
+    const quiz = await QuizAPI.getQuizSet(quizId);
+    currentQuestions = quiz.questions || [];
+    renderQuestions();
+  } catch (error) {
+    console.error("Error loading questions:", error);
+    showMessage(error.message, "error");
   }
 }
 
@@ -98,7 +48,7 @@ function renderQuestions() {
     card.innerHTML = `
     <div class="question-header">
       <div class="question-text">
-      ${i + 1}. ${q.question}
+      ${i + 1}. ${q.question_text}
       </div>
       <div class="question-actions">
         <i class="edit-btn fas fa-edit icon-btn"></i>
@@ -109,7 +59,9 @@ function renderQuestions() {
         ${q.answers
           .map(
             (ans) =>
-              `<li class="${ans === q.correct ? "correct" : ""}">${ans}</li>`
+              `<li class="${ans.is_correct ? "correct" : ""}">${
+                ans.answer_text
+              }</li>`
           )
           .join("")}
       </ul>
@@ -120,16 +72,22 @@ function renderQuestions() {
       openEditModal(q.id);
     });
 
-    // Delete button with confirmation showing question text
+    // Delete button with confirmation
     card.querySelector(".delete-btn").addEventListener("click", async () => {
       if (
         await showConfirmation(
-          `Are you sure you want to delete this question?\n\n"${q.question}"`
+          `Are you sure you want to delete this question?\n\n"${q.question_text}"`
         )
       ) {
-        currentQuestions = currentQuestions.filter((ques) => ques.id !== q.id);
-        saveQuestions();
-        renderQuestions();
+        try {
+          await QuizAPI.deleteQuestion(q.id);
+          currentQuestions = currentQuestions.filter(
+            (ques) => ques.id !== q.id
+          );
+          renderQuestions();
+        } catch (error) {
+          showMessage(error.message, "error");
+        }
       }
     });
 
@@ -189,49 +147,74 @@ closeBtn.addEventListener("click", () => (modal.style.display = "none"));
 function saveQuestion(closeAfter = true) {
   const questionText = questionInput.value.trim();
   const answerInputs = [...answersContainer.querySelectorAll(".answer-input")];
-  const answers = answerInputs.map((a) => a.value.trim()).filter(Boolean);
+  const answers = answerInputs
+    .map((a, idx) => ({
+      text: a.value.trim(),
+      is_correct:
+        answersContainer.querySelectorAll("input[type=radio]")[idx].checked,
+    }))
+    .filter((ans) => ans.text);
 
-  const correctIndex = [
-    ...answersContainer.querySelectorAll("input[type=radio]"),
-  ].findIndex((r) => r.checked);
+  const correctCount = answers.filter((a) => a.is_correct).length;
 
-  if (!questionText || answers.length < 2 || correctIndex === -1) {
-    alert(
-      "Please fill in the question, add at least 2 answers, and select the correct one."
+  if (!questionText || answers.length < 2 || correctCount !== 1) {
+    showMessage(
+      "Please fill in the question, add at least 2 answers, and select exactly one correct answer.",
+      "error"
     );
     return;
   }
 
   if (editingId) {
     // Update existing question
-    const qIndex = currentQuestions.findIndex((q) => q.id === editingId);
-    if (qIndex !== -1) {
-      currentQuestions[qIndex] = {
-        id: editingId,
-        question: questionText,
-        answers,
-        correct: answers[correctIndex],
-      };
-    }
-    editingId = null; // clear editing state
+    saveEditedQuestion(questionText, answers, closeAfter);
   } else {
     // Create new question
-    const newQuestion = {
-      id: Date.now(),
-      question: questionText,
-      answers,
-      correct: answers[correctIndex],
-    };
-    currentQuestions.push(newQuestion);
+    saveNewQuestion(questionText, answers, closeAfter);
   }
+}
 
-  saveQuestions();
-  renderQuestions();
+async function saveNewQuestion(questionText, answers, closeAfter) {
+  try {
+    const newQuestion = await QuizAPI.createQuestion(
+      quizId,
+      questionText,
+      answers
+    );
+    currentQuestions.push(newQuestion);
+    renderQuestions();
 
-  if (closeAfter) {
-    modal.style.display = "none";
-  } else {
-    resetModal();
+    if (closeAfter) {
+      modal.style.display = "none";
+    } else {
+      resetModal();
+    }
+  } catch (error) {
+    showMessage(error.message, "error");
+  }
+}
+
+async function saveEditedQuestion(questionText, answers, closeAfter) {
+  try {
+    const updated = await QuizAPI.updateQuestion(
+      editingId,
+      questionText,
+      answers
+    );
+    const index = currentQuestions.findIndex((q) => q.id === editingId);
+    if (index !== -1) {
+      currentQuestions[index] = updated;
+    }
+    editingId = null;
+    renderQuestions();
+
+    if (closeAfter) {
+      modal.style.display = "none";
+    } else {
+      resetModal();
+    }
+  } catch (error) {
+    showMessage(error.message, "error");
   }
 }
 
@@ -244,14 +227,37 @@ function openEditModal(id) {
   if (!q) return;
 
   editingId = id;
-  questionInput.value = q.question;
+  questionInput.value = q.question_text;
   answersContainer.innerHTML = "";
 
   q.answers.forEach((ans) => {
-    addAnswerField(ans, ans === q.correct);
+    addAnswerField(ans.answer_text, ans.is_correct);
   });
 
   modal.style.display = "flex";
 }
 
-loadQuestions();
+// Show message helper
+function showMessage(msg, type) {
+  const messageDiv = document.createElement("div");
+  messageDiv.textContent = msg;
+  messageDiv.style.padding = "10px 15px";
+  messageDiv.style.marginTop = "10px";
+  messageDiv.style.borderRadius = "4px";
+  messageDiv.style.color = type === "error" ? "#d32f2f" : "#388e3c";
+  messageDiv.style.backgroundColor = type === "error" ? "#ffebee" : "#e8f5e9";
+  messageDiv.style.border =
+    type === "error" ? "1px solid #d32f2f" : "1px solid #388e3c";
+
+  const existingMessage = document.querySelector("[data-message]");
+  if (existingMessage) existingMessage.remove();
+
+  messageDiv.setAttribute("data-message", "true");
+  container.parentElement.insertBefore(messageDiv, container);
+
+  setTimeout(() => messageDiv.remove(), 3000);
+}
+
+if (checkAuth()) {
+  loadQuestions();
+}

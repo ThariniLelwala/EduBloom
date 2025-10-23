@@ -58,10 +58,11 @@ const server = http.createServer((req, res) => {
       return;
     }
 
-    // Check if it's a teacher module route (subjects, topics, notes) - these go to teacherRoutes
+    // Check if it's a teacher module route (subjects, topics, notes, quiz) - these go to teacherRoutes
     if (
       pathname.startsWith("/api/teacher/subjects") ||
       pathname.startsWith("/api/teacher/notes") ||
+      pathname.startsWith("/api/teacher/quiz") ||
       (pathname.startsWith("/api/teacher/") && pathname.includes("/notes"))
     ) {
       const teacherResult = handleTeacherRoutes(req, res);

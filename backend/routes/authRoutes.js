@@ -1,7 +1,7 @@
 // routes/authRoutes.js
 const authController = require("../controllers/authController");
 const parentController = require("../controllers/parentController");
-const teacherController = require("../controllers/teacherController");
+const verificationController = require("../controllers/teacher/verificationController");
 const {
   verifyToken,
   requireRole,
@@ -124,42 +124,42 @@ function handleAuthRoutes(req, res) {
     if (method === "GET" && pathname === "/api/teacher/verification-status") {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.getVerificationStatus
+        verificationController.getVerificationStatus
       )(req, res);
     }
 
     if (method === "POST" && pathname === "/api/teacher/request-verification") {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.requestVerification
+        verificationController.requestVerification
       )(req, res);
     }
 
     if (method === "GET" && pathname === "/api/admin/teacher-verifications") {
       return applyMiddleware(
         [verifyToken, requireRole("admin")],
-        teacherController.getPendingVerifications
+        verificationController.getPendingVerifications
       )(req, res);
     }
 
     if (method === "POST" && pathname === "/api/admin/approve-verification") {
       return applyMiddleware(
         [verifyToken, requireRole("admin")],
-        teacherController.approveVerification
+        verificationController.approveVerification
       )(req, res);
     }
 
     if (method === "POST" && pathname === "/api/admin/reject-verification") {
       return applyMiddleware(
         [verifyToken, requireRole("admin")],
-        teacherController.rejectVerification
+        verificationController.rejectVerification
       )(req, res);
     }
 
     if (method === "PUT" && pathname === "/api/teacher/update-verification") {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.updateVerification
+        verificationController.updateVerification
       )(req, res);
     }
 
@@ -169,7 +169,7 @@ function handleAuthRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.deleteVerification
+        verificationController.deleteVerification
       )(req, res);
     }
 
@@ -179,7 +179,7 @@ function handleAuthRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.downloadVerificationFile
+        verificationController.downloadVerificationFile
       )(req, res);
     }
 

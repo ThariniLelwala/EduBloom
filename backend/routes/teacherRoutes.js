@@ -1,5 +1,8 @@
 // routes/teacherRoutes.js
-const teacherController = require("../controllers/teacherController");
+const subjectController = require("../controllers/teacher/subjectController");
+const notesController = require("../controllers/teacher/notesController");
+const verificationController = require("../controllers/teacher/verificationController");
+const quizController = require("../controllers/teacher/quizController");
 const {
   verifyToken,
   requireRole,
@@ -16,7 +19,7 @@ function handleTeacherRoutes(req, res) {
     if (method === "POST" && pathname === "/api/teacher/subjects/create") {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.createSubject
+        subjectController.createSubject
       )(req, res);
     }
 
@@ -24,7 +27,7 @@ function handleTeacherRoutes(req, res) {
     if (method === "GET" && pathname === "/api/teacher/subjects") {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.getSubjects
+        subjectController.getSubjects
       )(req, res);
     }
 
@@ -32,7 +35,7 @@ function handleTeacherRoutes(req, res) {
     if (method === "GET" && pathname.match(/^\/api\/teacher\/subjects\/\d+$/)) {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.getSubject
+        subjectController.getSubject
       )(req, res);
     }
 
@@ -40,7 +43,7 @@ function handleTeacherRoutes(req, res) {
     if (method === "PUT" && pathname.match(/^\/api\/teacher\/subjects\/\d+$/)) {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.updateSubject
+        subjectController.updateSubject
       )(req, res);
     }
 
@@ -51,7 +54,7 @@ function handleTeacherRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.deleteSubject
+        subjectController.deleteSubject
       )(req, res);
     }
 
@@ -63,7 +66,7 @@ function handleTeacherRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.createTopic
+        subjectController.createTopic
       )(req, res);
     }
 
@@ -74,7 +77,7 @@ function handleTeacherRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.getTopics
+        subjectController.getTopics
       )(req, res);
     }
 
@@ -85,7 +88,7 @@ function handleTeacherRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.deleteTopic
+        subjectController.deleteTopic
       )(req, res);
     }
 
@@ -99,7 +102,7 @@ function handleTeacherRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.addModuleNote
+        notesController.addModuleNote
       )(req, res);
     }
 
@@ -110,7 +113,7 @@ function handleTeacherRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.getModuleNotes
+        notesController.getModuleNotes
       )(req, res);
     }
 
@@ -121,7 +124,7 @@ function handleTeacherRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.deleteModuleNote
+        notesController.deleteModuleNote
       )(req, res);
     }
 
@@ -132,7 +135,7 @@ function handleTeacherRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
-        teacherController.updateNoteVisibility
+        notesController.updateNoteVisibility
       )(req, res);
     }
 
@@ -141,10 +144,188 @@ function handleTeacherRoutes(req, res) {
       method === "GET" &&
       pathname.match(/^\/api\/teacher\/\d+\/notes\/public$/)
     ) {
-      return applyMiddleware([verifyToken], teacherController.getPublicNotes)(
+      return applyMiddleware([verifyToken], notesController.getPublicNotes)(
         req,
         res
       );
+    }
+
+    // ========== QUIZ MANAGEMENT ROUTES ==========
+
+    // Quiz Subjects routes
+    // Create subject: POST /api/teacher/quiz/subjects
+    if (method === "POST" && pathname === "/api/teacher/quiz/subjects") {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        quizController.createSubject
+      )(req, res);
+    }
+
+    // Get all subjects: GET /api/teacher/quiz/subjects
+    if (method === "GET" && pathname === "/api/teacher/quiz/subjects") {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        quizController.getSubjects
+      )(req, res);
+    }
+
+    // Get specific subject: GET /api/teacher/quiz/subjects/:subjectId
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/teacher\/quiz\/subjects\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        quizController.getSubject
+      )(req, res);
+    }
+
+    // Update subject: PUT /api/teacher/quiz/subjects/:subjectId
+    if (
+      method === "PUT" &&
+      pathname.match(/^\/api\/teacher\/quiz\/subjects\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        quizController.updateSubject
+      )(req, res);
+    }
+
+    // Delete subject: DELETE /api/teacher/quiz/subjects/:subjectId
+    if (
+      method === "DELETE" &&
+      pathname.match(/^\/api\/teacher\/quiz\/subjects\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        quizController.deleteSubject
+      )(req, res);
+    }
+
+    // Quiz Sets routes
+    // Create quiz set: POST /api/teacher/quiz/subjects/:subjectId/quiz-sets
+    if (
+      method === "POST" &&
+      pathname.match(/^\/api\/teacher\/quiz\/subjects\/\d+\/quiz-sets$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        quizController.createQuizSet
+      )(req, res);
+    }
+
+    // Get all quiz sets for subject: GET /api/teacher/quiz/subjects/:subjectId/quiz-sets
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/teacher\/quiz\/subjects\/\d+\/quiz-sets$/)
+    ) {
+      return applyMiddleware([verifyToken], quizController.getQuizSets)(
+        req,
+        res
+      );
+    }
+
+    // Get specific quiz set: GET /api/teacher/quiz/quiz-sets/:quizSetId
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/teacher\/quiz\/quiz-sets\/\d+$/)
+    ) {
+      return applyMiddleware([verifyToken], quizController.getQuizSet)(
+        req,
+        res
+      );
+    }
+
+    // Update quiz set: PUT /api/teacher/quiz/quiz-sets/:quizSetId
+    if (
+      method === "PUT" &&
+      pathname.match(/^\/api\/teacher\/quiz\/quiz-sets\/\d+$/) &&
+      !pathname.includes("reorder")
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        quizController.updateQuizSet
+      )(req, res);
+    }
+
+    // Delete quiz set: DELETE /api/teacher/quiz/quiz-sets/:quizSetId
+    if (
+      method === "DELETE" &&
+      pathname.match(/^\/api\/teacher\/quiz\/quiz-sets\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        quizController.deleteQuizSet
+      )(req, res);
+    }
+
+    // Questions routes
+    // Create question: POST /api/teacher/quiz/quiz-sets/:quizSetId/questions
+    if (
+      method === "POST" &&
+      pathname.match(/^\/api\/teacher\/quiz\/quiz-sets\/\d+\/questions$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        quizController.createQuestion
+      )(req, res);
+    }
+
+    // Get all questions: GET /api/teacher/quiz/quiz-sets/:quizSetId/questions
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/teacher\/quiz\/quiz-sets\/\d+\/questions$/)
+    ) {
+      return applyMiddleware([verifyToken], quizController.getQuestions)(
+        req,
+        res
+      );
+    }
+
+    // Get specific question: GET /api/teacher/quiz/questions/:questionId
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/teacher\/quiz\/questions\/\d+$/)
+    ) {
+      return applyMiddleware([verifyToken], quizController.getQuestion)(
+        req,
+        res
+      );
+    }
+
+    // Update question: PUT /api/teacher/quiz/questions/:questionId
+    if (
+      method === "PUT" &&
+      pathname.match(/^\/api\/teacher\/quiz\/questions\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        quizController.updateQuestion
+      )(req, res);
+    }
+
+    // Delete question: DELETE /api/teacher/quiz/questions/:questionId
+    if (
+      method === "DELETE" &&
+      pathname.match(/^\/api\/teacher\/quiz\/questions\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        quizController.deleteQuestion
+      )(req, res);
+    }
+
+    // Reorder questions: PUT /api/teacher/quiz/quiz-sets/:quizSetId/reorder-questions
+    if (
+      method === "PUT" &&
+      pathname.match(
+        /^\/api\/teacher\/quiz\/quiz-sets\/\d+\/reorder-questions$/
+      )
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        quizController.reorderQuestions
+      )(req, res);
     }
 
     // Route not found in teacher routes

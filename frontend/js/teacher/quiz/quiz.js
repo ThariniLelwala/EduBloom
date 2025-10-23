@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const container = document.getElementById("subjects-container");
   const modal = document.getElementById("subject-modal");
   const modalTitle = document.getElementById("modal-title");
@@ -9,37 +9,38 @@ document.addEventListener("DOMContentLoaded", () => {
   let subjects = [];
   let editId = null;
 
-  // Load subjects from quiz.json (shared with students)
+  // Check authentication and role
+  function checkAuth() {
+    const token = localStorage.getItem("authToken");
+    const userRole = localStorage.getItem("userRole");
+
+    if (!token) {
+      showMessage("Please log in to access quizzes.", "error");
+      setTimeout(() => (window.location.href = "/login.html"), 2000);
+      return false;
+    }
+
+    if (userRole !== "teacher") {
+      showMessage("Only teachers can access this page.", "error");
+      setTimeout(() => (window.location.href = "/"), 2000);
+      return false;
+    }
+
+    return true;
+  }
+
+  // Load subjects from backend
   async function loadSubjects() {
     try {
-      const res = await fetch("/data/quiz.json");
-      const data = await res.json();
-      subjects = data.subjects || [];
-
-      // Add any teacher-specific subjects from localStorage
-      const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-      if (teacherSubjects) {
-        const teacherData = JSON.parse(teacherSubjects);
-        subjects = [...subjects, ...teacherData];
-      }
-
+      subjects = await QuizAPI.getSubjects();
       renderSubjects();
     } catch (error) {
       console.error("Error loading subjects:", error);
-      // Fallback to localStorage if quiz.json fails
-      const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-      subjects = teacherSubjects ? JSON.parse(teacherSubjects) : [];
-      renderSubjects();
+      showMessage(
+        error.message || "Failed to load quizzes. Please try again.",
+        "error"
+      );
     }
-  }
-
-  // Save subjects to localStorage (only teacher-created subjects)
-  function saveSubjects() {
-    const teacherSubjects = subjects.filter((subj) => subj.id > 3);
-    localStorage.setItem(
-      "teacher_quiz_subjects",
-      JSON.stringify(teacherSubjects)
-    );
   }
 
   function renderSubjects() {
@@ -79,11 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Edit subject
       dropdown.querySelector(".edit").addEventListener("click", () => {
-        if (isSharedSubject) {
-          alert("Cannot edit shared subjects. Create a new subject instead.");
-          dropdown.style.display = "none";
-          return;
-        }
         editId = subj.id;
         modalTitle.textContent = "Edit Subject";
         input.value = subj.name;
@@ -93,19 +89,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Delete subject
       dropdown.querySelector(".delete").addEventListener("click", async () => {
-        if (isSharedSubject) {
-          alert("Cannot delete shared subjects.");
-          dropdown.style.display = "none";
-          return;
-        }
         const confirmed = await showConfirmation(
           `Delete "${subj.name}" and all its quizzes?`,
           "Delete Subject"
         );
         if (confirmed) {
-          subjects = subjects.filter((s) => s.id !== subj.id);
-          saveSubjects();
-          renderSubjects();
+          try {
+            await QuizAPI.deleteSubject(subj.id);
+            subjects = subjects.filter((s) => s.id !== subj.id);
+            renderSubjects();
+          } catch (error) {
+            showMessage(error.message, "error");
+          }
         }
         dropdown.style.display = "none";
       });
@@ -133,26 +128,30 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  saveBtn.addEventListener("click", () => {
+  saveBtn.addEventListener("click", async () => {
     const name = input.value.trim();
-    if (!name) return;
-
-    if (editId) {
-      // Check if trying to edit a shared subject
-      if (editId <= 3) {
-        alert("Cannot edit shared subjects. Create a new subject instead.");
-        modal.style.display = "none";
-        return;
-      }
-      const subj = subjects.find((s) => s.id === editId);
-      if (subj) subj.name = name;
-    } else {
-      subjects.push({ id: Date.now(), name, quizzes: [] });
+    if (!name) {
+      showMessage("Please enter a subject name", "error");
+      return;
     }
 
-    saveSubjects();
-    modal.style.display = "none";
-    renderSubjects();
+    try {
+      if (editId) {
+        const updated = await QuizAPI.updateSubject(editId, name, null);
+        const index = subjects.findIndex((s) => s.id === editId);
+        if (index !== -1) {
+          subjects[index] = updated;
+        }
+      } else {
+        const newSubject = await QuizAPI.createSubject(name, null);
+        subjects.push(newSubject);
+      }
+
+      modal.style.display = "none";
+      renderSubjects();
+    } catch (error) {
+      showMessage(error.message, "error");
+    }
   });
 
   closeBtn.addEventListener("click", () => (modal.style.display = "none"));
@@ -163,13 +162,31 @@ document.addEventListener("DOMContentLoaded", () => {
       .forEach((dd) => (dd.style.display = "none"));
   });
 
-  loadSubjects();
+  // Show message helper
+  function showMessage(msg, type) {
+    const messageDiv = document.createElement("div");
+    messageDiv.textContent = msg;
+    messageDiv.style.padding = "10px 15px";
+    messageDiv.style.marginTop = "10px";
+    messageDiv.style.borderRadius = "4px";
+    messageDiv.style.color = type === "error" ? "#d32f2f" : "#388e3c";
+    messageDiv.style.backgroundColor = type === "error" ? "#ffebee" : "#e8f5e9";
+    messageDiv.style.border =
+      type === "error" ? "1px solid #d32f2f" : "1px solid #388e3c";
 
-  document.addEventListener("click", () => {
-    document
-      .querySelectorAll(".dropdown")
-      .forEach((dd) => (dd.style.display = "none"));
-  });
+    const existingMessage = document.querySelector("[data-message]");
+    if (existingMessage) existingMessage.remove();
+
+    messageDiv.setAttribute("data-message", "true");
+    container.parentElement.insertBefore(messageDiv, container);
+
+    setTimeout(() => messageDiv.remove(), 3000);
+  }
+
+  // Verify authentication before loading
+  if (!checkAuth()) {
+    return; // Stop execution if not authenticated
+  }
 
   loadSubjects();
 });

@@ -67,6 +67,23 @@ function requireAuth(req, res, next) {
   next();
 }
 
+// Helper function to extract user from token (synchronous extraction from request)
+function extractUserFromToken(req) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return null;
+    }
+
+    const token = authHeader.split(" ")[1];
+    const { verifyTokenSync } = require("../utils/token");
+    const user = verifyTokenSync(token);
+    return user;
+  } catch (err) {
+    return null;
+  }
+}
+
 // Helper function to apply middleware chain
 function applyMiddleware(middlewares, handler) {
   return async (req, res) => {

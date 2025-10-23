@@ -187,6 +187,81 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_teacher_verifications_submitted_at ON teacher_verifications(submitted_at DESC);
     `);
 
+    // Quiz Subjects table (created by teachers)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS quiz_subjects (
+        id SERIAL PRIMARY KEY,
+        teacher_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name VARCHAR(150) NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Quiz Sets table (quizzes/tests within a subject)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS quiz_sets (
+        id SERIAL PRIMARY KEY,
+        subject_id INT NOT NULL REFERENCES quiz_subjects(id) ON DELETE CASCADE,
+        name VARCHAR(150) NOT NULL,
+        description TEXT,
+        is_published BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Quiz Questions table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS quiz_questions (
+        id SERIAL PRIMARY KEY,
+        quiz_set_id INT NOT NULL REFERENCES quiz_sets(id) ON DELETE CASCADE,
+        question_text VARCHAR(1000) NOT NULL,
+        question_order INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Quiz Answers table (options for each question)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS quiz_answers (
+        id SERIAL PRIMARY KEY,
+        question_id INT NOT NULL REFERENCES quiz_questions(id) ON DELETE CASCADE,
+        answer_text VARCHAR(500) NOT NULL,
+        is_correct BOOLEAN DEFAULT FALSE,
+        answer_order INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Create indexes for better performance
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_quiz_subjects_teacher_id ON quiz_subjects(teacher_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_quiz_sets_subject_id ON quiz_sets(subject_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_quiz_sets_is_published ON quiz_sets(is_published);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_quiz_questions_quiz_set_id ON quiz_questions(quiz_set_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_quiz_answers_question_id ON quiz_answers(question_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_quiz_answers_is_correct ON quiz_answers(is_correct);
+    `);
+
     console.log("✅ Database tables and indexes created successfully");
 
     // Check if admin user exists, if not create one

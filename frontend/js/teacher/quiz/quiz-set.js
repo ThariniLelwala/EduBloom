@@ -17,77 +17,38 @@ document.addEventListener("DOMContentLoaded", async () => {
   let quizzes = [];
   let editId = null;
 
-  // Load quizzes from quiz.json and teacher localStorage
+  // Check authentication
+  function checkAuth() {
+    const token = localStorage.getItem("authToken");
+    const userRole = localStorage.getItem("userRole");
+
+    if (!token) {
+      showMessage("Please log in to access quizzes.", "error");
+      setTimeout(() => (window.location.href = "/login.html"), 2000);
+      return false;
+    }
+
+    if (userRole !== "teacher") {
+      showMessage("Only teachers can access this page.", "error");
+      setTimeout(() => (window.location.href = "/"), 2000);
+      return false;
+    }
+
+    return true;
+  }
+
+  // Load quizzes from backend
   async function loadQuizzes() {
     try {
-      // Load shared quizzes from quiz.json
-      const res = await fetch("/data/quiz.json");
-      const data = await res.json();
-      const sharedSubject = data.subjects.find((s) => s.id === subjectId);
-      const sharedQuizzes = sharedSubject
-        ? sharedSubject.quizzes.map((quiz) => ({ ...quiz, isShared: true }))
-        : [];
-
-      // Load teacher-created quizzes from localStorage
-      const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-      const subjects = teacherSubjects ? JSON.parse(teacherSubjects) : [];
-      const teacherSubject = subjects.find((s) => s.id === subjectId);
-      const teacherQuizzes = teacherSubject
-        ? teacherSubject.quizzes.map((quiz) => ({ ...quiz, isShared: false }))
-        : [];
-
-      // Combine shared and teacher quizzes
-      quizzes = [...sharedQuizzes, ...teacherQuizzes];
-
-      // Load published status for quizzes
-      const quizStatus = localStorage.getItem("quiz_status");
-      if (quizStatus) {
-        const statusData = JSON.parse(quizStatus);
-        quizzes.forEach((quiz) => {
-          if (statusData[quiz.id] !== undefined) {
-            quiz.published = statusData[quiz.id];
-          } else {
-            quiz.published = quiz.published !== false; // Default to published
-          }
-        });
-      } else {
-        // Default all quizzes to published
-        quizzes.forEach((quiz) => {
-          quiz.published = quiz.published !== false;
-        });
-      }
-
+      quizzes = await QuizAPI.getQuizSets(subjectId);
       renderQuizzes();
     } catch (error) {
       console.error("Error loading quizzes:", error);
-      // Fallback to localStorage only
-      const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-      const subjects = teacherSubjects ? JSON.parse(teacherSubjects) : [];
-      const teacherSubject = subjects.find((s) => s.id === subjectId);
-      quizzes = teacherSubject
-        ? teacherSubject.quizzes.map((quiz) => ({ ...quiz, isShared: false }))
-        : [];
-      renderQuizzes();
+      showMessage(
+        error.message || "Failed to load quizzes. Please try again.",
+        "error"
+      );
     }
-  }
-
-  // Save only teacher-created quizzes back to localStorage
-  function saveSubjects() {
-    const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-    let subjects = teacherSubjects ? JSON.parse(teacherSubjects) : [];
-    const subjectIndex = subjects.findIndex((s) => s.id === subjectId);
-    if (subjectIndex !== -1) {
-      // Only save teacher-created quizzes (IDs > 399)
-      subjects[subjectIndex].quizzes = quizzes.filter((quiz) => quiz.id > 399);
-      localStorage.setItem("teacher_quiz_subjects", JSON.stringify(subjects));
-    }
-
-    // Save quiz published status
-    const quizStatus = {};
-    quizzes.forEach((quiz) => {
-      quizStatus[quiz.id] = quiz.published;
-    });
-    localStorage.setItem("quiz_status", JSON.stringify(quizStatus));
   }
 
   function renderQuizzes() {
@@ -97,23 +58,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       const card = document.createElement("div");
       card.classList.add("subject-card");
 
-      // Check if this is a shared quiz from quiz.json or teacher-created
-      const isSharedQuiz = quiz.isShared;
-
       card.innerHTML = `
         <div class="subject-header">
           <i class="fas fa-file-alt"></i>
           <span>${quiz.name}</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
-          <i class="fas ${quiz.published ? "fa-globe" : "fa-lock"}"></i>
+          <i class="fas ${quiz.is_published ? "fa-globe" : "fa-lock"}"></i>
           <i class="fas fa-ellipsis-v dots"></i>
         </div>
         <div class="dropdown">
           <ul>
             <li class="edit">Edit</li>
             <li class="change-status">${
-              quiz.published ? "Make Private" : "Make Public"
+              quiz.is_published ? "Make Private" : "Make Public"
             }</li>
             <li class="delete">Delete</li>
           </ul>
@@ -131,41 +89,43 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       dropdown.querySelector(".edit").addEventListener("click", () => {
-        if (isSharedQuiz) {
-          alert("Cannot edit shared quizzes. Create a new quiz instead.");
-          dropdown.style.display = "none";
-          return;
-        }
         editId = quiz.id;
         modalTitle.textContent = "Edit Quiz";
         input.value = quiz.name;
-        publishCheckbox.checked = quiz.published || false;
+        publishCheckbox.checked = quiz.is_published || false;
         modal.style.display = "flex";
         dropdown.style.display = "none";
       });
 
-      dropdown.querySelector(".change-status").addEventListener("click", () => {
-        quiz.published = !quiz.published;
-        saveSubjects();
-        renderQuizzes();
-        dropdown.style.display = "none";
-      });
+      dropdown
+        .querySelector(".change-status")
+        .addEventListener("click", async () => {
+          try {
+            await QuizAPI.updateQuizSet(quiz.id, {
+              is_published: !quiz.is_published,
+            });
+            quiz.is_published = !quiz.is_published;
+            renderQuizzes();
+          } catch (error) {
+            showMessage(error.message, "error");
+          }
+          dropdown.style.display = "none";
+        });
 
       dropdown.querySelector(".delete").addEventListener("click", async () => {
-        if (isSharedQuiz) {
-          alert("Cannot delete shared quizzes.");
-          dropdown.style.display = "none";
-          return;
-        }
         if (await showConfirmation(`Delete "${quiz.name}"?`)) {
-          quizzes = quizzes.filter((q) => q.id !== quiz.id);
-          saveSubjects();
-          renderQuizzes();
+          try {
+            await QuizAPI.deleteQuizSet(quiz.id);
+            quizzes = quizzes.filter((q) => q.id !== quiz.id);
+            renderQuizzes();
+          } catch (error) {
+            showMessage(error.message, "error");
+          }
         }
         dropdown.style.display = "none";
       });
 
-      // Navigate to questions page when clicking on card
+      // Navigate to questions page
       card.addEventListener("click", (e) => {
         if (e.target.closest(".dots") || e.target.closest(".dropdown")) return;
         window.location.href = `questions.html?subjectId=${subjectId}&quizId=${
@@ -191,28 +151,38 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  saveBtn.addEventListener("click", () => {
+  saveBtn.addEventListener("click", async () => {
     const name = input.value.trim();
-    if (!name) return;
-
-    if (editId) {
-      const quiz = quizzes.find((q) => q.id === editId);
-      if (quiz) {
-        quiz.name = name;
-        quiz.published = publishCheckbox.checked;
-      }
-    } else {
-      quizzes.push({
-        id: Date.now(),
-        name,
-        questions: [],
-        published: publishCheckbox.checked,
-      });
+    if (!name) {
+      showMessage("Please enter a quiz name", "error");
+      return;
     }
 
-    saveSubjects();
-    modal.style.display = "none";
-    renderQuizzes();
+    try {
+      if (editId) {
+        const updated = await QuizAPI.updateQuizSet(editId, {
+          name,
+          is_published: publishCheckbox.checked,
+        });
+        const index = quizzes.findIndex((q) => q.id === editId);
+        if (index !== -1) {
+          quizzes[index] = updated;
+        }
+      } else {
+        const newQuiz = await QuizAPI.createQuizSet(
+          subjectId,
+          name,
+          null,
+          publishCheckbox.checked
+        );
+        quizzes.push(newQuiz);
+      }
+
+      modal.style.display = "none";
+      renderQuizzes();
+    } catch (error) {
+      showMessage(error.message, "error");
+    }
   });
 
   closeBtn.addEventListener("click", () => (modal.style.display = "none"));
@@ -222,6 +192,32 @@ document.addEventListener("DOMContentLoaded", async () => {
       .querySelectorAll(".dropdown")
       .forEach((dd) => (dd.style.display = "none"));
   });
+
+  // Show message helper
+  function showMessage(msg, type) {
+    const messageDiv = document.createElement("div");
+    messageDiv.textContent = msg;
+    messageDiv.style.padding = "10px 15px";
+    messageDiv.style.marginTop = "10px";
+    messageDiv.style.borderRadius = "4px";
+    messageDiv.style.color = type === "error" ? "#d32f2f" : "#388e3c";
+    messageDiv.style.backgroundColor = type === "error" ? "#ffebee" : "#e8f5e9";
+    messageDiv.style.border =
+      type === "error" ? "1px solid #d32f2f" : "1px solid #388e3c";
+
+    const existingMessage = document.querySelector("[data-message]");
+    if (existingMessage) existingMessage.remove();
+
+    messageDiv.setAttribute("data-message", "true");
+    container.parentElement.insertBefore(messageDiv, container);
+
+    setTimeout(() => messageDiv.remove(), 3000);
+  }
+
+  // Verify authentication before loading
+  if (!checkAuth()) {
+    return; // Stop execution if not authenticated
+  }
 
   loadQuizzes();
 });

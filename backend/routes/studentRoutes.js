@@ -1,5 +1,6 @@
 // routes/studentRoutes.js
-const studentController = require("../controllers/studentController");
+const subjectController = require("../controllers/student/subjectController");
+const notesController = require("../controllers/student/notesController");
 const {
   verifyToken,
   requireRole,
@@ -16,7 +17,7 @@ function handleStudentRoutes(req, res) {
     if (method === "POST" && pathname === "/api/student/subjects/create") {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
-        studentController.createSubject
+        subjectController.createSubject
       )(req, res);
     }
 
@@ -24,7 +25,7 @@ function handleStudentRoutes(req, res) {
     if (method === "GET" && pathname === "/api/student/subjects") {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
-        studentController.getSubjects
+        subjectController.getSubjects
       )(req, res);
     }
 
@@ -32,7 +33,7 @@ function handleStudentRoutes(req, res) {
     if (method === "GET" && pathname.match(/^\/api\/student\/subjects\/\d+$/)) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
-        studentController.getSubject
+        subjectController.getSubject
       )(req, res);
     }
 
@@ -40,7 +41,7 @@ function handleStudentRoutes(req, res) {
     if (method === "PUT" && pathname.match(/^\/api\/student\/subjects\/\d+$/)) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
-        studentController.updateSubject
+        subjectController.updateSubject
       )(req, res);
     }
 
@@ -51,7 +52,7 @@ function handleStudentRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
-        studentController.deleteSubject
+        subjectController.deleteSubject
       )(req, res);
     }
 
@@ -63,7 +64,7 @@ function handleStudentRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
-        studentController.createTopic
+        subjectController.createTopic
       )(req, res);
     }
 
@@ -74,7 +75,7 @@ function handleStudentRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
-        studentController.getTopics
+        subjectController.getTopics
       )(req, res);
     }
 
@@ -85,7 +86,7 @@ function handleStudentRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
-        studentController.deleteTopic
+        subjectController.deleteTopic
       )(req, res);
     }
 
@@ -99,7 +100,7 @@ function handleStudentRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
-        studentController.addModuleNote
+        notesController.addModuleNote
       )(req, res);
     }
 
@@ -110,7 +111,7 @@ function handleStudentRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
-        studentController.getModuleNotes
+        notesController.getModuleNotes
       )(req, res);
     }
 
@@ -121,7 +122,7 @@ function handleStudentRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
-        studentController.deleteModuleNote
+        notesController.deleteModuleNote
       )(req, res);
     }
 
