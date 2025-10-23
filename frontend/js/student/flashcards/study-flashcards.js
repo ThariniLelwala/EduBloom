@@ -1,11 +1,22 @@
 document.addEventListener("DOMContentLoaded", () => {
   const flashcardData = JSON.parse(localStorage.getItem("currentFlashcards"));
+  const backBtn = document.getElementById("back-btn");
+  const params = new URLSearchParams(window.location.search);
+  const subjectId = params.get("subjectId");
+  const subjectName = params.get("subjectName");
 
   if (!flashcardData || !flashcardData.cards.length) {
     const content = document.getElementById("content");
     content.innerHTML = "<p>No flashcard data found.</p>";
     return;
   }
+
+  // Set up back button with proper subject parameters
+  backBtn.addEventListener("click", () => {
+    window.location.href = `flashcard-set.html?subjectId=${subjectId}&subjectName=${encodeURIComponent(
+      subjectName
+    )}`;
+  });
 
   class FlashcardCarousel {
     constructor(data) {
@@ -25,7 +36,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     init() {
-      this.flashcardTitle.textContent = `Studying: ${this.data.subjectName}`;
+      // Display set names as the topic being studied
+      const topicName =
+        this.data.setNames && this.data.setNames.length > 0
+          ? this.data.setNames.join(", ")
+          : "Flashcards";
+      this.flashcardTitle.textContent = topicName;
       this.createCards();
       this.updateCarousel();
       this.bindEvents();

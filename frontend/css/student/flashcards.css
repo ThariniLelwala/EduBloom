@@ -24,7 +24,6 @@
   color: var(--color-white);
   font-size: 1.5rem;
   margin: 0;
-  justify-content: space-between;
   width: 100%;
 }
 
@@ -242,7 +241,6 @@
 }
 
 #flashcard-modal #modal-title {
-  order: 1;
   margin: 0;
   flex: 1;
 }
@@ -266,7 +264,7 @@
   justify-content: center;
 }
 
-.flashcard-item {
+.carousel-track .flashcard-item {
   position: absolute;
   width: 300px;
   height: 200px;
@@ -282,26 +280,26 @@
   -webkit-backdrop-filter: none !important;
 }
 
-.flashcard-item.active {
+.carousel-track .flashcard-item.active {
   opacity: 1;
   transform: scale(1) translateX(0);
   pointer-events: auto;
   z-index: 10;
 }
 
-.flashcard-item.prev {
+.carousel-track .flashcard-item.prev {
   opacity: 0.3;
   transform: scale(0.7) translateX(-200px);
   z-index: 5;
 }
 
-.flashcard-item.next {
+.carousel-track .flashcard-item.next {
   opacity: 0.3;
   transform: scale(0.7) translateX(200px);
   z-index: 5;
 }
 
-.flashcard-item.hidden {
+.carousel-track .flashcard-item.hidden {
   opacity: 0;
   transform: scale(0.5) translateX(300px);
   z-index: 1;

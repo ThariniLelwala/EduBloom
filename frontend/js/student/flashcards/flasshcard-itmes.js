@@ -15,16 +15,35 @@ let editingId = null;
 
 async function loadCards() {
   try {
-    const res = await fetch("/data/flashcards.json");
+    console.log("Loading flashcards - subjectId:", subjectId, "setId:", setId);
+
+    const res = await fetch("../../../../data/flashcards.json");
     const data = await res.json();
 
+    console.log("Fetched data:", data);
+
     const subject = data.subjects.find((s) => s.id === subjectId);
-    if (!subject) return;
+    console.log("Found subject:", subject);
+
+    if (!subject) {
+      console.warn("Subject not found");
+      currentCards = [];
+      renderCards();
+      return;
+    }
 
     const set = subject.sets.find((s) => s.id === setId);
-    if (!set) return;
+    console.log("Found set:", set);
+
+    if (!set) {
+      console.warn("Set not found");
+      currentCards = [];
+      renderCards();
+      return;
+    }
 
     currentCards = set.cards || [];
+    console.log("Loaded cards:", currentCards);
     renderCards();
   } catch (error) {
     console.error("Error loading flashcards:", error);
@@ -35,33 +54,61 @@ async function loadCards() {
 
 function renderCards() {
   container.innerHTML = "";
+
+  console.log("renderCards called with", currentCards.length, "cards");
+
+  if (currentCards.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.6);">
+        <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+        <p>No flashcards in this set yet</p>
+        <small>Click "Add Flashcard" to create one</small>
+      </div>
+    `;
+    return;
+  }
+
   currentCards.forEach((card, i) => {
     const cardElement = document.createElement("div");
     cardElement.classList.add("flashcard-item");
     cardElement.innerHTML = `
-    <div class="flashcard-header">
-      <div class="flashcard-text">
-        <div class="flashcard-label">Question</div>
-        <div class="flashcard-question">${card.question}</div>
-        <div class="flashcard-label">Answer</div>
-        <div class="flashcard-answer">${card.answer}</div>
+    <div class="flashcard-card">
+      <div class="flashcard-front">
+        <div class="flashcard-content">
+          <div class="flashcard-label">Question</div>
+          <div class="flashcard-question">${card.question}</div>
+        </div>
       </div>
-      <div class="flashcard-actions">
-        <i class="edit-btn fas fa-edit icon-btn" title="Edit flashcard"></i>
-        <i class="delete-btn fas fa-trash icon-btn" title="Delete flashcard"></i>
+      <div class="flashcard-back">
+        <div class="flashcard-content">
+          <div class="flashcard-label">Answer</div>
+          <div class="flashcard-answer">${card.answer}</div>
+        </div>
       </div>
+    </div>
+    <div class="flashcard-actions">
+      <i class="edit-btn fas fa-edit icon-btn" title="Edit flashcard"></i>
+      <i class="delete-btn fas fa-trash icon-btn" title="Delete flashcard"></i>
     </div>
     `;
 
+    // Flip card on click
+    const cardFlip = cardElement.querySelector(".flashcard-card");
+    cardFlip.addEventListener("click", () => {
+      cardFlip.classList.toggle("flipped");
+    });
+
     // Edit button
-    cardElement.querySelector(".edit-btn").addEventListener("click", () => {
+    cardElement.querySelector(".edit-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
       openEditModal(card.id);
     });
 
     // Delete button with confirmation
     cardElement
       .querySelector(".delete-btn")
-      .addEventListener("click", async () => {
+      .addEventListener("click", async (e) => {
+        e.stopPropagation();
         const confirmed = await showConfirmation(
           `Are you sure you want to delete this flashcard?\n\n"${card.question}"`,
           "Delete Flashcard"

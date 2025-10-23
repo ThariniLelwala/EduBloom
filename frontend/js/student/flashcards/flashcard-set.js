@@ -181,9 +181,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Gather cards from selected sets
     let selectedCards = [];
+    let selectedSetNames = [];
     selectedIds.forEach((id) => {
       const set = sets.find((s) => s.id === id);
-      if (set && set.cards) selectedCards = selectedCards.concat(set.cards);
+      if (set && set.cards) {
+        selectedCards = selectedCards.concat(set.cards);
+        selectedSetNames.push(set.name);
+      }
     });
 
     if (!selectedCards.length) {
@@ -202,6 +206,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       JSON.stringify({
         subjectId,
         subjectName,
+        setNames: selectedSetNames,
         cards: selectedCards,
       })
     );

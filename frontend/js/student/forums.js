@@ -1,6 +1,9 @@
 // Forums Page JavaScript
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
+  // Restrict access to university students only
+  await requireUniversityStudent();
+
   initializeForums();
 });
 
