@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - View Teachers</title>
+    <script src="../../js/sidebar.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/custom-select.css" />
+    <link rel="stylesheet" href="../../css/student/resources.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+    <div id="topbar-container"></div>
+
+    <div class="container">
+      <!-- Sidebar -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main content -->
+      <main id="content">
+        <div class="card-grid">
+          <!-- Welcome Card -->
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">View Teachers</h1>
+              <div>
+                Browse and discover teachers by subject and ratings to find the
+                perfect educator for your learning needs.
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+
+          <!-- Filters Card -->
+          <div class="card full">
+            <div class="card-title">
+              <i class="fas fa-filter"></i>
+              <h3>Filter Teachers</h3>
+            </div>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 16px;
+                margin-top: 16px;
+              "
+            >
+              <!-- Subject Filter -->
+              <div class="custom-select-wrapper">
+                <div class="custom-select-display" id="subject-filter">
+                  All Subjects
+                </div>
+                <div class="custom-select-options" id="subject-options">
+                  <div class="custom-select-option" data-value="all">
+                    All Subjects
+                  </div>
+                  <div class="custom-select-option" data-value="mathematics">
+                    Mathematics
+                  </div>
+                  <div class="custom-select-option" data-value="science">
+                    Science
+                  </div>
+                  <div class="custom-select-option" data-value="english">
+                    English
+                  </div>
+                  <div class="custom-select-option" data-value="history">
+                    History
+                  </div>
+                  <div
+                    class="custom-select-option"
+                    data-value="computer-science"
+                  >
+                    Computer Science
+                  </div>
+                </div>
+              </div>
+
+              <!-- Rating Filter -->
+              <div class="custom-select-wrapper">
+                <div class="custom-select-display" id="rating-filter">
+                  All Ratings
+                </div>
+                <div class="custom-select-options" id="rating-options">
+                  <div class="custom-select-option" data-value="all">
+                    All Ratings
+                  </div>
+                  <div class="custom-select-option" data-value="5">5 Stars</div>
+                  <div class="custom-select-option" data-value="4">
+                    4+ Stars
+                  </div>
+                  <div class="custom-select-option" data-value="3">
+                    3+ Stars
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Teachers Grid -->
+          <div class="card full">
+            <div class="card-title">
+              <i class="fas fa-users"></i>
+              <h3 id="teachers-count">All Teachers (12)</h3>
+            </div>
+            <div class="teachers-list" id="teachers-grid">
+              <!-- Teachers will be populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+    <script src="../../js/student/view-teachers.js"></script>
+  </body>
+</html>

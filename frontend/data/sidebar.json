@@ -22,11 +22,6 @@
       "link": "resources.html"
     },
     {
-      "title": "Forums",
-      "icon": "fas fa-users",
-      "link": "forums.html"
-    },
-    {
       "title": "Flash Cards",
       "icon": "fas fa-sticky-note",
       "link": "flashcard/flashcards.html"
@@ -228,6 +223,11 @@
       "title": "Overview",
       "icon": "fas fa-chart-line",
       "link": "overview.html"
+    },
+    {
+      "title": "Teacher Profile",
+      "icon": "fas fa-user-graduate",
+      "link": "teacher-profile.html"
     },
     {
       "title": "Profile",

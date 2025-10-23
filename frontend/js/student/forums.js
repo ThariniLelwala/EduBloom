@@ -20,6 +20,9 @@ function initializeForums() {
   if (typeof initCustomSelects === "function") {
     initCustomSelects();
   }
+
+  // Hide forum creation UI for non-university students
+  hideForNonUniversityStudents("create-topic-card");
 }
 
 function loadForums() {
@@ -212,6 +215,15 @@ function setupForumInteractions() {
 }
 
 function createNewTopic() {
+  // Check if user is a university student
+  if (!isUniversityStudent()) {
+    showNotification(
+      "Forum creation is only available for university students",
+      "error"
+    );
+    return;
+  }
+
   const modal = document.getElementById("create-topic-modal");
   modal.classList.add("show");
 }

@@ -108,6 +108,62 @@
   font-weight: 400;
 }
 
+/* Teachers List */
+.teachers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.teacher-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border-left: 3px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.teacher-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: rgba(74, 222, 128, 0.5);
+}
+
+.teacher-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.teacher-name {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.teacher-subject {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+}
+
+.teacher-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.9rem;
+  color: #ffd700;
+  font-weight: 500;
+}
+
+.teacher-rating i {
+  color: #ffd700;
+}
+
 /* Activity List */
 .activity-list {
   display: flex;
@@ -157,7 +213,8 @@
 @media (max-width: 768px) {
   .forum-topics,
   .notes-subjects,
-  .quiz-subjects {
+  .quiz-subjects,
+  .teachers-list {
     gap: 6px;
   }
 
@@ -182,18 +239,21 @@
 
   .forum-topic,
   .subject-note,
-  .subject-quiz {
+  .subject-quiz,
+  .teacher-item {
     padding: 6px 8px;
   }
 
   .topic-title,
-  .subject-name {
+  .subject-name,
+  .teacher-name {
     font-size: 0.85rem;
   }
 
   .topic-replies,
   .note-count,
-  .quiz-count {
+  .quiz-count,
+  .teacher-subject {
     font-size: 0.75rem;
   }
 }
