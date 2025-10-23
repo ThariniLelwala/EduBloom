@@ -36,6 +36,7 @@ input[type="checkbox"].task-checkbox {
   accent-color: var(--color-white);
   z-index: 3;
   flex: 0 0 auto;
+  margin-bottom: 0px;
 }
 
 /* Label */
@@ -119,6 +120,7 @@ input[type="checkbox"].task-checkbox {
   border-radius: 8px;
   transition: background 0.2s ease;
   position: relative;
+  margin-top: 4px;
 }
 
 .task-item:hover {
@@ -213,4 +215,28 @@ input[type="checkbox"].task-checkbox {
   text-decoration: line-through;
   text-decoration-thickness: 2px;
   text-decoration-color: rgba(255, 255, 255, 0.7);
+}
+
+/* Timetable Card Styles */
+#timetable-container {
+  padding: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+#timetable-container p {
+  margin: 8px 0;
+}
+
+#timetable-container p:first-child {
+  margin-top: 0;
+}
+
+#timetable-container p:last-child {
+  margin-bottom: 0;
+}
+
+#timetable-container strong {
+  color: var(--color-white);
+  font-weight: 600;
 }

@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="../../css/sidebar.css" />
     <link rel="stylesheet" href="../../css/cards.css" />
     <link rel="stylesheet" href="../../css/dashboard/task.css" />
+    <link rel="stylesheet" href="../../css/dashboard/progress.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
@@ -68,48 +69,35 @@
 
           <!-- Quick Overview Card -->
           <div class="card w1">
-            <div class="card-title">
-              <i class="fas fa-chart-bar"></i>
-              <h3>Quick Overview</h3>
-            </div>
-            <div class="quick-actions-container">
-              <button
-                class="quick-action-btn"
-                onclick="window.location.href='../../profile.html'"
-              >
-                <i class="fas fa-user-circle"></i>
-                <span>View Profile</span>
-              </button>
-              <button class="quick-action-btn">
-                <i class="fas fa-envelope"></i>
-                <span>Messages</span>
-              </button>
-              <button class="quick-action-btn">
-                <i class="fas fa-bell"></i>
-                <span>Notifications</span>
-              </button>
-            </div>
+            <h3>Quick Overview</h3>
+            <ul class="quick-actions">
+              <li>
+                <a href="../../profile.html">
+                  <i class="fas fa-user-circle"></i> View Profile
+                </a>
+              </li>
+              <li>
+                <a href="#"> <i class="fas fa-envelope"></i> Messages </a>
+              </li>
+              <li>
+                <a href="#"> <i class="fas fa-bell"></i> Notifications </a>
+              </li>
+            </ul>
           </div>
 
-          <!-- Recent Performance Card -->
-          <div class="card w1">
-            <h3>Recent Performance</h3>
-            <div class="performance-list">
-              <div class="performance-item">
-                <span class="subject">Mathematics</span>
-                <span class="score">A</span>
+          <!-- Average Score Card (School Students Only) -->
+          <div class="card w1" id="avg-score-card" style="display: none">
+            <div class="card-title">
+              <i class="fas fa-chart-bar"></i>
+              <h3>Latest Average Score</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value" id="latest-avg-score">0</div>
+                <div class="stat-label">Latest Exam Average</div>
               </div>
-              <div class="performance-item">
-                <span class="subject">English</span>
-                <span class="score">B+</span>
-              </div>
-              <div class="performance-item">
-                <span class="subject">Science</span>
-                <span class="score">A-</span>
-              </div>
-              <div class="performance-item">
-                <span class="subject">History</span>
-                <span class="score">B</span>
+              <div class="stat-secondary" id="score-trend">
+                <i class="fas fa-arrow-up"></i> Improving
               </div>
             </div>
           </div>
@@ -346,6 +334,68 @@
       function closeDeleteModal() {
         document.getElementById("delete-modal").classList.remove("show");
       }
+
+      // Initialize latest average score card if student is school type
+      function initializeAverageScoreCard() {
+        const studentType = localStorage.getItem("studentType");
+        const avgScoreSmallCard = document.getElementById("avg-score-card");
+        
+        if (studentType !== "university" && avgScoreSmallCard) {
+          avgScoreSmallCard.style.display = "block";
+          
+          // Load exam scores from localStorage
+          try {
+            const examsData = JSON.parse(localStorage.getItem("examsData") || "{}");
+            
+            if (examsData.exams && examsData.exams.length > 0) {
+              // Get the latest exam
+              const latestExam = examsData.exams[examsData.exams.length - 1];
+              const marks = Object.values(latestExam.marks).filter(
+                (mark) => mark !== null && mark !== undefined
+              );
+              
+              if (marks.length > 0) {
+                const average = (marks.reduce((a, b) => a + b, 0) / marks.length).toFixed(2);
+                document.getElementById("latest-avg-score").textContent = average;
+                
+                // Calculate trend
+                if (examsData.exams.length >= 2) {
+                  const priorExam = examsData.exams[examsData.exams.length - 2];
+                  const priorMarks = Object.values(priorExam.marks).filter(
+                    (mark) => mark !== null && mark !== undefined
+                  );
+                  
+                  if (priorMarks.length > 0) {
+                    const priorAverage = priorMarks.reduce((a, b) => a + b, 0) / priorMarks.length;
+                    const currentAverage = average;
+                    
+                    const trendElement = document.getElementById("score-trend");
+                    if (currentAverage > priorAverage + 2) {
+                      trendElement.innerHTML = '<i class="fas fa-arrow-up"></i> Improving';
+                      trendElement.className = "stat-secondary trend-up";
+                    } else if (currentAverage < priorAverage - 2) {
+                      trendElement.innerHTML = '<i class="fas fa-arrow-down"></i> Declining';
+                      trendElement.className = "stat-secondary trend-down";
+                    } else {
+                      trendElement.innerHTML = '<i class="fas fa-minus"></i> Stable';
+                      trendElement.className = "stat-secondary";
+                    }
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            console.error("Error loading exam scores:", error);
+          }
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("DOMContentLoaded fired!");
+        loadChildTasks();
+        setupModalListeners();
+        initializeAverageScoreCard();
+      });
     </script>
   </body>
 </html>

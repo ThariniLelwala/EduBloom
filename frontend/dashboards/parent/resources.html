@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Parent Resources</title>
+    <script src="../../js/sidebar.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/dashboard/progress.css" />
+    <link rel="stylesheet" href="../../css/student/resources.css" />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <style>
+      /* Parent Resource Recommendation Styles */
+      .recommendation-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--color-white);
+      }
+
+      .resource-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .resource-actions .btn-primary,
+      .resource-actions .btn-secondary {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        width: 50%;
+        margin: 0;
+        flex: 1;
+      }
+
+      .resource-item-parent {
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 6px;
+        border-left: 3px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.2s ease;
+        margin-bottom: 8px;
+      }
+
+      .resource-item-parent:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .resource-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+      }
+
+      .resource-name {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+      }
+
+      .resource-description {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 4px;
+      }
+
+      .resource-meta {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.6);
+        display: flex;
+        gap: 12px;
+      }
+
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+        margin: 12px 0;
+      }
+
+      .stat-card {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 12px;
+        border-radius: 8px;
+        text-align: center;
+      }
+
+      .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--color-white);
+      }
+
+      .stat-label {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-top: 4px;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--color-primary);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.3s, transform 0.3s;
+        z-index: 1000;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+    <div class="toast" id="toast"></div>
+    <div id="topbar-container"></div>
+
+    <div class="container">
+      <!-- Sidebar -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main content -->
+      <main id="content">
+        <div class="card-grid">
+          <!-- Welcome Card -->
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">
+                <i class="fas fa-book"></i> Resources & Recommendations
+              </h1>
+              <div>
+                Explore teacher-created resources and recommend them to your
+                child. View forums, notes, quizzes, and connect with verified
+                teachers.
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+
+          <!-- Overview Statistics -->
+          <div class="card full">
+            <h3 style="margin-bottom: 16px">Resource Overview</h3>
+            <div class="stats-row">
+              <div class="stat-card">
+                <div class="stat-value" id="total-forums">5</div>
+                <div class="stat-label">Active Forums</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="total-notes">24</div>
+                <div class="stat-label">Teacher Notes</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="total-quizzes">18</div>
+                <div class="stat-label">Available Quizzes</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="total-teachers">8</div>
+                <div class="stat-label">Teachers</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="recommended-count">0</div>
+                <div class="stat-label">Recommended</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Forums Card -->
+          <div class="card w2">
+            <div class="card-title">
+              <i class="fas fa-users"></i>
+              <h3>Forums</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value" id="active-forums">5</div>
+                <div class="stat-label">Active Discussions</div>
+              </div>
+              <div class="comparison">
+                <span class="comparison-label">Latest Activity:</span>
+                <span class="comparison-value increase">
+                  <i class="fas fa-clock"></i> 2 hours ago
+                </span>
+              </div>
+              <div id="forums-list" style="max-height: 250px; overflow-y: auto">
+                <!-- Forums will be populated here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Teacher Notes Card -->
+          <div class="card w2">
+            <div class="card-title">
+              <i class="fas fa-file-alt"></i>
+              <h3>Notes</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value" id="notes-count">24</div>
+                <div class="stat-label">Available Notes</div>
+              </div>
+              <div class="comparison">
+                <span class="comparison-label">Recently Updated:</span>
+                <span class="comparison-value increase">
+                  <i class="fas fa-calendar"></i> Today
+                </span>
+              </div>
+              <div id="notes-list" style="max-height: 250px; overflow-y: auto">
+                <!-- Notes will be populated here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Teacher Quizzes Card -->
+          <div class="card w2">
+            <div class="card-title">
+              <i class="fas fa-brain"></i>
+              <h3>Quizzes</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value" id="quiz-count">18</div>
+                <div class="stat-label">Available Quizzes</div>
+              </div>
+              <div class="comparison">
+                <span class="comparison-label">Difficulty Range:</span>
+                <span class="comparison-value increase">
+                  <i class="fas fa-star"></i> Easy to Hard
+                </span>
+              </div>
+              <div
+                id="quizzes-list"
+                style="max-height: 250px; overflow-y: auto"
+              >
+                <!-- Quizzes will be populated here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Available Teachers Card -->
+          <div class="card w2">
+            <div class="card-title">
+              <i class="fas fa-user-graduate"></i>
+              <h3>Available Teachers</h3>
+            </div>
+            <div class="card-content">
+              <div class="stat-group">
+                <div class="stat-value" id="teachers-count">8</div>
+                <div class="stat-label">Active Teachers</div>
+              </div>
+              <div class="comparison">
+                <span class="comparison-label">Verified Teachers:</span>
+                <span class="comparison-value increase">
+                  <i class="fas fa-check-circle"></i> 6/8
+                </span>
+              </div>
+              <div
+                id="teachers-list"
+                style="max-height: 250px; overflow-y: auto"
+              >
+                <!-- Teachers will be populated here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Resource Tips Card -->
+          <div class="card w1 h2">
+            <div class="card-title">
+              <i class="fas fa-lightbulb"></i>
+              <h3>Tips for Parents</h3>
+            </div>
+            <div class="tips-container">
+              <div class="tip">
+                <span class="tip-number">1</span>
+                <p>Review resources before recommending to your child</p>
+              </div>
+              <div class="tip">
+                <span class="tip-number">2</span>
+                <p>Check teacher profiles and ratings for credibility</p>
+              </div>
+              <div class="tip">
+                <span class="tip-number">3</span>
+                <p>Recommend resources that match your child's learning pace</p>
+              </div>
+              <div class="tip">
+                <span class="tip-number">4</span>
+                <p>Discuss recommended resources with your child</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Recommendations Card -->
+          <div class="card w2">
+            <div class="card-title">
+              <i class="fas fa-history"></i>
+              <h3>Recent Recommendations</h3>
+            </div>
+            <div class="card-content">
+              <div
+                id="recent-recommendations"
+                style="max-height: 280px; overflow-y: auto"
+              >
+                <!-- Recent recommendations will be populated here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Forum Modal -->
+    <div class="modal" id="forum-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="forum-title">Forum Discussion</h2>
+          <button class="modal-close" onclick="closeForum()">×</button>
+        </div>
+        <div class="modal-body">
+          <p
+            id="forum-content"
+            style="text-align: left; color: rgba(255, 255, 255, 0.8)"
+          >
+            Forum content will appear here
+          </p>
+          <div
+            style="
+              max-height: 300px;
+              overflow-y: auto;
+              background: rgba(0, 0, 0, 0.2);
+              padding: 12px;
+              border-radius: 8px;
+              margin-top: 12px;
+            "
+          >
+            <p
+              style="
+                font-size: 0.85rem;
+                color: rgba(255, 255, 255, 0.7);
+                margin: 0;
+              "
+            >
+              Latest discussion posts will appear here...
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes Modal -->
+    <div class="modal" id="notes-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="notes-title">Study Notes</h2>
+          <button class="modal-close" onclick="closeNotes()">×</button>
+        </div>
+        <div class="modal-body">
+          <p
+            id="notes-content"
+            style="text-align: left; color: rgba(255, 255, 255, 0.8)"
+          >
+            Notes content will appear here
+          </p>
+          <div
+            style="
+              max-height: 300px;
+              overflow-y: auto;
+              background: rgba(0, 0, 0, 0.2);
+              padding: 12px;
+              border-radius: 8px;
+              margin-top: 12px;
+            "
+          >
+            <p
+              style="
+                font-size: 0.85rem;
+                color: rgba(255, 255, 255, 0.7);
+                margin: 0;
+              "
+            >
+              Complete notes preview will appear here...
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quiz Modal -->
+    <div class="modal" id="quiz-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="quiz-title">Quiz Set</h2>
+          <button class="modal-close" onclick="closeQuiz()">×</button>
+        </div>
+        <div class="modal-body">
+          <p
+            id="quiz-content"
+            style="text-align: left; color: rgba(255, 255, 255, 0.8)"
+          >
+            Quiz details will appear here
+          </p>
+          <div
+            style="
+              max-height: 300px;
+              overflow-y: auto;
+              background: rgba(0, 0, 0, 0.2);
+              padding: 12px;
+              border-radius: 8px;
+              margin-top: 12px;
+            "
+          >
+            <p
+              style="
+                font-size: 0.85rem;
+                color: rgba(255, 255, 255, 0.7);
+                margin: 0;
+              "
+            >
+              Quiz questions preview will appear here...
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+    <script src="../../js/parent/resources.js"></script>
+  </body>
+</html>
