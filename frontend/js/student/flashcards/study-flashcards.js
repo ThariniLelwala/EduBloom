@@ -1,15 +1,13 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const flashcardData = JSON.parse(localStorage.getItem("currentFlashcards"));
+document.addEventListener("DOMContentLoaded", async () => {
   const backBtn = document.getElementById("back-btn");
   const params = new URLSearchParams(window.location.search);
   const subjectId = params.get("subjectId");
   const subjectName = params.get("subjectName");
+  const selectedSetIds = JSON.parse(
+    localStorage.getItem("selectedFlashcardSetIds") || "[]"
+  );
 
-  if (!flashcardData || !flashcardData.cards.length) {
-    const content = document.getElementById("content");
-    content.innerHTML = "<p>No flashcard data found.</p>";
-    return;
-  }
+  let flashcardData = null;
 
   // Set up back button with proper subject parameters
   backBtn.addEventListener("click", () => {
@@ -17,6 +15,46 @@ document.addEventListener("DOMContentLoaded", () => {
       subjectName
     )}`;
   });
+
+  // Fetch flashcards from database for selected sets
+  try {
+    if (!selectedSetIds || selectedSetIds.length === 0) {
+      const content = document.getElementById("content");
+      content.innerHTML = "<p>No flashcard sets selected.</p>";
+      return;
+    }
+
+    // Fetch items from each selected set
+    const allCards = [];
+    const setNames = [];
+
+    for (const setId of selectedSetIds) {
+      const setData = await flashcardApi.getFlashcardSet(setId);
+      if (setData && setData.items) {
+        setNames.push(setData.name);
+        allCards.push(...setData.items);
+      }
+    }
+
+    if (allCards.length === 0) {
+      const content = document.getElementById("content");
+      content.innerHTML = "<p>No flashcard items found in selected sets.</p>";
+      return;
+    }
+
+    // Shuffle the cards
+    const shuffledCards = allCards.sort(() => Math.random() - 0.5);
+
+    flashcardData = {
+      cards: shuffledCards,
+      setNames: setNames,
+    };
+  } catch (error) {
+    console.error("Error loading flashcards:", error);
+    const content = document.getElementById("content");
+    content.innerHTML = `<p>Error loading flashcards: ${error.message}</p>`;
+    return;
+  }
 
   class FlashcardCarousel {
     constructor(data) {

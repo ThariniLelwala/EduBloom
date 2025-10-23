@@ -16,15 +16,30 @@ document.addEventListener("DOMContentLoaded", async () => {
   let sets = [];
   let editId = null;
 
-  // Load data from JSON
-  try {
-    const res = await fetch("/data/flashcards.json");
-    const data = await res.json();
-    const subject = data.subjects.find((s) => s.id === subjectId);
-    if (subject) sets = subject.sets;
-  } catch (error) {
-    console.error("Error loading flashcard sets:", error);
-    sets = [];
+  // Check authentication
+  function checkAuth() {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      window.location.href = "/login.html";
+      return false;
+    }
+    return true;
+  }
+
+  // Load data from backend
+  async function loadSets() {
+    try {
+      if (!checkAuth()) return;
+
+      const sets_data = await flashcardApi.getFlashcardSets(subjectId);
+      sets = sets_data;
+      renderSets();
+    } catch (error) {
+      console.error("Error loading flashcard sets:", error);
+      alert("Failed to load flashcard sets: " + error.message);
+      sets = [];
+      renderSets();
+    }
   }
 
   function renderSets() {
@@ -72,8 +87,12 @@ document.addEventListener("DOMContentLoaded", async () => {
           "Delete Flashcard Set"
         );
         if (confirmed) {
-          sets = sets.filter((s) => s.id !== set.id);
-          renderSets();
+          try {
+            await flashcardApi.deleteFlashcardSet(set.id);
+            loadSets(); // Reload from backend
+          } catch (error) {
+            alert("Failed to delete set: " + error.message);
+          }
         }
         dropdown.style.display = "none";
       });
@@ -103,19 +122,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  saveBtn.addEventListener("click", () => {
+  saveBtn.addEventListener("click", async () => {
     const name = input.value.trim();
-    if (!name) return;
-
-    if (editId) {
-      const set = sets.find((s) => s.id === editId);
-      if (set) set.name = name;
-    } else {
-      sets.push({ id: Date.now(), name, cards: [] });
+    if (!name) {
+      alert("Please enter a set name");
+      return;
     }
 
-    modal.style.display = "none";
-    renderSets();
+    try {
+      if (editId) {
+        // Update existing set
+        await flashcardApi.updateFlashcardSet(editId, { name });
+      } else {
+        // Create new set
+        await flashcardApi.createFlashcardSet(subjectId, name);
+      }
+
+      modal.style.display = "none";
+      loadSets(); // Reload from backend
+    } catch (error) {
+      alert("Failed to save set: " + error.message);
+    }
   });
 
   closeBtn.addEventListener("click", () => (modal.style.display = "none"));
@@ -126,7 +153,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       .forEach((dd) => (dd.style.display = "none"));
   });
 
-  renderSets();
+  // Load initial data
+  await loadSets();
 
   // ---------------- Study Flashcards Logic ----------------
   const studyFlashcardsBtn = document.getElementById("study-flashcards-btn");
@@ -152,7 +180,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       option.innerHTML = `
         <label class="checkbox-container">
           <input type="checkbox" value="${set.id}" />
-          ${set.name} (${set.cards ? set.cards.length : 0} cards)
+          ${set.name} (${set.item_count || 0} cards)
         </label>
       `;
       flashcardOptionsContainer.appendChild(option);
@@ -169,7 +197,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     () => (studyFlashcardsModal.style.display = "none")
   );
 
-  confirmStudyFlashcards.addEventListener("click", () => {
+  confirmStudyFlashcards.addEventListener("click", async () => {
     const selectedIds = [
       ...flashcardOptionsContainer.querySelectorAll("input:checked"),
     ].map((c) => parseInt(c.value));
@@ -179,41 +207,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // Gather cards from selected sets
-    let selectedCards = [];
-    let selectedSetNames = [];
-    selectedIds.forEach((id) => {
-      const set = sets.find((s) => s.id === id);
-      if (set && set.cards) {
-        selectedCards = selectedCards.concat(set.cards);
-        selectedSetNames.push(set.name);
-      }
-    });
+    try {
+      // Store only the selected set IDs in localStorage
+      localStorage.setItem(
+        "selectedFlashcardSetIds",
+        JSON.stringify(selectedIds)
+      );
 
-    if (!selectedCards.length) {
-      alert("The selected sets don't contain any flashcards.");
-      return;
+      // Navigate to study flashcards page
+      window.location.href = `study-flashcards.html?subjectId=${subjectId}&subjectName=${encodeURIComponent(
+        subjectName
+      )}`;
+    } catch (error) {
+      alert("Error preparing study session: " + error.message);
     }
-
-    // Shuffle cards
-    selectedCards = selectedCards
-      .map((c) => ({ ...c }))
-      .sort(() => Math.random() - 0.5);
-
-    // Store in localStorage
-    localStorage.setItem(
-      "currentFlashcards",
-      JSON.stringify({
-        subjectId,
-        subjectName,
-        setNames: selectedSetNames,
-        cards: selectedCards,
-      })
-    );
-
-    // Navigate to study flashcards page
-    window.location.href = `study-flashcards.html?subjectId=${subjectId}&subjectName=${encodeURIComponent(
-      subjectName
-    )}`;
   });
 });

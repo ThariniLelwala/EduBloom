@@ -95,9 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
 
-        console.log(
-          `[Sidebar] Current: ${currentPage}, Depth: ${depth}, Item: ${item.title}, Link: ${linkPath}`
-        );
         li.innerHTML = `<i class="${item.icon}"></i> <span>${item.title}</span>`;
         li.addEventListener("click", () => (window.location.href = linkPath));
         sidebarList.appendChild(li);

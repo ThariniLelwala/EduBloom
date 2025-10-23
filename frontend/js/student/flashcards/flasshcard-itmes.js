@@ -13,40 +13,32 @@ subjectHeading.textContent = setName;
 let currentCards = [];
 let editingId = null;
 
+// Check authentication
+function checkAuth() {
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    window.location.href = "/login.html";
+    return false;
+  }
+  return true;
+}
+
 async function loadCards() {
   try {
+    if (!checkAuth()) return;
+
     console.log("Loading flashcards - subjectId:", subjectId, "setId:", setId);
 
-    const res = await fetch("../../../../data/flashcards.json");
-    const data = await res.json();
+    const data = await flashcardApi.getFlashcardSet(setId);
 
     console.log("Fetched data:", data);
 
-    const subject = data.subjects.find((s) => s.id === subjectId);
-    console.log("Found subject:", subject);
-
-    if (!subject) {
-      console.warn("Subject not found");
-      currentCards = [];
-      renderCards();
-      return;
-    }
-
-    const set = subject.sets.find((s) => s.id === setId);
-    console.log("Found set:", set);
-
-    if (!set) {
-      console.warn("Set not found");
-      currentCards = [];
-      renderCards();
-      return;
-    }
-
-    currentCards = set.cards || [];
+    currentCards = data.items || [];
     console.log("Loaded cards:", currentCards);
     renderCards();
   } catch (error) {
     console.error("Error loading flashcards:", error);
+    alert("Failed to load flashcards: " + error.message);
     currentCards = [];
     renderCards();
   }
@@ -114,8 +106,12 @@ function renderCards() {
           "Delete Flashcard"
         );
         if (confirmed) {
-          currentCards = currentCards.filter((c) => c.id !== card.id);
-          renderCards();
+          try {
+            await flashcardApi.deleteFlashcardItem(setId, card.id);
+            loadCards(); // Reload from backend
+          } catch (error) {
+            alert("Failed to delete flashcard: " + error.message);
+          }
         }
       });
 
@@ -152,7 +148,7 @@ addFlashcardBtn.addEventListener("click", () => {
 
 closeBtn.addEventListener("click", () => (modal.style.display = "none"));
 
-function saveCard(closeAfter = true) {
+async function saveCard(closeAfter = true) {
   const questionText = questionInput.value.trim();
   const answerText = answerInput.value.trim();
 
@@ -161,33 +157,28 @@ function saveCard(closeAfter = true) {
     return;
   }
 
-  if (editingId) {
-    // Update existing card
-    const cardIndex = currentCards.findIndex((c) => c.id === editingId);
-    if (cardIndex !== -1) {
-      currentCards[cardIndex] = {
-        id: editingId,
+  try {
+    if (editingId) {
+      // Update existing card
+      await flashcardApi.updateFlashcardItem(setId, editingId, {
         question: questionText,
         answer: answerText,
-      };
+      });
+      editingId = null;
+    } else {
+      // Create new card
+      await flashcardApi.createFlashcardItem(setId, questionText, answerText);
     }
-    editingId = null;
-  } else {
-    // Create new card
-    const newCard = {
-      id: Date.now(),
-      question: questionText,
-      answer: answerText,
-    };
-    currentCards.push(newCard);
-  }
 
-  renderCards();
+    await loadCards(); // Reload from backend
 
-  if (closeAfter) {
-    modal.style.display = "none";
-  } else {
-    resetModal();
+    if (closeAfter) {
+      modal.style.display = "none";
+    } else {
+      resetModal();
+    }
+  } catch (error) {
+    alert("Failed to save flashcard: " + error.message);
   }
 }
 

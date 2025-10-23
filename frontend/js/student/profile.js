@@ -181,7 +181,9 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    const parentsHTML = parents.map(parent => `
+    const parentsHTML = parents
+      .map(
+        (parent) => `
       <div class="linked-parent">
         <div class="parent-info">
           <strong>${parent.parent_username}</strong>
@@ -191,7 +193,9 @@ document.addEventListener("DOMContentLoaded", function () {
           <i class="fas fa-trash"></i> Remove
         </button>
       </div>
-    `).join('');
+    `
+      )
+      .join("");
 
     linkedParentsDiv.innerHTML = parentsHTML;
   }
@@ -237,21 +241,31 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    const requestsHTML = requests.map(request => `
+    const requestsHTML = requests
+      .map(
+        (request) => `
       <div class="parent-request">
         <strong>${request.parent_username}</strong>
         <p>${request.parent_email}</p>
-        <p>Requested on: ${new Date(request.created_at).toLocaleDateString()}</p>
+        <p>Requested on: ${new Date(
+          request.created_at
+        ).toLocaleDateString()}</p>
         <div class="request-actions">
-          <button class="btn-accept" onclick="handleParentRequest(${request.id || request.link_id}, 'accept')">
+          <button class="btn-accept" onclick="handleParentRequest(${
+            request.id || request.link_id
+          }, 'accept')">
             <i class="fas fa-check"></i> Accept
           </button>
-          <button class="btn-reject" onclick="handleParentRequest(${request.id || request.link_id}, 'reject')">
+          <button class="btn-reject" onclick="handleParentRequest(${
+            request.id || request.link_id
+          }, 'reject')">
             <i class="fas fa-times"></i> Reject
           </button>
         </div>
       </div>
-    `).join('');
+    `
+      )
+      .join("");
 
     pendingRequestsDiv.innerHTML = requestsHTML;
   }
@@ -291,7 +305,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Remove parent link
   async function removeParentLink(linkId) {
-    if (!confirm('Are you sure you want to remove this parent link?')) {
+    if (!confirm("Are you sure you want to remove this parent link?")) {
       return;
     }
 

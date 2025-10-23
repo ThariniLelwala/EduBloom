@@ -9,15 +9,27 @@ document.addEventListener("DOMContentLoaded", () => {
   let subjects = [];
   let editId = null;
 
-  // Load subjects from JSON
+  // Check authentication
+  function checkAuth() {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      window.location.href = "/login.html";
+      return false;
+    }
+    return true;
+  }
+
+  // Load subjects from backend
   async function loadSubjects() {
     try {
-      const res = await fetch("/data/flashcards.json");
-      const data = await res.json();
-      subjects = data.subjects;
+      if (!checkAuth()) return;
+
+      const subjects_data = await flashcardApi.getSubjects();
+      subjects = subjects_data;
       renderSubjects();
     } catch (error) {
       console.error("Error loading flashcard subjects:", error);
+      alert("Failed to load flashcard subjects: " + error.message);
       subjects = [];
       renderSubjects();
     }
@@ -67,8 +79,12 @@ document.addEventListener("DOMContentLoaded", () => {
           "Delete Subject"
         );
         if (confirmed) {
-          subjects = subjects.filter((s) => s.id !== subj.id);
-          renderSubjects();
+          try {
+            await flashcardApi.deleteSubject(subj.id);
+            loadSubjects(); // Reload from backend
+          } catch (error) {
+            alert("Failed to delete subject: " + error.message);
+          }
         }
         dropdown.style.display = "none";
       });
@@ -96,19 +112,27 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  saveBtn.addEventListener("click", () => {
+  saveBtn.addEventListener("click", async () => {
     const name = input.value.trim();
-    if (!name) return;
-
-    if (editId) {
-      const subj = subjects.find((s) => s.id === editId);
-      if (subj) subj.name = name;
-    } else {
-      subjects.push({ id: Date.now(), name, sets: [] });
+    if (!name) {
+      alert("Please enter a subject name");
+      return;
     }
 
-    modal.style.display = "none";
-    renderSubjects();
+    try {
+      if (editId) {
+        // Update existing subject
+        await flashcardApi.updateSubject(editId, { name });
+      } else {
+        // Create new subject
+        await flashcardApi.createSubject(name);
+      }
+
+      modal.style.display = "none";
+      loadSubjects(); // Reload from backend
+    } catch (error) {
+      alert("Failed to save subject: " + error.message);
+    }
   });
 
   closeBtn.addEventListener("click", () => (modal.style.display = "none"));

@@ -1,6 +1,7 @@
 // routes/studentRoutes.js
 const subjectController = require("../controllers/student/subjectController");
 const notesController = require("../controllers/student/notesController");
+const flashcardController = require("../controllers/student/flashcardController");
 const {
   verifyToken,
   requireRole,
@@ -123,6 +124,174 @@ function handleStudentRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
         notesController.deleteModuleNote
+      )(req, res);
+    }
+
+    // ========== FLASHCARD MANAGEMENT ROUTES ==========
+
+    // Flashcard Subjects routes
+    // Create subject: POST /api/student/flashcards/subjects
+    if (method === "POST" && pathname === "/api/student/flashcards/subjects") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        flashcardController.createSubject
+      )(req, res);
+    }
+
+    // Get all subjects: GET /api/student/flashcards/subjects
+    if (method === "GET" && pathname === "/api/student/flashcards/subjects") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        flashcardController.getSubjects
+      )(req, res);
+    }
+
+    // Get specific subject: GET /api/student/flashcards/subjects/:subjectId
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/student\/flashcards\/subjects\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        flashcardController.getSubject
+      )(req, res);
+    }
+
+    // Update subject: PUT /api/student/flashcards/subjects/:subjectId
+    if (
+      method === "PUT" &&
+      pathname.match(/^\/api\/student\/flashcards\/subjects\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        flashcardController.updateSubject
+      )(req, res);
+    }
+
+    // Delete subject: DELETE /api/student/flashcards/subjects/:subjectId
+    if (
+      method === "DELETE" &&
+      pathname.match(/^\/api\/student\/flashcards\/subjects\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        flashcardController.deleteSubject
+      )(req, res);
+    }
+
+    // Flashcard Sets routes
+    // Create flashcard set: POST /api/student/flashcards/subjects/:subjectId/sets
+    if (
+      method === "POST" &&
+      pathname.match(/^\/api\/student\/flashcards\/subjects\/\d+\/sets$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        flashcardController.createFlashcardSet
+      )(req, res);
+    }
+
+    // Get all flashcard sets for subject: GET /api/student/flashcards/subjects/:subjectId/sets
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/student\/flashcards\/subjects\/\d+\/sets$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        flashcardController.getFlashcardSets
+      )(req, res);
+    }
+
+    // Get specific flashcard set: GET /api/student/flashcards/sets/:setId
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/student\/flashcards\/sets\/\d+$/) &&
+      !pathname.includes("items") &&
+      !pathname.includes("reorder")
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        flashcardController.getFlashcardSet
+      )(req, res);
+    }
+
+    // Update flashcard set: PUT /api/student/flashcards/sets/:setId
+    if (
+      method === "PUT" &&
+      pathname.match(/^\/api\/student\/flashcards\/sets\/\d+$/) &&
+      !pathname.includes("items") &&
+      !pathname.includes("reorder")
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        flashcardController.updateFlashcardSet
+      )(req, res);
+    }
+
+    // Delete flashcard set: DELETE /api/student/flashcards/sets/:setId
+    if (
+      method === "DELETE" &&
+      pathname.match(/^\/api\/student\/flashcards\/sets\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        flashcardController.deleteFlashcardSet
+      )(req, res);
+    }
+
+    // Flashcard Items routes
+    // Create flashcard item: POST /api/student/flashcards/sets/:setId/items
+    if (
+      method === "POST" &&
+      pathname.match(/^\/api\/student\/flashcards\/sets\/\d+\/items$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        flashcardController.createFlashcardItem
+      )(req, res);
+    }
+
+    // Get all flashcard items: GET /api/student/flashcards/sets/:setId/items
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/student\/flashcards\/sets\/\d+\/items$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        flashcardController.getFlashcardItems
+      )(req, res);
+    }
+
+    // Update flashcard item: PUT /api/student/flashcards/sets/:setId/items/:itemId
+    if (
+      method === "PUT" &&
+      pathname.match(/^\/api\/student\/flashcards\/sets\/\d+\/items\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        flashcardController.updateFlashcardItem
+      )(req, res);
+    }
+
+    // Delete flashcard item: DELETE /api/student/flashcards/sets/:setId/items/:itemId
+    if (
+      method === "DELETE" &&
+      pathname.match(/^\/api\/student\/flashcards\/sets\/\d+\/items\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        flashcardController.deleteFlashcardItem
+      )(req, res);
+    }
+
+    // Reorder flashcard items: PUT /api/student/flashcards/sets/:setId/reorder-items
+    if (
+      method === "PUT" &&
+      pathname.match(/^\/api\/student\/flashcards\/sets\/\d+\/reorder-items$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        flashcardController.reorderFlashcardItems
       )(req, res);
     }
 

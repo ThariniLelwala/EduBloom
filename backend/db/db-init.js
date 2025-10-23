@@ -262,6 +262,56 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_quiz_answers_is_correct ON quiz_answers(is_correct);
     `);
 
+    // Flashcard Subjects table (student creates subjects for organizing flashcards)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS flashcard_subjects (
+        id SERIAL PRIMARY KEY,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name VARCHAR(150) NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Flashcard Sets table (collections of flashcards within a subject)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS flashcard_sets (
+        id SERIAL PRIMARY KEY,
+        subject_id INT NOT NULL REFERENCES flashcard_subjects(id) ON DELETE CASCADE,
+        name VARCHAR(150) NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Flashcard Items table (individual flashcards with question and answer)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS flashcard_items (
+        id SERIAL PRIMARY KEY,
+        flashcard_set_id INT NOT NULL REFERENCES flashcard_sets(id) ON DELETE CASCADE,
+        question VARCHAR(1000) NOT NULL,
+        answer VARCHAR(2000) NOT NULL,
+        item_order INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Create indexes for better performance
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_flashcard_subjects_student_id ON flashcard_subjects(student_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_flashcard_sets_subject_id ON flashcard_sets(subject_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_flashcard_items_set_id ON flashcard_items(flashcard_set_id);
+    `);
+
     console.log("✅ Database tables and indexes created successfully");
 
     // Check if admin user exists, if not create one
