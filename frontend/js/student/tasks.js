@@ -1,241 +1,438 @@
-// ../../js/tasks.js
-let taskData = null;
-let currentType = null;
-let editContext = { type: null, index: null };
-let deleteContext = { type: null, index: null };
+// js/student/tasks.js
+let tasks = {
+  todo: [],
+  weekly: [],
+  monthly: [],
+};
 
-// Load tasks from JSON
-async function loadTasks() {
+let parentTasks = {
+  todo: [],
+  weekly: [],
+  monthly: [],
+};
+
+let currentEditingIndex = -1;
+let currentEditingType = "";
+let currentAddingType = "";
+let isEditingParentTask = false;
+
+// Initialize on page load
+document.addEventListener("DOMContentLoaded", async () => {
+  await archiveExpiredGoals();
+  await loadTasks();
+  setDates();
+  renderTasks();
+  setupEventListeners();
+});
+
+// Archive expired weekly and monthly goals
+async function archiveExpiredGoals() {
   try {
-    const response = await fetch("../../data/tasks.json");
-    if (!response.ok) throw new Error("Failed to load tasks.json");
-    taskData = await response.json();
-
-    renderAll();
-    bindGlobalEvents();
-  } catch (err) {
-    console.error("Error loading tasks:", err);
+    const result = await studentTodoApi.archiveExpiredGoals();
+    if (result.archivedCount > 0) {
+      console.log(`Archived ${result.archivedCount} expired goals`);
+    }
+  } catch (error) {
+    // Silent fail - don't interrupt user experience
+    console.log("No expired goals to archive");
   }
 }
 
-// Render all lists
-function renderAll() {
-  if (!taskData) return;
+// Load tasks from backend
+async function loadTasks() {
+  try {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      window.location.href = "/login.html";
+      return;
+    }
 
-  populateList("todo-list", taskData.todo, "todo");
-  populateList("weekly-list", taskData.weeklyGoals, "weekly");
-  populateList("monthly-list", taskData.monthlyGoals, "monthly");
+    // Load student-created todos
+    const allTodos = await studentTodoApi.getTodos();
+    tasks = {
+      todo: allTodos.todos.filter((t) => t.type === "todo"),
+      weekly: allTodos.todos.filter((t) => t.type === "weekly"),
+      monthly: allTodos.todos.filter((t) => t.type === "monthly"),
+    };
 
+    // Load parent-assigned todos
+    const parentTodosData = await studentTodoApi.getParentTodos();
+    parentTasks = {
+      todo: parentTodosData.todos.filter((t) => t.type === "todo"),
+      weekly: parentTodosData.todos.filter((t) => t.type === "weekly"),
+      monthly: parentTodosData.todos.filter((t) => t.type === "monthly"),
+    };
+  } catch (error) {
+    console.error("Error loading tasks:", error);
+    // Fall back to empty state
+    tasks = {
+      todo: [],
+      weekly: [],
+      monthly: [],
+    };
+    parentTasks = {
+      todo: [],
+      weekly: [],
+      monthly: [],
+    };
+  }
+}
+
+// Render all tasks
+function renderTasks() {
+  renderTaskList("todo");
+  renderTaskList("weekly");
+  renderTaskList("monthly");
   updateSummary();
 }
 
-// Update summary (safe for pages with/without elements)
-function updateSummary() {
-  if (!taskData) return;
-
-  const todoCompleted = taskData.todo?.filter((t) => t.done).length || 0;
-  const weeklyCompleted =
-    taskData.weeklyGoals?.filter((g) => g.done).length || 0;
-  const monthlyCompleted =
-    taskData.monthlyGoals?.filter((g) => g.done).length || 0;
-
-  const todoEl = document.getElementById("todo-completed");
-  if (todoEl) todoEl.textContent = `${todoCompleted}/${taskData.todo.length}`;
-
-  const weeklyEl = document.getElementById("weekly-completed");
-  if (weeklyEl)
-    weeklyEl.textContent = `${weeklyCompleted}/${taskData.weeklyGoals.length}`;
-
-  const monthlyEl = document.getElementById("monthly-completed");
-  if (monthlyEl)
-    monthlyEl.textContent = `${monthlyCompleted}/${taskData.monthlyGoals.length}`;
-}
-
-// Populate a list
-function populateList(listId, items, prefix) {
-  const list = document.getElementById(listId);
-  if (!list || !items) return;
+// Render specific task list with student and parent tasks
+function renderTaskList(type) {
+  const list = document.getElementById(`${type}-list`);
+  if (!list) return;
 
   list.innerHTML = "";
 
-  items.forEach((item, index) => {
+  // Render student-created tasks
+  tasks[type].forEach((task, index) => {
     const li = document.createElement("li");
     li.className = "task-item";
-    if (item.done) li.classList.add("completed");
+    li.dataset.taskId = task.id;
+    li.dataset.isParent = "false";
 
+    // Add completed class if task is marked as completed
+    if (task.completed) {
+      li.classList.add("completed");
+    }
+
+    // Checkbox for students to mark tasks as complete
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.className = "task-checkbox";
-    checkbox.id = `${prefix}-${index}`;
-    checkbox.checked = !!item.done;
-
-    const label = document.createElement("label");
-    label.htmlFor = checkbox.id;
-    label.textContent = item.task || item.goal;
-
-    checkbox.addEventListener("change", () => {
-      item.done = checkbox.checked;
-      li.classList.toggle("completed", checkbox.checked);
-      updateSummary();
+    checkbox.checked = task.completed;
+    checkbox.addEventListener("change", async (e) => {
+      await toggleTaskComplete(task.id, e.target.checked);
     });
 
-    // Actions: Edit / Delete
-    const actions = document.createElement("div");
-    actions.className = "task-item-actions";
+    li.innerHTML = `
+      <div class="task-content">
+        <span class="task-text">${task.text}</span>
+      </div>
+      <div class="task-actions">
+        <button class="edit-btn" onclick="editTask('${type}', ${index}, false)" title="Edit task">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="delete-btn" onclick="deleteTask('${type}', ${index}, false)" title="Delete task">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    `;
 
-    const editBtn = document.createElement("i");
-    editBtn.className = "fa fa-pencil";
-    editBtn.title = "Edit";
-    editBtn.addEventListener("click", () => openEditModal(prefix, index));
+    // Insert checkbox at the beginning
+    const checkboxWrapper = document.createElement("div");
+    checkboxWrapper.className = "task-checkbox-wrapper";
+    checkboxWrapper.appendChild(checkbox);
+    li.insertBefore(checkboxWrapper, li.firstChild);
 
-    const deleteBtn = document.createElement("i");
-    deleteBtn.className = "fa fa-trash";
-    deleteBtn.title = "Delete";
-    deleteBtn.addEventListener("click", () => openDeleteModal(prefix, index));
+    list.appendChild(li);
+  });
 
-    actions.appendChild(editBtn);
-    actions.appendChild(deleteBtn);
+  // Add separator if there are both student and parent tasks
+  if (tasks[type].length > 0 && parentTasks[type].length > 0) {
+    const hr = document.createElement("hr");
+    hr.className = "task-separator";
+    hr.style.margin = "10px 0";
+    hr.style.border = "none";
+    hr.style.borderTop = "2px solid #ddd";
+    list.appendChild(hr);
+  }
 
-    li.appendChild(checkbox);
-    li.appendChild(label);
-    li.appendChild(actions);
+  // Render parent-assigned tasks
+  parentTasks[type].forEach((task, index) => {
+    const li = document.createElement("li");
+    li.className = "task-item parent-task";
+    li.dataset.taskId = task.id;
+    li.dataset.isParent = "true";
+
+    // Add completed class if task is marked as completed
+    if (task.completed) {
+      li.classList.add("completed");
+    }
+
+    // Parent tasks are read-only (no edit/delete for parent-assigned tasks)
+    li.innerHTML = `
+      <div class="task-content">
+        <span class="task-text">${task.text}</span>
+        <span class="task-badge" style="background-color: white; color: #333; font-size: 0.7em; padding: 2px 8px; border-radius: 4px; margin-left: 8px; display: inline-block; font-weight: 600;">parent</span>
+      </div>
+    `;
+
+    // Checkbox for students to mark tasks as complete (parent tasks can also be checked)
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "task-checkbox";
+    checkbox.checked = task.completed;
+    checkbox.addEventListener("change", async (e) => {
+      await toggleParentTaskComplete(task.id, e.target.checked);
+    });
+
+    // Insert checkbox at the beginning
+    const checkboxWrapper = document.createElement("div");
+    checkboxWrapper.className = "task-checkbox-wrapper";
+    checkboxWrapper.appendChild(checkbox);
+    li.insertBefore(checkboxWrapper, li.firstChild);
+
     list.appendChild(li);
   });
 }
 
-// Bind global buttons and modals
-function bindGlobalEvents() {
-  const modal = document.getElementById("task-modal");
-  const modalClose = document.getElementById("modal-close");
-  const modalCancel = document.getElementById("modal-cancel");
-  const modalSave = document.getElementById("modal-save");
-  const modalInput = document.getElementById("task-input");
-  const modalTitle = document.getElementById("modal-title");
-
-  const editModal = document.getElementById("edit-modal");
-  const editInput = document.getElementById("edit-input");
-  const editCancel = document.getElementById("edit-cancel");
-  const editClose = document.getElementById("edit-modal-close");
-  const editSave = document.getElementById("edit-save");
-
-  const deleteModal = document.getElementById("delete-modal");
-  const deleteConfirm = document.getElementById("delete-confirm");
-  const deleteCancel = document.getElementById("delete-cancel");
-  const deleteClose = document.getElementById("delete-modal-close");
-
-  function openModal(m) {
-    m.classList.add("show");
+// Toggle task completion
+async function toggleTaskComplete(taskId, completed) {
+  try {
+    await studentTodoApi.updateTodo(taskId, { completed });
+    await loadTasks();
+    renderTasks();
+  } catch (error) {
+    alert("Failed to update task: " + error.message);
   }
-  function closeModal(m) {
-    m.classList.remove("show");
+}
+
+// Toggle parent-assigned task completion
+async function toggleParentTaskComplete(taskId, completed) {
+  try {
+    // Parent todos are updated via the student parent-todos endpoint
+    await studentTodoApi.updateParentTodo(taskId, { completed });
+    await loadTasks();
+    renderTasks();
+  } catch (error) {
+    alert("Failed to update task: " + error.message);
+  }
+}
+
+// Update summary counts
+function updateSummary() {
+  const todoTotal = document.getElementById("todo-total");
+  if (todoTotal) {
+    todoTotal.textContent = tasks.todo.length + parentTasks.todo.length;
   }
 
-  // Add task/goal button
+  const weeklyTotal = document.getElementById("weekly-total");
+  if (weeklyTotal) {
+    weeklyTotal.textContent = tasks.weekly.length + parentTasks.weekly.length;
+  }
+
+  const monthlyTotal = document.getElementById("monthly-total");
+  if (monthlyTotal) {
+    monthlyTotal.textContent =
+      tasks.monthly.length + parentTasks.monthly.length;
+  }
+}
+
+// Set date information with time remaining
+function setDates() {
+  const today = new Date();
+  const todayStr = today.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+
+  const todoDateEl = document.getElementById("todo-date");
+  if (todoDateEl) {
+    todoDateEl.textContent = `Today - ${todayStr}`;
+  }
+
+  // Calculate weekly time remaining
+  const daysUntilSunday = 7 - today.getDay();
+  const weeklyDateEl = document.getElementById("weekly-date");
+  if (weeklyDateEl) {
+    if (daysUntilSunday === 0) {
+      weeklyDateEl.textContent = "Expires today";
+    } else if (daysUntilSunday === 1) {
+      weeklyDateEl.textContent = "Expires tomorrow";
+    } else {
+      weeklyDateEl.textContent = `${daysUntilSunday} days left`;
+    }
+  }
+
+  // Calculate monthly time remaining
+  const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const daysUntilEndOfMonth = lastDay.getDate() - today.getDate();
+  const monthlyDateEl = document.getElementById("monthly-date");
+  if (monthlyDateEl) {
+    if (daysUntilEndOfMonth === 0) {
+      monthlyDateEl.textContent = "Expires today";
+    } else if (daysUntilEndOfMonth === 1) {
+      monthlyDateEl.textContent = "Expires tomorrow";
+    } else {
+      monthlyDateEl.textContent = `${daysUntilEndOfMonth} days left`;
+    }
+  }
+}
+
+// Setup event listeners
+function setupEventListeners() {
+  // Add buttons - use data-type attribute from HTML
   document.querySelectorAll(".add-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      currentType = btn.dataset.type || "todo";
-      modalTitle.textContent = currentType === "todo" ? "Add Task" : "Add Goal";
-      modalInput.value = "";
-      openModal(modal);
-      modalInput.focus();
+    btn.addEventListener("click", (e) => {
+      // Get type from data-type attribute
+      const type = e.target.getAttribute("data-type") || "todo";
+      openAddModal(type);
     });
   });
 
-  [modalClose, modalCancel].forEach((btn) =>
-    btn.addEventListener("click", () => closeModal(modal))
-  );
+  // Modal buttons
+  document.getElementById("modal-save").addEventListener("click", saveTask);
+  document
+    .getElementById("modal-cancel")
+    .addEventListener("click", closeAddModal);
+  document
+    .getElementById("modal-close")
+    .addEventListener("click", closeAddModal);
 
-  modalSave.addEventListener("click", () => {
-    const text = modalInput.value.trim();
-    if (!text) return;
+  document
+    .getElementById("edit-save")
+    .addEventListener("click", saveEditedTask);
+  document
+    .getElementById("edit-cancel")
+    .addEventListener("click", closeEditModal);
+  document
+    .getElementById("edit-modal-close")
+    .addEventListener("click", closeEditModal);
 
-    if (currentType === "todo") {
-      if (!taskData.todo) taskData.todo = [];
-      taskData.todo.push({ task: text, done: false });
-    } else if (currentType === "weekly") {
-      if (!taskData.weeklyGoals) taskData.weeklyGoals = [];
-      taskData.weeklyGoals.push({ goal: text, done: false });
-    } else if (currentType === "monthly") {
-      if (!taskData.monthlyGoals) taskData.monthlyGoals = [];
-      taskData.monthlyGoals.push({ goal: text, done: false });
-    }
+  document
+    .getElementById("delete-confirm")
+    .addEventListener("click", confirmDelete);
+  document
+    .getElementById("delete-cancel")
+    .addEventListener("click", closeDeleteModal);
+  document
+    .getElementById("delete-modal-close")
+    .addEventListener("click", closeDeleteModal);
 
-    renderAll();
-    closeModal(modal);
+  // Enter key support
+  document.getElementById("task-input").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") saveTask();
   });
 
-  // Edit modal close
-  [editCancel, editClose].forEach((btn) =>
-    btn.addEventListener("click", () => closeModal(editModal))
-  );
-
-  // Edit modal save
-  editSave.addEventListener("click", () => {
-    if (!editContext) return;
-
-    const { type, index } = editContext;
-    const list =
-      type === "todo"
-        ? taskData.todo
-        : type === "weekly"
-        ? taskData.weeklyGoals
-        : taskData.monthlyGoals;
-
-    const newText = editInput.value.trim();
-    if (!newText) return;
-
-    if (type === "todo") list[index].task = newText;
-    else list[index].goal = newText;
-
-    renderAll();
-    closeModal(editModal);
-    editContext = { type: null, index: null };
-  });
-
-  // Delete modal close
-  [deleteCancel, deleteClose].forEach((btn) =>
-    btn.addEventListener("click", () => closeModal(deleteModal))
-  );
-
-  // Delete confirm
-  deleteConfirm.addEventListener("click", () => {
-    const { type, index } = deleteContext;
-    const list =
-      type === "todo"
-        ? taskData.todo
-        : type === "weekly"
-        ? taskData.weeklyGoals
-        : taskData.monthlyGoals;
-
-    list.splice(index, 1);
-    renderAll();
-    closeModal(deleteModal);
+  document.getElementById("edit-input").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") saveEditedTask();
   });
 }
 
-// Open edit modal
-function openEditModal(type, index) {
-  const editModal = document.getElementById("edit-modal");
-  const editInput = document.getElementById("edit-input");
+// Open add modal
+function openAddModal(type) {
+  const modal = document.getElementById("task-modal");
+  const title = document.getElementById("modal-title");
+  const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
 
-  editContext = { type, index };
-  const list =
-    type === "todo"
-      ? taskData.todo
-      : type === "weekly"
-      ? taskData.weeklyGoals
-      : taskData.monthlyGoals;
-
-  editInput.value = list[index].task || list[index].goal;
-  editModal.classList.add("show");
+  currentAddingType = type;
+  title.textContent = `Add ${typeLabel}`;
+  document.getElementById("task-input").value = "";
+  document.getElementById("task-input").focus();
+  modal.classList.add("show");
 }
 
-// Open delete modal
-function openDeleteModal(type, index) {
-  deleteContext = { type, index };
-  const deleteModal = document.getElementById("delete-modal");
-  deleteModal.classList.add("show");
+// Close add modal
+function closeAddModal() {
+  document.getElementById("task-modal").classList.remove("show");
+  document.getElementById("task-input").value = "";
 }
 
-// Initialize
-loadTasks();
+// Save new task
+async function saveTask() {
+  const input = document.getElementById("task-input");
+  const text = input.value.trim();
+
+  if (!text) {
+    alert("Please enter a task");
+    return;
+  }
+
+  try {
+    await studentTodoApi.createTodo(currentAddingType, text);
+    await loadTasks();
+    renderTasks();
+    closeAddModal();
+  } catch (error) {
+    alert("Failed to save task: " + error.message);
+  }
+}
+
+// Edit task
+function editTask(type, index, isParent = false) {
+  if (isParent) {
+    alert("You cannot edit parent-assigned tasks");
+    return;
+  }
+
+  isEditingParentTask = isParent;
+  currentEditingType = type;
+  currentEditingIndex = index;
+  const modal = document.getElementById("edit-modal");
+  const input = document.getElementById("edit-input");
+
+  input.value = tasks[type][index].text;
+  input.focus();
+  modal.classList.add("show");
+}
+
+// Close edit modal
+function closeEditModal() {
+  document.getElementById("edit-modal").classList.remove("show");
+  document.getElementById("edit-input").value = "";
+  isEditingParentTask = false;
+}
+
+// Save edited task
+async function saveEditedTask() {
+  const input = document.getElementById("edit-input");
+  const text = input.value.trim();
+
+  if (!text) {
+    alert("Please enter a task");
+    return;
+  }
+
+  try {
+    const task = tasks[currentEditingType][currentEditingIndex];
+    await studentTodoApi.updateTodo(task.id, { text });
+    await loadTasks();
+    renderTasks();
+    closeEditModal();
+  } catch (error) {
+    alert("Failed to update task: " + error.message);
+  }
+}
+
+// Delete task
+function deleteTask(type, index, isParent = false) {
+  if (isParent) {
+    alert("You cannot delete parent-assigned tasks");
+    return;
+  }
+
+  isEditingParentTask = isParent;
+  currentEditingType = type;
+  currentEditingIndex = index;
+  document.getElementById("delete-modal").classList.add("show");
+}
+
+// Close delete modal
+function closeDeleteModal() {
+  document.getElementById("delete-modal").classList.remove("show");
+  isEditingParentTask = false;
+}
+
+// Confirm delete
+async function confirmDelete() {
+  try {
+    const task = tasks[currentEditingType][currentEditingIndex];
+    await studentTodoApi.deleteTodo(task.id);
+    await loadTasks();
+    renderTasks();
+    closeDeleteModal();
+  } catch (error) {
+    alert("Failed to delete task: " + error.message);
+  }
+}

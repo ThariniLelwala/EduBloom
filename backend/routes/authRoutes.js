@@ -1,6 +1,7 @@
 // routes/authRoutes.js
 const authController = require("../controllers/authController");
 const parentController = require("../controllers/parentController");
+const todoController = require("../controllers/parent/todoController");
 const verificationController = require("../controllers/teacher/verificationController");
 const {
   verifyToken,
@@ -180,6 +181,83 @@ function handleAuthRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
         verificationController.downloadVerificationFile
+      )(req, res);
+    }
+
+    // ========== PARENT TODO ROUTES ==========
+
+    // Create a new todo item: POST /api/parent/todos
+    if (method === "POST" && pathname === "/api/parent/todos") {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        todoController.createTodo
+      )(req, res);
+    }
+
+    // Get all todos for a student: GET /api/parent/students/:studentId/todos
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/parent\/students\/\d+\/todos$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        todoController.getTodos
+      )(req, res);
+    }
+
+    // Get todos by type: GET /api/parent/students/:studentId/todos/:type
+    if (
+      method === "GET" &&
+      pathname.match(
+        /^\/api\/parent\/students\/\d+\/todos\/(todo|weekly|monthly)$/
+      )
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        todoController.getTodosByType
+      )(req, res);
+    }
+
+    // Update a todo item: PUT /api/parent/todos/:todoId
+    if (method === "PUT" && pathname.match(/^\/api\/parent\/todos\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        todoController.updateTodo
+      )(req, res);
+    }
+
+    // Delete a todo item: DELETE /api/parent/todos/:todoId
+    if (method === "DELETE" && pathname.match(/^\/api\/parent\/todos\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        todoController.deleteTodo
+      )(req, res);
+    }
+
+    // Get all students for parent: GET /api/parent/students
+    if (method === "GET" && pathname === "/api/parent/students") {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        todoController.getParentStudents
+      )(req, res);
+    }
+
+    // Archive expired goals: POST /api/parent/archive-expired-goals
+    if (method === "POST" && pathname === "/api/parent/archive-expired-goals") {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        todoController.archiveExpiredGoals
+      )(req, res);
+    }
+
+    // Get expired goals for student: GET /api/parent/students/:studentId/expired-goals
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/parent\/students\/\d+\/expired-goals$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        todoController.getExpiredGoals
       )(req, res);
     }
 

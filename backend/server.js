@@ -45,10 +45,14 @@ const server = http.createServer((req, res) => {
 
   // API routes
   if (pathname.startsWith("/api/")) {
-    // Check if it's a student module route (subjects, topics, notes, flashcards) - these go to studentRoutes
+    // Check if it's a student module route (subjects, topics, notes, flashcards, todos) - these go to studentRoutes
     if (
       pathname.startsWith("/api/student/subjects") ||
       pathname.startsWith("/api/student/flashcards") ||
+      pathname.startsWith("/api/student/todos") ||
+      pathname.startsWith("/api/student/archive-expired-goals") ||
+      pathname.startsWith("/api/student/expired-goals") ||
+      pathname.startsWith("/api/student/parent-todos") ||
       (pathname.startsWith("/api/student/") && pathname.includes("/topics"))
     ) {
       const studentResult = handleStudentRoutes(req, res);

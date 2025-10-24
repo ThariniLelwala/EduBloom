@@ -299,6 +299,21 @@ async function initializeDatabase() {
       );
     `);
 
+    // Parent Todo table (todos created by parents for students)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS parent_todos (
+        id SERIAL PRIMARY KEY,
+        parent_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        type VARCHAR(20) NOT NULL CHECK (type IN ('todo', 'weekly', 'monthly')),
+        text VARCHAR(500) NOT NULL,
+        completed BOOLEAN DEFAULT FALSE,
+        expires_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
     // Create indexes for better performance
     await db.query(`
       CREATE INDEX IF NOT EXISTS idx_flashcard_subjects_student_id ON flashcard_subjects(student_id);
@@ -310,6 +325,49 @@ async function initializeDatabase() {
 
     await db.query(`
       CREATE INDEX IF NOT EXISTS idx_flashcard_items_set_id ON flashcard_items(flashcard_set_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_parent_todos_parent_id ON parent_todos(parent_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_parent_todos_student_id ON parent_todos(student_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_parent_todos_type ON parent_todos(type);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_parent_todos_expires_at ON parent_todos(expires_at);
+    `);
+
+    // Student Todo table (todos assigned to students by parents, students can mark complete)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS student_todos (
+        id SERIAL PRIMARY KEY,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        type VARCHAR(20) NOT NULL CHECK (type IN ('todo', 'weekly', 'monthly')),
+        text VARCHAR(500) NOT NULL,
+        completed BOOLEAN DEFAULT FALSE,
+        expires_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Create indexes for student_todos
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_student_todos_student_id ON student_todos(student_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_student_todos_type ON student_todos(type);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_student_todos_expires_at ON student_todos(expires_at);
     `);
 
     console.log("✅ Database tables and indexes created successfully");
