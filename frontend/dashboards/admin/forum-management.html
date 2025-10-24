@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forum Management</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/dashboard/progress.css" />
+    <link rel="stylesheet" href="../../css/admin/dashboard.css" />
+    <link rel="stylesheet" href="../../css/admin/themes.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+
+    <div class="container">
+      <!-- Sidebar -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main content -->
+      <main id="content">
+        <div class="card-grid">
+          <!-- Welcome Card -->
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">
+                <i class="fas fa-comments"></i> Forum Management
+              </h1>
+              <div>"Manage forums, moderators, and community engagement."</div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+
+          <!-- Statistics Cards -->
+          <div class="card w1 small-card">
+            <h4>Total Forums</h4>
+            <p id="total-forums-count">0</p>
+          </div>
+
+          <div class="card w1 small-card">
+            <h4>Forum Admins</h4>
+            <p id="forum-admins-count">0</p>
+          </div>
+
+          <div class="card w1 small-card">
+            <h4>Most Active Forum</h4>
+            <p id="most-active-forum">0</p>
+          </div>
+
+          <div class="card w1 small-card">
+            <h4>Pending Moderation</h4>
+            <p id="pending-moderation-count">0</p>
+          </div>
+
+          <!-- Pending Approvals Table -->
+          <div class="card full">
+            <div class="card-header">
+              <h3><i class="fas fa-clock"></i> Pending Approvals</h3>
+            </div>
+            <div class="admin-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Forum Name</th>
+                    <th>Requested By</th>
+                    <th>Category</th>
+                    <th>Requested Date</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="pending-approvals-tbody">
+                  <!-- Populated by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- All Forums Table -->
+          <div class="card full">
+            <div class="card-header">
+              <h3><i class="fas fa-comments"></i> All Forums</h3>
+            </div>
+            <div class="admin-controls">
+              <div class="admin-controls-left">
+                <input
+                  type="text"
+                  id="forums-search"
+                  class="admin-search-input"
+                  placeholder="Search forums..."
+                />
+                <select id="creator-type-filter" class="admin-filter-select">
+                  <option value="">Creator Type</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="student">Student</option>
+                </select>
+                <select id="forum-status-filter" class="admin-filter-select">
+                  <option value="">Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+            <div class="admin-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Forum Name</th>
+                    <th>Created By</th>
+                    <th>Creator Type</th>
+                    <th>Members</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="all-forums-tbody">
+                  <!-- Populated by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Pending Approval View Modal -->
+    <div id="pending-approval-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="approval-modal-title">Forum Details</h2>
+          <span class="modal-close" data-modal="pending-approval-modal"
+            >&times;</span
+          >
+        </div>
+        <div class="modal-body">
+          <div style="display: flex; flex-direction: column; gap: 16px">
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 4px;
+                "
+                >Forum Name</label
+              >
+              <p
+                id="approval-modal-name"
+                style="color: var(--color-white); margin: 0"
+              ></p>
+            </div>
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 4px;
+                "
+                >Requested By</label
+              >
+              <p
+                id="approval-modal-requester"
+                style="color: var(--color-white); margin: 0"
+              ></p>
+            </div>
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 4px;
+                "
+                >Category</label
+              >
+              <p
+                id="approval-modal-category"
+                style="color: var(--color-white); margin: 0"
+              ></p>
+            </div>
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 4px;
+                "
+                >Requested Date</label
+              >
+              <p
+                id="approval-modal-date"
+                style="color: var(--color-white); margin: 0"
+              ></p>
+            </div>
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 4px;
+                "
+                >Description</label
+              >
+              <p
+                id="approval-modal-description"
+                style="color: var(--color-white); margin: 0"
+              ></p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-modal="pending-approval-modal">
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="grant-approval-btn">
+            Grant Approval
+          </button>
+          <button class="btn btn-secondary" id="reject-request-btn">
+            Reject Request
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirmation Modal for Grant Approval -->
+    <div id="grant-confirmation-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Confirm Decision</h2>
+          <span class="modal-close" data-modal="grant-confirmation-modal"
+            >&times;</span
+          >
+        </div>
+        <div class="modal-body">
+          <p style="color: var(--color-white); margin: 0">
+            Are you sure you want to grant approval for this forum? The forum
+            will be published immediately.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            data-modal="grant-confirmation-modal"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="confirm-grant-btn">
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirmation Modal for Reject Request -->
+    <div id="reject-confirmation-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Confirm Decision</h2>
+          <span class="modal-close" data-modal="reject-confirmation-modal"
+            >&times;</span
+          >
+        </div>
+        <div class="modal-body">
+          <p style="color: var(--color-white); margin: 0">
+            Are you sure you want to reject this forum request? The user will be
+            notified of the rejection.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            data-modal="reject-confirmation-modal"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="confirm-reject-btn">
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forum View Modal -->
+    <div id="forum-view-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="forum-view-title">Forum Details</h2>
+          <span class="modal-close" data-modal="forum-view-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div style="display: flex; flex-direction: column; gap: 16px">
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 4px;
+                "
+                >Forum Name</label
+              >
+              <p
+                id="forum-view-name"
+                style="color: var(--color-white); margin: 0"
+              ></p>
+            </div>
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 4px;
+                "
+                >Created By</label
+              >
+              <p
+                id="forum-view-creator"
+                style="color: var(--color-white); margin: 0"
+              ></p>
+            </div>
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 4px;
+                "
+                >Creator Type</label
+              >
+              <p
+                id="forum-view-creator-type"
+                style="
+                  color: var(--color-white);
+                  margin: 0;
+                  text-transform: capitalize;
+                "
+              ></p>
+            </div>
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 4px;
+                "
+                >Members</label
+              >
+              <p
+                id="forum-view-members"
+                style="color: var(--color-white); margin: 0"
+              ></p>
+            </div>
+            <div>
+              <label
+                style="
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 12px;
+                  display: block;
+                  margin-bottom: 4px;
+                "
+                >Status</label
+              >
+              <p
+                id="forum-view-status"
+                style="
+                  color: var(--color-white);
+                  margin: 0;
+                  text-transform: capitalize;
+                "
+              ></p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-modal="forum-view-modal">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JS -->
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/sidebar.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+    <script src="../../js/admin/admin-theme-manager.js"></script>
+    <script src="../../js/admin/admin-forum-management.js"></script>
+  </body>
+</html>

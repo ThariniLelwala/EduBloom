@@ -239,5 +239,43 @@
       "icon": "fas fa-user",
       "link": "profile.html"
     }
+  ],
+  "admin": [
+    { "title": "Dashboard", "icon": "fas fa-home", "link": "dashboard.html" },
+    {
+      "title": "User Management",
+      "icon": "fas fa-users-cog",
+      "link": "user-management.html"
+    },
+    {
+      "title": "Content Moderation",
+      "icon": "fas fa-folder-open",
+      "link": "content-moderation.html"
+    },
+    {
+      "title": "System Analytics",
+      "icon": "fas fa-chart-line",
+      "link": "system-analytics.html"
+    },
+    {
+      "title": "Forum Management",
+      "icon": "fas fa-comments",
+      "link": "forum-management.html"
+    },
+    {
+      "title": "Help",
+      "icon": "fas fa-question-circle",
+      "link": "help.html"
+    },
+    {
+      "title": "Announcements",
+      "icon": "fas fa-bell",
+      "link": "announcements.html"
+    },
+    {
+      "title": "Profile",
+      "icon": "fas fa-user",
+      "link": "profile.html"
+    }
   ]
 }

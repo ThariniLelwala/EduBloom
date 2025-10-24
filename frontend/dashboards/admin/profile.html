@@ -3,16 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Teacher Profile - EduBloom</title>
-    <script src="../../../js/sidebar.js"></script>
+    <title>Admin Profile - EduBloom</title>
+    <script src="../../js/sidebar.js"></script>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="../../../css/style.css" />
-    <link rel="stylesheet" href="../../../css/topbar.css" />
-    <link rel="stylesheet" href="../../../css/sidebar.css" />
-    <link rel="stylesheet" href="../../../css/cards.css" />
-    <link rel="stylesheet" href="../../../css/custom-select.css" />
-    <link rel="stylesheet" href="../../../css/profile.css" />
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/custom-select.css" />
+    <link rel="stylesheet" href="../../css/profile.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
@@ -31,8 +31,8 @@
       <main id="content">
         <h2 class="header-row">
           <div class="card-title">
-            <i class="fas fa-user"></i>
-            <span>Teacher Profile</span>
+            <i class="fas fa-user-shield"></i>
+            <span>Admin Profile</span>
           </div>
         </h2>
 
@@ -40,7 +40,7 @@
           <!-- Welcome Card -->
           <div class="card welcome full">
             <div class="welcome-content">
-              <h1 class="heading" id="welcome-heading">Welcome Teacher</h1>
+              <h1 class="heading" id="welcome-heading">Welcome Admin</h1>
               <p id="welcome-message">
                 Manage your profile and appearance settings
               </p>
@@ -48,16 +48,11 @@
             <div class="welcome-image"></div>
           </div>
 
-          <!-- User Profile Card -->
+          <!-- Admin Profile Card -->
           <div class="card w2">
-            <h2><i class="fas fa-user"></i> Teacher Profile</h2>
+            <h2><i class="fas fa-user-shield"></i> Admin Profile</h2>
             <div id="profile-info">
               <!-- User info will be displayed here -->
-            </div>
-
-            <!-- Verification Status Card -->
-            <div id="verification-section" style="margin-top: 20px">
-              <!-- Verification status will be displayed here -->
             </div>
 
             <button
@@ -155,67 +150,10 @@
       </div>
     </div>
 
-    <script src="../../../js/topbar.js"></script>
-    <script src="../../../js/bg-manager.js"></script>
-    <script src="../../../js/confirmation-modal.js"></script>
-    <script src="../../../js/custom-select.js"></script>
-    <script src="../../../js/teacher/profile.js"></script>
-
-    <!-- Verification Request Modal -->
-    <div id="verificationModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2><i class="fas fa-certificate"></i> Request Verification</h2>
-          <button class="modal-close" id="closeVerificationBtn">&times;</button>
-        </div>
-
-        <div class="modal-body">
-          <form id="verificationForm">
-            <div class="form-group-verification">
-              <label for="appointmentLetter">
-                <i class="fas fa-file-pdf"></i> Appointment Letter *
-              </label>
-              <input
-                type="file"
-                id="appointmentLetter"
-                name="appointmentLetter"
-                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-              />
-              <div class="file-info">
-                Accepted formats: PDF, Word, Image (Max 5MB)
-              </div>
-            </div>
-
-            <div class="form-group-verification">
-              <label for="verificationMessage">
-                <i class="fas fa-message"></i> Additional Information
-              </label>
-              <textarea
-                id="verificationMessage"
-                name="verificationMessage"
-                placeholder="Provide any additional information that may help with verification (optional)"
-                maxlength="500"
-              ></textarea>
-              <div class="char-count">
-                <span id="charCount">0</span>/500 characters
-              </div>
-            </div>
-          </form>
-        </div>
-
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn-secondary"
-            id="cancelVerificationBtn"
-          >
-            Cancel
-          </button>
-          <button type="button" class="btn-primary" id="submitVerificationBtn">
-            Submit Request
-          </button>
-        </div>
-      </div>
-    </div>
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+    <script src="../../js/confirmation-modal.js"></script>
+    <script src="../../js/custom-select.js"></script>
+    <script src="../../js/admin/admin-profile.js"></script>
   </body>
 </html>
