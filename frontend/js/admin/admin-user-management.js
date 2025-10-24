@@ -4,51 +4,63 @@
 let allUsers = [];
 let filteredUsers = [];
 let selectedUsers = new Set();
+let pendingDeleteUserIds = null; // Store user IDs pending deletion
 
 // Load all user statistics
 function loadUserStatistics() {
-  loadTotalUsers();
-  loadActiveUsers();
-  loadSuspendedUsers();
-  loadDailyRegistration();
+  loadStatisticsFromAPI();
+}
+
+// Load statistics from backend API
+async function loadStatisticsFromAPI() {
+  try {
+    const stats = await adminApi.getStatistics();
+
+    const totalElement = document.getElementById("total-users-count");
+    if (totalElement) {
+      totalElement.textContent = stats.total || 0;
+    }
+
+    const activeElement = document.getElementById("active-users-count");
+    if (activeElement) {
+      activeElement.textContent =
+        stats.students + stats.teachers + stats.parents || 0;
+    }
+
+    const suspendedElement = document.getElementById("suspended-users-count");
+    if (suspendedElement) {
+      suspendedElement.textContent = "0"; // Will be implemented with status column
+    }
+
+    const dailyElement = document.getElementById("daily-registration-count");
+    if (dailyElement) {
+      dailyElement.textContent = stats.todayRegistrations || 0;
+    }
+  } catch (error) {
+    console.error("Error loading statistics:", error);
+  }
 }
 
 function loadTotalUsers() {
-  const totalUsersCount = getTotalUsersCount();
-  const element = document.getElementById("total-users-count");
-  if (element) {
-    element.textContent = totalUsersCount;
-  }
+  // Deprecated: Use loadStatisticsFromAPI instead
 }
 
 function getTotalUsersCount() {
-  // Count users from localStorage or return simulated data
-  const students = JSON.parse(localStorage.getItem("students")) || [];
-  const teachers = JSON.parse(localStorage.getItem("teachers")) || [];
-  const parents = JSON.parse(localStorage.getItem("parents")) || [];
-  return students.length + teachers.length + parents.length || 45;
+  // Deprecated: Use loadStatisticsFromAPI instead
+  return 0;
 }
 
 function loadActiveUsers() {
-  const activeUsersCount = getActiveUsersCount();
-  const element = document.getElementById("active-users-count");
-  if (element) {
-    element.textContent = activeUsersCount;
-  }
+  // Deprecated: Use loadStatisticsFromAPI instead
 }
 
 function getActiveUsersCount() {
-  // Get active users from localStorage or simulate
-  const activeUsers = JSON.parse(localStorage.getItem("activeUsers")) || [];
-  return activeUsers.length || 28;
+  // Deprecated: Use loadStatisticsFromAPI instead
+  return 0;
 }
 
 function loadSuspendedUsers() {
-  const suspendedUsersCount = getSuspendedUsersCount();
-  const element = document.getElementById("suspended-users-count");
-  if (element) {
-    element.textContent = suspendedUsersCount;
-  }
+  // Deprecated: Use loadStatisticsFromAPI instead
 }
 
 function getSuspendedUsersCount() {
@@ -173,6 +185,8 @@ function renderUsersTable() {
   filteredUsers.forEach((user) => {
     const tr = document.createElement("tr");
     const isSelected = selectedUsers.has(user.id);
+    const fullName =
+      `${user.firstname || ""} ${user.lastname || ""}`.trim() || user.username;
 
     tr.innerHTML = `
       <td>
@@ -180,10 +194,10 @@ function renderUsersTable() {
           user.id
         }" ${isSelected ? "checked" : ""} />
       </td>
-      <td class="text-white">${user.name}</td>
+      <td class="text-white">${fullName}</td>
+      <td class="text-muted">${user.username}</td>
       <td class="text-muted">${user.email}</td>
       <td class="text-muted text-capitalize">${user.role}</td>
-      <td class="text-muted text-capitalize">${user.status}</td>
       <td style="text-align: center;">
         <button class="edit-user-btn admin-table-action" data-user-id="${
           user.id
@@ -268,16 +282,25 @@ function filterUsers() {
     .getElementById("search-users")
     .value.toLowerCase();
   const roleFilter = document.getElementById("filter-role").value;
-  const activityFilter = document.getElementById("filter-activity").value;
 
   filteredUsers = allUsers.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchQuery) ||
-      user.email.toLowerCase().includes(searchQuery);
-    const matchesRole = !roleFilter || user.role === roleFilter;
-    const matchesActivity = !activityFilter || user.status === activityFilter;
+    // Create full name from firstname and lastname
+    const fullName = `${user.firstname || ""} ${
+      user.lastname || ""
+    }`.toLowerCase();
+    const username = (user.username || "").toLowerCase();
+    const email = (user.email || "").toLowerCase();
 
-    return matchesSearch && matchesRole && matchesActivity;
+    // Search in fullname, username, or email
+    const matchesSearch =
+      fullName.includes(searchQuery) ||
+      username.includes(searchQuery) ||
+      email.includes(searchQuery);
+
+    // Filter by role (if selected)
+    const matchesRole = !roleFilter || user.role === roleFilter;
+
+    return matchesSearch && matchesRole;
   });
 
   selectedUsers.clear();
@@ -288,7 +311,6 @@ function filterUsers() {
 function bindFilterEvents() {
   const searchInput = document.getElementById("search-users");
   const roleFilter = document.getElementById("filter-role");
-  const activityFilter = document.getElementById("filter-activity");
 
   if (searchInput) {
     searchInput.addEventListener("input", filterUsers);
@@ -296,43 +318,37 @@ function bindFilterEvents() {
   if (roleFilter) {
     roleFilter.addEventListener("change", filterUsers);
   }
-  if (activityFilter) {
-    activityFilter.addEventListener("change", filterUsers);
-  }
 }
 
 // Bind action button events
 function bindActionEvents() {
-  const addUserBtn = document.getElementById("add-user-btn");
+  const addAdminBtn = document.getElementById("add-admin-btn");
   const bulkDeleteBtn = document.getElementById("bulk-delete-btn");
 
-  if (addUserBtn) {
-    addUserBtn.addEventListener("click", () => {
-      alert("Add User functionality - to be implemented");
+  if (addAdminBtn) {
+    addAdminBtn.addEventListener("click", () => {
+      openAddAdminModal();
     });
   }
 
   if (bulkDeleteBtn) {
-    bulkDeleteBtn.addEventListener("click", () => {
+    bulkDeleteBtn.addEventListener("click", async () => {
       if (selectedUsers.size === 0) return;
-      if (confirm(`Delete ${selectedUsers.size} selected user(s)?`)) {
-        allUsers = allUsers.filter((user) => !selectedUsers.has(user.id));
-        selectedUsers.clear();
-        filterUsers();
-      }
+      // Show password confirmation modal
+      pendingDeleteUserIds = Array.from(selectedUsers);
+      openDeleteConfirmModal();
     });
   }
 
   // Bind individual delete buttons
-  document.addEventListener("click", (e) => {
+  document.addEventListener("click", async (e) => {
     if (e.target.closest(".delete-user-btn")) {
       const userId = parseInt(
         e.target.closest(".delete-user-btn").dataset.userId
       );
-      if (confirm("Delete this user?")) {
-        allUsers = allUsers.filter((user) => user.id !== userId);
-        filterUsers();
-      }
+      // Show password confirmation modal
+      pendingDeleteUserIds = [userId];
+      openDeleteConfirmModal();
     }
 
     if (e.target.closest(".edit-user-btn")) {
@@ -344,11 +360,227 @@ function bindActionEvents() {
   });
 }
 
+// Modal Functions
+function openAddAdminModal() {
+  const modal = document.getElementById("add-admin-modal");
+  if (modal) {
+    modal.style.display = "flex";
+    // Reset form
+    document.getElementById("add-admin-form").reset();
+    document.getElementById("admin-error-msg").style.display = "none";
+  }
+}
+
+function closeAddAdminModal() {
+  const modal = document.getElementById("add-admin-modal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
+function openDeleteConfirmModal() {
+  const modal = document.getElementById("delete-confirm-modal");
+  if (modal) {
+    modal.style.display = "flex";
+    // Reset form
+    document.getElementById("delete-confirm-form").reset();
+    document.getElementById("delete-error-msg").style.display = "none";
+  }
+}
+
+function closeDeleteConfirmModal() {
+  const modal = document.getElementById("delete-confirm-modal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+  pendingDeleteUserIds = null;
+}
+
+// Handle delete confirmation form submission
+async function handleDeleteConfirmSubmit(e) {
+  e.preventDefault();
+
+  if (!pendingDeleteUserIds || pendingDeleteUserIds.length === 0) {
+    return;
+  }
+
+  const password = document.getElementById("delete-password").value;
+  const errorMsg = document.getElementById("delete-error-msg");
+
+  if (!password) {
+    errorMsg.textContent = "Password is required";
+    errorMsg.style.display = "block";
+    return;
+  }
+
+  try {
+    // Delete user(s) with password
+    if (pendingDeleteUserIds.length === 1) {
+      await adminApi.deleteUser(pendingDeleteUserIds[0], password);
+      allUsers = allUsers.filter((user) => user.id !== pendingDeleteUserIds[0]);
+    } else {
+      await adminApi.deleteMultipleUsers(pendingDeleteUserIds, password);
+      allUsers = allUsers.filter(
+        (user) => !pendingDeleteUserIds.includes(user.id)
+      );
+      selectedUsers.clear();
+    }
+
+    closeDeleteConfirmModal();
+    filterUsers();
+    alert("User(s) deleted successfully!");
+  } catch (error) {
+    errorMsg.textContent = error.message || "Error deleting user(s)";
+    errorMsg.style.display = "block";
+  }
+}
+
+// Handle add admin form submission
+async function handleAddAdminSubmit(e) {
+  e.preventDefault();
+
+  const firstname = document.getElementById("admin-firstname").value.trim();
+  const lastname = document.getElementById("admin-lastname").value.trim();
+  const birthday = document.getElementById("admin-birthday").value;
+  const username = document.getElementById("admin-username").value.trim();
+  const email = document.getElementById("admin-email").value.trim();
+  const password = document.getElementById("admin-password").value;
+  const errorMsg = document.getElementById("admin-error-msg");
+
+  // Basic validation
+  if (
+    !firstname ||
+    !lastname ||
+    !birthday ||
+    !username ||
+    !email ||
+    !password
+  ) {
+    errorMsg.textContent = "All fields are required";
+    errorMsg.style.display = "block";
+    return;
+  }
+
+  // Password validation
+  const passwordRegex =
+    /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  if (!passwordRegex.test(password)) {
+    errorMsg.textContent =
+      "Password must be at least 8 chars with uppercase, number, and special character";
+    errorMsg.style.display = "block";
+    return;
+  }
+
+  // Age validation (18+)
+  const birthDate = new Date(birthday);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age--;
+  }
+
+  if (age < 18) {
+    errorMsg.textContent = "Admin must be at least 18 years old";
+    errorMsg.style.display = "block";
+    return;
+  }
+
+  // Create admin data object
+  const adminData = {
+    firstname,
+    lastname,
+    birthday,
+    username,
+    email,
+    password,
+  };
+
+  try {
+    const response = await adminApi.createAdmin(adminData);
+    // Success - close modal and refresh table
+    closeAddAdminModal();
+    await loadAllUsersFromAPI();
+    alert("Admin created successfully!");
+  } catch (error) {
+    errorMsg.textContent = error.message || "Error creating admin";
+    errorMsg.style.display = "block";
+  }
+}
+
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", () => {
   loadUserStatistics();
-  initializeUsersData();
-  renderUsersTable();
+  loadAllUsersFromAPI();
   bindFilterEvents();
   bindActionEvents();
+
+  // Add Admin Modal event listeners
+  const closeBtn = document.getElementById("close-admin-modal");
+  const cancelBtn = document.getElementById("cancel-admin-btn");
+  const form = document.getElementById("add-admin-form");
+  const modal = document.getElementById("add-admin-modal");
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeAddAdminModal);
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", closeAddAdminModal);
+  }
+
+  if (form) {
+    form.addEventListener("submit", handleAddAdminSubmit);
+  }
+
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        closeAddAdminModal();
+      }
+    });
+  }
+
+  // Delete Confirmation Modal event listeners
+  const closeDeleteBtn = document.getElementById("close-delete-modal");
+  const cancelDeleteBtn = document.getElementById("cancel-delete-btn");
+  const deleteForm = document.getElementById("delete-confirm-form");
+  const deleteModal = document.getElementById("delete-confirm-modal");
+
+  if (closeDeleteBtn) {
+    closeDeleteBtn.addEventListener("click", closeDeleteConfirmModal);
+  }
+
+  if (cancelDeleteBtn) {
+    cancelDeleteBtn.addEventListener("click", closeDeleteConfirmModal);
+  }
+
+  if (deleteForm) {
+    deleteForm.addEventListener("submit", handleDeleteConfirmSubmit);
+  }
+
+  if (deleteModal) {
+    deleteModal.addEventListener("click", (e) => {
+      if (e.target === deleteModal) {
+        closeDeleteConfirmModal();
+      }
+    });
+  }
 });
+
+// Load all users from API
+async function loadAllUsersFromAPI() {
+  try {
+    allUsers = await adminApi.getAllUsers();
+    filteredUsers = [...allUsers];
+    renderUsersTable();
+  } catch (error) {
+    console.error("Error loading users:", error);
+    // Fallback to initialize mock data
+    initializeUsersData();
+    renderUsersTable();
+  }
+}

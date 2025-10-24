@@ -23,6 +23,25 @@ async function initializeDatabase() {
       );
     `);
 
+    // Add missing columns to users table if they don't exist (for existing databases)
+    try {
+      await db.query(`ALTER TABLE users ADD COLUMN firstname VARCHAR(100);`);
+    } catch (err) {
+      // Column already exists, ignore error
+    }
+
+    try {
+      await db.query(`ALTER TABLE users ADD COLUMN lastname VARCHAR(100);`);
+    } catch (err) {
+      // Column already exists, ignore error
+    }
+
+    try {
+      await db.query(`ALTER TABLE users ADD COLUMN birthday DATE;`);
+    } catch (err) {
+      // Column already exists, ignore error
+    }
+
     // Parent-Student Links table
     await db.query(`
       CREATE TABLE IF NOT EXISTS parent_student_links (

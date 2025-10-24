@@ -6,6 +6,7 @@ const path = require("path");
 const handleAuthRoutes = require("./routes/authRoutes");
 const handleStudentRoutes = require("./routes/studentRoutes");
 const handleTeacherRoutes = require("./routes/teacherRoutes");
+const handleAdminRoutes = require("./routes/adminRoutes");
 
 // Frontend path
 const frontendPath = path.join(__dirname, "../frontend");
@@ -73,6 +74,16 @@ const server = http.createServer((req, res) => {
       const teacherResult = handleTeacherRoutes(req, res);
       if (teacherResult === null) {
         // If teacher routes don't handle it, fall back to auth routes
+        return handleAuthRoutes(req, res);
+      }
+      return;
+    }
+
+    // Check if it's an admin route - these go to adminRoutes
+    if (pathname.startsWith("/api/admin/")) {
+      const adminResult = handleAdminRoutes(req, res);
+      if (adminResult === null) {
+        // If admin routes don't handle it, fall back to auth routes
         return handleAuthRoutes(req, res);
       }
       return;
