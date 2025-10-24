@@ -57,12 +57,11 @@ document.addEventListener("DOMContentLoaded", function () {
   function loadProfileFromLocalStorage(username, userRole) {
     if (username) {
       const mockUser = {
-        name: username,
+        firstname: localStorage.getItem("firstname") || "Not set",
+        lastname: localStorage.getItem("lastname") || "Not set",
+        birthday: localStorage.getItem("birthday") || "Not set",
         email: localStorage.getItem("email") || "Not set",
         role: userRole || "parent",
-        phone: "Not set",
-        address: "Not set",
-        joinedDate: new Date().toISOString(),
       };
       displayProfileData(mockUser);
     } else {
@@ -78,7 +77,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Update welcome message
     if (welcomeHeading) {
-      welcomeHeading.textContent = `Welcome ${user.name || user.username}`;
+      welcomeHeading.textContent = `Welcome ${
+        user.firstname || user.name || user.username
+      }`;
     }
     if (welcomeMessage) {
       welcomeMessage.textContent =
@@ -89,8 +90,20 @@ document.addEventListener("DOMContentLoaded", function () {
     profileInfo.innerHTML = `
             <div class="profile-info-grid">
                 <div class="profile-item">
-                    <strong>Name</strong>
-                    <p>${user.name || user.username || "Not set"}</p>
+                    <strong>First Name</strong>
+                    <p>${user.firstname || "Not set"}</p>
+                </div>
+                <div class="profile-item">
+                    <strong>Last Name</strong>
+                    <p>${user.lastname || "Not set"}</p>
+                </div>
+                <div class="profile-item">
+                    <strong>Birthday</strong>
+                    <p>${
+                      user.birthday
+                        ? new Date(user.birthday).toLocaleDateString()
+                        : "Not set"
+                    }</p>
                 </div>
                 <div class="profile-item">
                     <strong>Email</strong>
@@ -99,22 +112,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 <div class="profile-item">
                     <strong>Role</strong>
                     <p>Parent</p>
-                </div>
-                <div class="profile-item">
-                    <strong>Phone</strong>
-                    <p>${user.phone || "Not set"}</p>
-                </div>
-                <div class="profile-item">
-                    <strong>Address</strong>
-                    <p>${user.address || "Not set"}</p>
-                </div>
-                <div class="profile-item">
-                    <strong>Joined</strong>
-                    <p>${
-                      user.joinedDate
-                        ? new Date(user.joinedDate).toLocaleDateString()
-                        : "Not set"
-                    }</p>
                 </div>
             </div>
         `;
@@ -164,7 +161,9 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    const studentsHTML = children.map(child => `
+    const studentsHTML = children
+      .map(
+        (child) => `
       <div class="linked-student">
         <div class="student-info">
           <strong>${child.username}</strong>
@@ -174,7 +173,9 @@ document.addEventListener("DOMContentLoaded", function () {
           <i class="fas fa-trash"></i> Remove
         </button>
       </div>
-    `).join('');
+    `
+      )
+      .join("");
 
     linkedStudentsDiv.innerHTML = studentsHTML;
   }
@@ -450,7 +451,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function validateAddChildForm() {
-      const studentIdentifier = document.getElementById("studentIdentifier").value;
+      const studentIdentifier =
+        document.getElementById("studentIdentifier").value;
 
       clearErrors();
 
@@ -468,7 +470,9 @@ document.addEventListener("DOMContentLoaded", function () {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const studentIdentifier = document.getElementById("studentIdentifier").value.trim();
+      const studentIdentifier = document
+        .getElementById("studentIdentifier")
+        .value.trim();
 
       try {
         const token = localStorage.getItem("authToken");
@@ -488,18 +492,24 @@ document.addEventListener("DOMContentLoaded", function () {
           showToast("Link request sent successfully!");
           closeModal();
         } else {
-          showError("studentIdentifier", result.error || "Failed to send link request");
+          showError(
+            "studentIdentifier",
+            result.error || "Failed to send link request"
+          );
         }
       } catch (error) {
         console.error("Failed to send link request:", error);
-        showError("studentIdentifier", "Failed to send link request. Please try again.");
+        showError(
+          "studentIdentifier",
+          "Failed to send link request. Please try again."
+        );
       }
     });
   }
 
   // Remove student link
   async function removeStudentLink(studentId) {
-    if (!confirm('Are you sure you want to remove this student link?')) {
+    if (!confirm("Are you sure you want to remove this student link?")) {
       return;
     }
 

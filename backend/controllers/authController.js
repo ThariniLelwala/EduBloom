@@ -24,6 +24,9 @@ class AuthController {
             email: result.user.email,
             role: result.user.role,
             student_type: result.user.student_type,
+            firstname: result.user.firstname,
+            lastname: result.user.lastname,
+            birthday: result.user.birthday,
           },
         })
       );
@@ -79,6 +82,9 @@ class AuthController {
             email: user.email,
             role: user.role,
             student_type: user.student_type,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            birthday: user.birthday,
           },
         })
       );
@@ -280,7 +286,11 @@ class AuthController {
 
       if (parseInt(acceptedParentsCount.rows[0].count) >= 2) {
         res.writeHead(400, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "You can only have a maximum of 2 linked parents" }));
+        res.end(
+          JSON.stringify({
+            error: "You can only have a maximum of 2 linked parents",
+          })
+        );
         return;
       }
 

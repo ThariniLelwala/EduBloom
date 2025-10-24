@@ -58,12 +58,11 @@ document.addEventListener("DOMContentLoaded", function () {
   function loadProfileFromLocalStorage(username, userRole) {
     if (username) {
       const mockUser = {
-        name: username,
+        firstname: localStorage.getItem("firstname") || "Not set",
+        lastname: localStorage.getItem("lastname") || "Not set",
+        birthday: localStorage.getItem("birthday") || "Not set",
         email: localStorage.getItem("email") || "Not set",
         role: userRole || "teacher",
-        subject: "Not set",
-        school: "Not set",
-        joinedDate: new Date().toISOString(),
       };
       displayProfileData(mockUser);
     } else {
@@ -79,7 +78,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Update welcome message
     if (welcomeHeading) {
-      welcomeHeading.textContent = `Welcome ${user.name || user.username}`;
+      welcomeHeading.textContent = `Welcome ${
+        user.firstname || user.name || user.username
+      }`;
     }
     if (welcomeMessage) {
       welcomeMessage.textContent =
@@ -90,8 +91,20 @@ document.addEventListener("DOMContentLoaded", function () {
     profileInfo.innerHTML = `
             <div class="profile-info-grid">
                 <div class="profile-item">
-                    <strong>Name</strong>
-                    <p>${user.name || user.username || "Not set"}</p>
+                    <strong>First Name</strong>
+                    <p>${user.firstname || "Not set"}</p>
+                </div>
+                <div class="profile-item">
+                    <strong>Last Name</strong>
+                    <p>${user.lastname || "Not set"}</p>
+                </div>
+                <div class="profile-item">
+                    <strong>Birthday</strong>
+                    <p>${
+                      user.birthday
+                        ? new Date(user.birthday).toLocaleDateString()
+                        : "Not set"
+                    }</p>
                 </div>
                 <div class="profile-item">
                     <strong>Email</strong>
@@ -100,22 +113,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 <div class="profile-item">
                     <strong>Role</strong>
                     <p>Teacher</p>
-                </div>
-                <div class="profile-item">
-                    <strong>Subject</strong>
-                    <p>${user.subject || "Not set"}</p>
-                </div>
-                <div class="profile-item">
-                    <strong>School</strong>
-                    <p>${user.school || "Not set"}</p>
-                </div>
-                <div class="profile-item">
-                    <strong>Joined</strong>
-                    <p>${
-                      user.joinedDate
-                        ? new Date(user.joinedDate).toLocaleDateString()
-                        : "Not set"
-                    }</p>
                 </div>
             </div>
         `;

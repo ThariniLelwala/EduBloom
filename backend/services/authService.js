@@ -14,15 +14,57 @@ class AuthService {
       role,
       student_type,
       student_identifier,
+      firstname,
+      lastname,
+      birthday,
     } = userData;
 
-    if (!username || !email || !password || !role) {
+    if (
+      !username ||
+      !email ||
+      !password ||
+      !role ||
+      !firstname ||
+      !lastname ||
+      !birthday
+    ) {
       throw new Error("Missing required fields");
     }
 
     // Validate role
     if (!["student", "teacher", "parent", "admin"].includes(role)) {
       throw new Error("Invalid role");
+    }
+
+    // Calculate age from birthday
+    const birthDate = new Date(birthday);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    // Validate age for restricted roles
+    if (
+      (role === "parent" ||
+        role === "teacher" ||
+        (role === "student" && student_type === "university")) &&
+      age < 18
+    ) {
+      throw new Error(
+        `You must be at least 18 years old to create a ${role} account`
+      );
+    }
+
+    // Validate age for school students
+    if (role === "student" && student_type === "school" && age < 12) {
+      throw new Error(
+        "You must be at least 12 years old to create a school student account"
+      );
     }
 
     // Check if email or username already exists
@@ -67,10 +109,20 @@ class AuthService {
 
     // ✅ Create user only after validation passes
     const userResult = await db.query(
-      `INSERT INTO users (username, email, password, salt, role, student_type)
-     VALUES ($1, $2, $3, $4, $5, $6)
-     RETURNING id, username, email, role, student_type`,
-      [username, email, hashed, salt, role, student_type || null]
+      `INSERT INTO users (username, email, password, salt, role, student_type, firstname, lastname, birthday)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+     RETURNING id, username, email, role, student_type, firstname, lastname, birthday`,
+      [
+        username,
+        email,
+        hashed,
+        salt,
+        role,
+        student_type || null,
+        firstname,
+        lastname,
+        birthday,
+      ]
     );
 
     const user = userResult.rows[0];
@@ -141,6 +193,9 @@ class AuthService {
       email: user.email,
       role: user.role,
       student_type: user.student_type,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      birthday: user.birthday,
       token,
       ...additionalData,
     };
@@ -187,7 +242,7 @@ class AuthService {
   // Verify token and get user data
   async verifyToken(token) {
     const result = await db.query(
-      "SELECT id, username, email, role, student_type FROM users WHERE token = $1",
+      "SELECT id, username, email, role, student_type, firstname, lastname, birthday FROM users WHERE token = $1",
       [token]
     );
 

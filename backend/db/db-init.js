@@ -16,6 +16,9 @@ async function initializeDatabase() {
         token VARCHAR(255),
         role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'teacher', 'student', 'parent')),
         student_type VARCHAR(20) CHECK (student_type IN ('university', 'school') OR student_type IS NULL),
+        firstname VARCHAR(100),
+        lastname VARCHAR(100),
+        birthday DATE,
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);

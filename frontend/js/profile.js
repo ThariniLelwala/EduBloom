@@ -51,6 +51,22 @@ async function fetchProfile() {
       profileInfo.innerHTML = `
         <div class="profile-info-grid">
           <div class="profile-item">
+            <strong>First Name</strong>
+            <p>${result.user.firstname || "N/A"}</p>
+          </div>
+          <div class="profile-item">
+            <strong>Last Name</strong>
+            <p>${result.user.lastname || "N/A"}</p>
+          </div>
+          <div class="profile-item">
+            <strong>Birthday</strong>
+            <p>${
+              result.user.birthday
+                ? new Date(result.user.birthday).toLocaleDateString()
+                : "N/A"
+            }</p>
+          </div>
+          <div class="profile-item">
             <strong>Username</strong>
             <p>${result.user.username}</p>
           </div>
