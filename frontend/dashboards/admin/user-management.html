@@ -131,6 +131,33 @@
               </table>
             </div>
           </div>
+
+          <!-- Pending Teacher Verifications Card -->
+          <div class="card full">
+            <div class="card-header">
+              <h3>Pending Teacher Verifications</h3>
+              <span class="verification-badge" id="pending-verifications-count">0</span>
+            </div>
+
+            <!-- Verifications Table -->
+            <div class="admin-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Teacher Name</th>
+                    <th>Email</th>
+                    <th>Submitted Date</th>
+                    <th>Document</th>
+                    <th>Message</th>
+                    <th style="text-align: center">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="verifications-table-body">
+                  <!-- Pending verifications will be populated here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </main>
     </div>
@@ -380,5 +407,6 @@
     <script src="../../js/api/adminApi.js"></script>
     <script src="../../js/admin/admin-theme-manager.js"></script>
     <script src="../../js/admin/admin-user-management.js"></script>
+    <script src="../../js/admin/admin-verifications.js"></script>
   </body>
 </html>

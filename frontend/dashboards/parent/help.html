@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Help & Support - Parent</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/admin/dashboard.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+
+    <div class="container">
+      <!-- Sidebar -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main content -->
+      <main id="content">
+        <div class="card-grid">
+          <!-- Welcome Card -->
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">
+                <i class="fas fa-users"></i> Parent Support Center
+              </h1>
+              <div>"Stay informed about your child's progress and learning."</div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+
+          <!-- FAQs Section -->
+          <div class="card full">
+            <div class="card-header">
+              <h3>
+                <i class="fas fa-question-circle"></i> Frequently Asked
+                Questions
+              </h3>
+            </div>
+            <div id="faqs-container" class="faqs-list">
+              <!-- Populated by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Contact Support Section -->
+          <div class="card full">
+            <div class="card-header">
+              <h3><i class="fas fa-envelope"></i> Contact Support</h3>
+            </div>
+            <div style="padding: 16px">
+              <form id="support-form">
+                <div style="display: flex; flex-direction: column; gap: 16px">
+                  <div>
+                    <label
+                      style="
+                        color: rgba(255, 255, 255, 0.8);
+                        font-size: 12px;
+                        display: block;
+                        margin-bottom: 8px;
+                      "
+                      >Topic</label
+                    >
+                    <input
+                      type="text"
+                      id="support-topic"
+                      class="admin-search-input"
+                      placeholder="What do you need help with?"
+                      style="width: 100%"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      style="
+                        color: rgba(255, 255, 255, 0.8);
+                        font-size: 12px;
+                        display: block;
+                        margin-bottom: 8px;
+                      "
+                      >Message</label
+                    >
+                    <textarea
+                      id="support-message"
+                      class="admin-search-input"
+                      placeholder="Describe your issue or question..."
+                      style="width: 100%; resize: vertical; min-height: 120px"
+                      required
+                    ></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Send Request
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- JS -->
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/sidebar.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+    <script src="../../js/help-common.js"></script>
+  </body>
+</html>

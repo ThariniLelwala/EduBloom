@@ -414,3 +414,33 @@
   margin-left: 12px;
   flex-shrink: 0;
 }
+
+/* ===== Teacher Verification Styles ===== */
+.verification-badge {
+  display: inline-block;
+  background: var(--color-primary);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.file-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.file-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.file-link i {
+  font-size: 12px;
+}
