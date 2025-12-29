@@ -199,9 +199,9 @@
 }
 
 .category-item.active {
-  background: rgba(74, 222, 128, 0.2);
-  border-color: #4ade80;
-  color: #4ade80;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--color-white);
+  color: var(--color-white);
 }
 
 .category-item i {
@@ -237,7 +237,7 @@
 .pending-topic-item {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
-  border-left: 3px solid rgba(255, 165, 0, 0.5);
+  border-left: 3px solid rgba(255, 255, 255, 0.3);
   padding: 12px;
   transition: all 0.2s ease;
 }
@@ -270,8 +270,8 @@
 }
 
 .pending-status.pending {
-  background: rgba(255, 165, 0, 0.2);
-  color: #ffa500;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-white);
 }
 
 .pending-status.approved {
@@ -280,8 +280,8 @@
 }
 
 .pending-status.rejected {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-white);
 }
 
 .pending-topic-meta {
@@ -647,12 +647,12 @@
 
 /* Topic Status */
 .topic-category.published {
-  color: #28a745;
+  color: var(--color-white);
   font-weight: 500;
 }
 
 .topic-category.draft {
-  color: #ffc107;
+  color: var(--color-white);
   font-weight: 500;
 }
 

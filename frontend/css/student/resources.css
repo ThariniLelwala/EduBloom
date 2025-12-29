@@ -21,7 +21,7 @@
 
 .forum-topic:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-left-color: rgba(74, 222, 128, 0.5);
+  border-left-color: rgba(255, 255, 255, 0.3);
 }
 
 .topic-title {
@@ -57,7 +57,7 @@
 
 .subject-note:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-left-color: rgba(74, 222, 128, 0.5);
+  border-left-color: rgba(255, 255, 255, 0.3);
 }
 
 .subject-note .subject-name {
@@ -93,7 +93,7 @@
 
 .subject-quiz:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-left-color: rgba(74, 222, 128, 0.5);
+  border-left-color: rgba(255, 255, 255, 0.3);
 }
 
 .subject-quiz .subject-name {
@@ -130,7 +130,7 @@
 
 .teacher-item:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-left-color: rgba(74, 222, 128, 0.5);
+  border-left-color: rgba(255, 255, 255, 0.3);
 }
 
 .teacher-info {
@@ -156,12 +156,12 @@
   align-items: center;
   gap: 4px;
   font-size: 0.9rem;
-  color: #ffd700;
+  color: var(--color-white);
   font-weight: 500;
 }
 
 .teacher-rating i {
-  color: #ffd700;
+  color: var(--color-white);
 }
 
 /* Activity List */
@@ -185,7 +185,7 @@
 
 .activity-item:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-left-color: rgba(74, 222, 128, 0.5);
+  border-left-color: rgba(255, 255, 255, 0.3);
 }
 
 .activity-item i {

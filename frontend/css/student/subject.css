@@ -22,7 +22,7 @@
 
 .upload-area.dragover {
   border-color: var(--color-primary);
-  background: rgba(33, 150, 243, 0.1);
+  background: rgba(255, 255, 255, 0.1);
   transform: scale(1.01);
 }
 

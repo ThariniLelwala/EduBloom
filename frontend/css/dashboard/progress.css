@@ -20,7 +20,7 @@
   font-size: 2.5rem;
   font-weight: 700;
   color: var(--color-white);
-  text-shadow: 0 2px 8px rgba(74, 222, 128, 0.3);
+  text-shadow: 0 2px 8px rgba(255, 255, 255, 0.3);
   letter-spacing: -0.5px;
 }
 
@@ -39,11 +39,11 @@
 }
 
 .stat-secondary.trend-up {
-  color: #4ade80;
+  color: var(--color-white);
 }
 
 .stat-secondary.trend-down {
-  color: #ff6b7a;
+  color: var(--color-white);
 }
 
 /* Comparison Styling */
@@ -70,11 +70,11 @@
 }
 
 .comparison-value.increase {
-  color: #4ade80;
+  color: var(--color-white);
 }
 
 .comparison-value.decrease {
-  color: #ff6b7a;
+  color: var(--color-white);
 }
 
 /* Chart Container */
@@ -116,11 +116,11 @@
 .total-hours {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #4ade80;
-  background: rgba(74, 222, 128, 0.1);
+  color: var(--color-white);
+  background: rgba(255, 255, 255, 0.1);
   padding: 4px 10px;
   border-radius: 6px;
-  border: 1px solid rgba(74, 222, 128, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Mental Logs Card Styling */
@@ -145,15 +145,12 @@
 .mental-log-value {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #4ade80;
+  color: var(--color-white);
 }
 
 /* Streak Value Styling */
 .streak-value {
-  background: linear-gradient(135deg, #ff6b7a, #ffffff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-white);
 }
 
 .chart-stat {
@@ -215,7 +212,7 @@
 
 .filter-input-group input:focus {
   outline: none;
-  border-color: rgba(74, 222, 128, 0.5);
+  border-color: rgba(255, 255, 255, 0.5);
   background: rgba(255, 255, 255, 0.12);
 }
 
@@ -276,9 +273,9 @@
 
 .day-progress {
   height: 100%;
-  background: linear-gradient(90deg, #4ade80, #22c55e);
+  background: var(--color-white);
   border-radius: 3px;
-  box-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
   transition: width 0.3s ease;
 }
 
@@ -348,8 +345,8 @@
 .gpa-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #4ade80;
-  text-shadow: 0 2px 4px rgba(74, 222, 128, 0.3);
+  color: var(--color-white);
+  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 
 .gpa-label {
@@ -378,7 +375,7 @@
 
 .gpa-stat .stat-value {
   font-size: 1.8rem;
-  color: #4ade80;
+  color: var(--color-white);
 }
 
 /* Responsive Design */
@@ -426,9 +423,9 @@
   flex-direction: column;
   gap: 12px;
   padding: 12px;
-  background: rgba(74, 222, 128, 0.08);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 8px;
-  border: 1px solid rgba(74, 222, 128, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   align-items: center;
 }
 
@@ -455,7 +452,7 @@
 
 .task-value {
   font-size: 1rem;
-  color: #4ade80;
+  color: var(--color-white);
   font-weight: 700;
   display: block;
 }

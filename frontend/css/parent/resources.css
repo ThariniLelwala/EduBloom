@@ -1,0 +1,149 @@
+/* Parent Resource Recommendation Styles */
+
+.recommendation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-white);
+}
+
+.resource-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.resource-actions .btn-primary,
+.resource-actions .btn-secondary {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  width: 50%;
+  margin: 0;
+  flex: 1;
+}
+
+.resource-item-parent {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border-left: 3px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+}
+
+.resource-item-parent:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.resource-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.resource-name {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.resource-description {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 4px;
+}
+
+.resource-meta {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  gap: 12px;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--color-white);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 4px;
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--color-primary);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s, transform 0.3s;
+  z-index: 1000;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Utilities for inline style replacements */
+.section-mb {
+    margin-bottom: 16px;
+}
+
+.scrollable-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.scrollable-list-lg {
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.modal-content-text {
+    text-align: left;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.modal-preview-box {
+    max-height: 300px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 12px;
+}
+
+.modal-preview-text {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+}

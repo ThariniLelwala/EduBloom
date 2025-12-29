@@ -185,8 +185,8 @@ input[type="checkbox"].task-checkbox {
 .task-item-dashboard .task-status {
   padding: 4px 12px;
   border-radius: 20px;
-  background: rgba(255, 193, 7, 0.2);
-  color: #ffc107;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-white);
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;

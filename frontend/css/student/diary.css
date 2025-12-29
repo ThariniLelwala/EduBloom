@@ -151,14 +151,14 @@ ul.quick-actions li a i {
 }
 
 .btn-icon-only.delete-btn {
-  background: rgba(220, 53, 69, 0.2);
-  border-color: rgba(220, 53, 69, 0.3);
-  color: #ff6b7a;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--color-white);
 }
 
 .btn-icon-only.delete-btn:hover {
-  background: rgba(220, 53, 69, 0.3);
-  color: #ff6b7a;
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--color-white);
 }
 
 .mood-item .emoji,
@@ -379,14 +379,14 @@ ul.quick-actions li a i {
 }
 
 .mood-action-btn.remove-btn {
-  background: rgba(220, 53, 69, 0.2);
-  border-color: rgba(220, 53, 69, 0.3);
-  color: #ff6b7a;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--color-white);
 }
 
 .mood-action-btn.remove-btn:hover {
-  background: rgba(220, 53, 69, 0.3);
-  color: #ff6b7a;
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--color-white);
 }
 
 /* Mood & Energy Options Grid (Emojis in row) */
@@ -819,14 +819,14 @@ body[data-diary-theme="none"] {
 }
 
 .delete-btn {
-  background: rgba(220, 53, 69, 0.2);
-  border-color: rgba(220, 53, 69, 0.3);
-  color: #ff6b7a;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--color-white);
 }
 
 .delete-btn:hover {
-  background: rgba(220, 53, 69, 0.3);
-  color: #ff6b7a;
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--color-white);
 }
 
 .no-entries {

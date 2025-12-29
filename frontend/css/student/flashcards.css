@@ -165,7 +165,7 @@
 }
 
 .icon-btn.delete-btn:hover {
-  color: #ff6b7a;
+  color: var(--color-white);
 }
 
 /* Responsive Design */

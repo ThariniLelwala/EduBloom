@@ -20,58 +20,7 @@
       crossorigin="anonymous"
     />
 
-    <style>
-      /* Parent-specific calendar styles */
-      .parent-todo-list li {
-        position: relative;
-      }
-
-      .parent-todo-list .task-checkbox {
-        cursor: pointer;
-        margin-right: 8px;
-      }
-
-      .parent-todo-list .task-text {
-        flex: 1;
-        word-break: break-word;
-      }
-
-      .parent-todo-list .task-item-actions {
-        display: flex;
-        gap: 10px;
-        margin-left: 8px;
-      }
-
-      .parent-todo-list .task-item-actions i {
-        cursor: pointer;
-        transition: color 0.2s ease;
-        color: rgba(255, 255, 255, 0.6);
-      }
-
-      .parent-todo-list .task-item-actions i:hover {
-        color: var(--color-white);
-      }
-
-      .toast {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: var(--color-primary);
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        opacity: 0;
-        transform: translateY(20px);
-        transition: opacity 0.3s, transform 0.3s;
-        z-index: 1000;
-      }
-
-      .toast.show {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    </style>
+    <link rel="stylesheet" href="../../css/parent/calendar.css" />
   </head>
 
   <body>
@@ -145,7 +94,7 @@
           <div class="card w1">
             <h3><i class="fas fa-clock"></i> Child's Time Table</h3>
             <div id="timetable-container">
-              <p style="color: rgba(255, 255, 255, 0.6); text-align: center">
+              <p class="timetable-loading">
                 Loading timetable...
               </p>
             </div>
