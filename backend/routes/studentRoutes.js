@@ -3,6 +3,7 @@ const subjectController = require("../controllers/student/subjectController");
 const notesController = require("../controllers/student/notesController");
 const flashcardController = require("../controllers/student/flashcardController");
 const quizController = require("../controllers/student/quizController");
+const gpaController = require("../controllers/student/gpaController");
 const todoController = require("../controllers/student/todoController");
 const {
   verifyToken,
@@ -531,6 +532,111 @@ function handleStudentRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
         quizController.deleteQuestion
+      )(req, res);
+    }
+
+    // ========== GPA TRACKER MANAGEMENT ROUTES ==========
+
+    // GPA Semesters routes
+    // Create semester: POST /api/student/gpa/semesters
+    if (method === "POST" && pathname === "/api/student/gpa/semesters") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        gpaController.createSemester
+      )(req, res);
+    }
+
+    // Get all semesters: GET /api/student/gpa/semesters
+    if (method === "GET" && pathname === "/api/student/gpa/semesters") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        gpaController.getSemesters
+      )(req, res);
+    }
+
+    // Get specific semester: GET /api/student/gpa/semesters/:semesterId
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/student\/gpa\/semesters\/\d+$/) &&
+      !pathname.includes("subjects")
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        gpaController.getSemester
+      )(req, res);
+    }
+
+    // Update semester: PUT /api/student/gpa/semesters/:semesterId
+    if (
+      method === "PUT" &&
+      pathname.match(/^\/api\/student\/gpa\/semesters\/\d+$/) &&
+      !pathname.includes("subjects")
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        gpaController.updateSemester
+      )(req, res);
+    }
+
+    // Delete semester: DELETE /api/student/gpa/semesters/:semesterId
+    if (
+      method === "DELETE" &&
+      pathname.match(/^\/api\/student\/gpa\/semesters\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        gpaController.deleteSemester
+      )(req, res);
+    }
+
+    // GPA Subjects routes
+    // Create subject: POST /api/student/gpa/semesters/:semesterId/subjects
+    if (
+      method === "POST" &&
+      pathname.match(/^\/api\/student\/gpa\/semesters\/\d+\/subjects$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        gpaController.createSubject
+      )(req, res);
+    }
+
+    // Update subject: PUT /api/student/gpa/subjects/:subjectId
+    if (
+      method === "PUT" &&
+      pathname.match(/^\/api\/student\/gpa\/subjects\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        gpaController.updateSubject
+      )(req, res);
+    }
+
+    // Delete subject: DELETE /api/student/gpa/subjects/:subjectId
+    if (
+      method === "DELETE" &&
+      pathname.match(/^\/api\/student\/gpa\/subjects\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        gpaController.deleteSubject
+      )(req, res);
+    }
+
+    // GPA Grade Mappings routes
+    // Get grade mappings: GET /api/student/gpa/grade-mappings
+    if (method === "GET" && pathname === "/api/student/gpa/grade-mappings") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        gpaController.getGradeMappings
+      )(req, res);
+    }
+
+    // Update grade mappings: PUT /api/student/gpa/grade-mappings
+    if (method === "PUT" && pathname === "/api/student/gpa/grade-mappings") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        gpaController.updateGradeMappings
       )(req, res);
     }
 

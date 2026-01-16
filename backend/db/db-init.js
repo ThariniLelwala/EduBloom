@@ -462,6 +462,57 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_student_quiz_answers_is_correct ON student_quiz_answers(is_correct);
     `);
 
+    // GPA Semesters table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS gpa_semesters (
+        id SERIAL PRIMARY KEY,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name VARCHAR(100) NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // GPA Subjects table (subjects within a semester)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS gpa_subjects (
+        id SERIAL PRIMARY KEY,
+        semester_id INT NOT NULL REFERENCES gpa_semesters(id) ON DELETE CASCADE,
+        name VARCHAR(150) NOT NULL,
+        grade VARCHAR(10) NOT NULL,
+        credits DECIMAL(3,1) NOT NULL DEFAULT 0,
+        subject_order INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // GPA Grade Mappings table (custom grade to GPA value mappings)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS gpa_grade_mappings (
+        id SERIAL PRIMARY KEY,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        grade_key VARCHAR(10) NOT NULL,
+        gpa_value DECIMAL(3,2) NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(student_id, grade_key)
+      );
+    `);
+
+    // Create indexes for GPA tables
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_gpa_semesters_student_id ON gpa_semesters(student_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_gpa_subjects_semester_id ON gpa_subjects(semester_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_gpa_grade_mappings_student_id ON gpa_grade_mappings(student_id);
+    `);
+
     console.log("✅ Database tables and indexes created successfully");
 
     // Check if admin user exists, if not create one

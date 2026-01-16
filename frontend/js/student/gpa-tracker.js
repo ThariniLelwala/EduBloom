@@ -3,6 +3,7 @@ let gpaData = null;
 let currentSemesterIndex = null;
 let editSemesterContext = null;
 let deleteSemesterContext = null;
+let eventsAlreadyBound = false; // Track if events are already bound
 
 // Default grade to GPA mapping
 const defaultGradeToGPA = {
@@ -31,7 +32,7 @@ const defaultGradeToGPA = {
   F: 0.0,
 };
 
-// Custom grade mappings (loaded from localStorage)
+// Custom grade mappings (loaded from backend)
 let customGradeToGPA = { ...defaultGradeToGPA };
 
 // Available grades for editing
@@ -50,45 +51,36 @@ const availableGrades = [
   { key: "F", display: "F" },
 ];
 
-// Load GPA data from localStorage or JSON
+// Check authentication
+function checkAuth() {
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    window.location.href = "/login.html";
+    return false;
+  }
+  return true;
+}
+
+// Load GPA data from backend
 async function loadGPAData() {
   try {
-    // Try to load from localStorage first
-    const stored = localStorage.getItem("gpaTrackerData");
-    if (stored) {
-      gpaData = JSON.parse(stored);
-    } else {
-      // Fallback to JSON file
-      const response = await fetch("../../data/gpa-tracker.json");
-      if (!response.ok) throw new Error("Failed to load gpa-tracker.json");
-      gpaData = await response.json();
-    }
+    if (!checkAuth()) return;
 
-    // Load custom grade mappings
-    const storedGrades = localStorage.getItem("customGradeMappings");
-    if (storedGrades) {
-      customGradeToGPA = { ...defaultGradeToGPA, ...JSON.parse(storedGrades) };
-    }
+    // Load semesters from backend
+    const semesters = await gpaApi.getSemesters();
+    gpaData = { semesters: semesters };
+
+    // Load custom grade mappings from backend
+    const gradeMappings = await gpaApi.getGradeMappings();
+    customGradeToGPA = { ...defaultGradeToGPA, ...gradeMappings };
 
     renderAll();
-    bindGlobalEvents();
   } catch (err) {
     console.error("Error loading GPA data:", err);
     // Initialize with empty data
     gpaData = { semesters: [] };
     renderAll();
-    bindGlobalEvents();
   }
-}
-
-// Save GPA data to localStorage
-function saveGPAData() {
-  localStorage.setItem("gpaTrackerData", JSON.stringify(gpaData));
-}
-
-// Save custom grade mappings to localStorage
-function saveCustomGradeMappings() {
-  localStorage.setItem("customGradeMappings", JSON.stringify(customGradeToGPA));
 }
 
 // Render all
@@ -210,8 +202,12 @@ function populateSemestersList() {
   });
 }
 
-// Bind global events
+// Bind global events (only once)
 function bindGlobalEvents() {
+  // Prevent binding events multiple times
+  if (eventsAlreadyBound) return;
+  eventsAlreadyBound = true;
+
   // Semester modal
   const semesterModal = document.getElementById("semester-modal");
   const semesterModalClose = document.getElementById("semester-modal-close");
@@ -275,14 +271,17 @@ function bindGlobalEvents() {
     btn.addEventListener("click", () => closeModal(semesterModal))
   );
 
-  semesterModalSave.addEventListener("click", () => {
+  semesterModalSave.addEventListener("click", async () => {
     const name = semesterNameInput.value.trim();
     if (!name) return;
 
-    gpaData.semesters.push({ name, subjects: [] });
-    saveGPAData();
-    renderAll();
-    closeModal(semesterModal);
+    try {
+      await gpaApi.createSemester(name);
+      closeModal(semesterModal);
+      await loadGPAData(); // Reload from backend
+    } catch (error) {
+      alert("Failed to create semester: " + error.message);
+    }
   });
 
   // Subject modal
@@ -320,17 +319,17 @@ function bindGlobalEvents() {
     }
   });
 
-  subjectModalSave.addEventListener("click", () => {
+  subjectModalSave.addEventListener("click", async () => {
     const semesterIndex = semesterSelect.value;
     const subjectRows =
       subjectsContainer.querySelectorAll(".subject-grade-row");
 
-    if (!semesterIndex) return;
+    if (semesterIndex === "") return;
 
     const semester = gpaData.semesters[semesterIndex];
     let hasNewSubjects = false;
 
-    subjectRows.forEach((row) => {
+    for (const row of subjectRows) {
       const subjectInput = row.querySelector(".subject-input");
       const creditsInput = row.querySelector(".credits-input");
       const gradeSelect = row.querySelector(".grade-select");
@@ -344,21 +343,20 @@ function bindGlobalEvents() {
           (s) => s.name === subjectName
         );
         if (!existingSubject) {
-          semester.subjects.push({
-            name: subjectName,
-            credits: credits,
-            grade: grade,
-          });
-          hasNewSubjects = true;
+          try {
+            await gpaApi.createSubject(semester.id, subjectName, grade, credits);
+            hasNewSubjects = true;
+          } catch (error) {
+            console.error("Failed to create subject:", error);
+          }
         }
       }
-    });
-
-    if (hasNewSubjects) {
-      saveGPAData();
-      renderAll();
     }
+
     closeModal(subjectModal);
+    if (hasNewSubjects) {
+      await loadGPAData(); // Reload from backend
+    }
   });
 
   // Edit semester modal
@@ -366,15 +364,19 @@ function bindGlobalEvents() {
     btn.addEventListener("click", () => closeModal(editSemesterModal))
   );
 
-  editSemesterModalSave.addEventListener("click", () => {
+  editSemesterModalSave.addEventListener("click", async () => {
     const newName = editSemesterNameInput.value.trim();
     if (!newName || editSemesterContext === null) return;
 
-    gpaData.semesters[editSemesterContext].name = newName;
-    saveGPAData();
-    renderAll();
-    closeModal(editSemesterModal);
-    editSemesterContext = null;
+    try {
+      const semester = gpaData.semesters[editSemesterContext];
+      await gpaApi.updateSemester(semester.id, newName);
+      closeModal(editSemesterModal);
+      editSemesterContext = null;
+      await loadGPAData(); // Reload from backend
+    } catch (error) {
+      alert("Failed to update semester: " + error.message);
+    }
   });
 
   // Delete semester modal
@@ -382,13 +384,17 @@ function bindGlobalEvents() {
     btn.addEventListener("click", () => closeModal(deleteSemesterModal))
   );
 
-  deleteSemesterModalConfirm.addEventListener("click", () => {
+  deleteSemesterModalConfirm.addEventListener("click", async () => {
     if (deleteSemesterContext !== null) {
-      gpaData.semesters.splice(deleteSemesterContext, 1);
-      saveGPAData();
-      renderAll();
-      closeModal(deleteSemesterModal);
-      deleteSemesterContext = null;
+      try {
+        const semester = gpaData.semesters[deleteSemesterContext];
+        await gpaApi.deleteSemester(semester.id);
+        closeModal(deleteSemesterModal);
+        deleteSemesterContext = null;
+        await loadGPAData(); // Reload from backend
+      } catch (error) {
+        alert("Failed to delete semester: " + error.message);
+      }
     }
   });
 
@@ -433,11 +439,15 @@ function bindGlobalEvents() {
     btn.addEventListener("click", () => closeModal(editCreditsModal))
   );
 
-  editCreditsModalSave.addEventListener("click", () => {
-    saveEditedCredits();
-    saveCustomGradeMappings();
-    renderAll();
-    closeModal(editCreditsModal);
+  editCreditsModalSave.addEventListener("click", async () => {
+    const newMappings = saveEditedCredits();
+    try {
+      await gpaApi.updateGradeMappings(newMappings);
+      closeModal(editCreditsModal);
+      await loadGPAData(); // Reload to refresh mappings
+    } catch (error) {
+      alert("Failed to save grade mappings: " + error.message);
+    }
   });
 }
 
@@ -559,19 +569,28 @@ function populateEditCreditsModal() {
   });
 }
 
-// Save edited credits
+// Save edited credits - returns the new mappings object
 function saveEditedCredits() {
   const creditInputs = document.querySelectorAll("#credits-edit input");
+  const newMappings = {};
 
   creditInputs.forEach((input) => {
     const grade = input.dataset.grade;
     const value = parseFloat(input.value);
 
     if (!isNaN(value) && value >= 0 && value <= 4.0) {
+      newMappings[grade] = value;
       customGradeToGPA[grade] = value;
     }
   });
+
+  return newMappings;
 }
 
 // Initialize
-loadGPAData();
+async function init() {
+  await loadGPAData();
+  bindGlobalEvents();
+}
+
+init();
