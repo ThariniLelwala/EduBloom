@@ -9,49 +9,30 @@ document.addEventListener("DOMContentLoaded", () => {
   let subjects = [];
   let editId = null;
 
-  // Load subjects from JSON and published teacher quizzes
-  async function loadSubjects() {
-    const res = await fetch("/data/quiz.json");
-    const data = await res.json();
-    subjects = data.subjects;
-
-    // Add published teacher quizzes
-    const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-    if (teacherSubjects) {
-      const teacherData = JSON.parse(teacherSubjects);
-      teacherData.forEach((teacherSubject) => {
-        // Check if subject already exists, if not create it
-        let existingSubject = subjects.find(
-          (s) => s.name.toLowerCase() === teacherSubject.name.toLowerCase()
-        );
-        if (!existingSubject) {
-          existingSubject = {
-            id: Date.now() + Math.random(),
-            name: teacherSubject.name,
-            quizzes: [],
-          };
-          subjects.push(existingSubject);
-        }
-
-        // Add published quizzes from this teacher subject
-        teacherSubject.quizzes.forEach((quiz) => {
-          if (quiz.published && quiz.questions && quiz.questions.length > 0) {
-            // Check if quiz already exists (avoid duplicates)
-            const quizExists = existingSubject.quizzes.some(
-              (q) => q.name === quiz.name
-            );
-            if (!quizExists) {
-              existingSubject.quizzes.push({
-                ...quiz,
-                teacherQuiz: true, // Mark as teacher-created quiz
-              });
-            }
-          }
-        });
-      });
+  // Check authentication
+  function checkAuth() {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      window.location.href = "/login.html";
+      return false;
     }
+    return true;
+  }
 
-    renderSubjects();
+  // Load subjects from backend
+  async function loadSubjects() {
+    try {
+      if (!checkAuth()) return;
+
+      const subjects_data = await studentQuizApi.getSubjects();
+      subjects = subjects_data;
+      renderSubjects();
+    } catch (error) {
+      console.error("Error loading quiz subjects:", error);
+      alert("Failed to load quiz subjects: " + error.message);
+      subjects = [];
+      renderSubjects();
+    }
   }
 
   function renderSubjects() {
@@ -98,8 +79,12 @@ document.addEventListener("DOMContentLoaded", () => {
           "Delete Subject"
         );
         if (confirmed) {
-          subjects = subjects.filter((s) => s.id !== subj.id);
-          renderSubjects();
+          try {
+            await studentQuizApi.deleteSubject(subj.id);
+            loadSubjects(); // Reload from backend
+          } catch (error) {
+            alert("Failed to delete subject: " + error.message);
+          }
         }
         dropdown.style.display = "none";
       });
@@ -127,19 +112,27 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  saveBtn.addEventListener("click", () => {
+  saveBtn.addEventListener("click", async () => {
     const name = input.value.trim();
-    if (!name) return;
-
-    if (editId) {
-      const subj = subjects.find((s) => s.id === editId);
-      if (subj) subj.name = name; // Fixed: ensure subj exists
-    } else {
-      subjects.push({ id: Date.now(), name, quizzes: [] });
+    if (!name) {
+      alert("Please enter a subject name");
+      return;
     }
 
-    modal.style.display = "none";
-    renderSubjects();
+    try {
+      if (editId) {
+        // Update existing subject
+        await studentQuizApi.updateSubject(editId, { name });
+      } else {
+        // Create new subject
+        await studentQuizApi.createSubject(name);
+      }
+
+      modal.style.display = "none";
+      loadSubjects(); // Reload from backend
+    } catch (error) {
+      alert("Failed to save subject: " + error.message);
+    }
   });
 
   closeBtn.addEventListener("click", () => (modal.style.display = "none"));

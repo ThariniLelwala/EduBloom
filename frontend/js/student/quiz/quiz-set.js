@@ -16,42 +16,30 @@ document.addEventListener("DOMContentLoaded", async () => {
   let quizzes = [];
   let editId = null;
 
-  // Load data from JSON and published teacher quizzes
+  // Check authentication
+  function checkAuth() {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      window.location.href = "/login.html";
+      return false;
+    }
+    return true;
+  }
+
+  // Load data from backend
   async function loadQuizzes() {
-    const res = await fetch("/data/quiz.json");
-    const data = await res.json();
-    const subject = data.subjects.find((s) => s.id === subjectId);
+    try {
+      if (!checkAuth()) return;
 
-    if (subject) {
-      quizzes = subject.quizzes || [];
-    } else {
+      const quizzes_data = await studentQuizApi.getQuizSets(subjectId);
+      quizzes = quizzes_data;
+      renderQuizzes();
+    } catch (error) {
+      console.error("Error loading quiz sets:", error);
+      alert("Failed to load quiz sets: " + error.message);
       quizzes = [];
+      renderQuizzes();
     }
-
-    // Add published teacher quizzes for this subject
-    const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-    if (teacherSubjects) {
-      const teacherData = JSON.parse(teacherSubjects);
-      const teacherSubject = teacherData.find(
-        (s) => s.name.toLowerCase() === subjectName.toLowerCase()
-      );
-      if (teacherSubject) {
-        teacherSubject.quizzes.forEach((quiz) => {
-          if (quiz.published && quiz.questions && quiz.questions.length > 0) {
-            // Check if quiz already exists (avoid duplicates)
-            const quizExists = quizzes.some((q) => q.name === quiz.name);
-            if (!quizExists) {
-              quizzes.push({
-                ...quiz,
-                teacherQuiz: true, // Mark as teacher-created quiz
-              });
-            }
-          }
-        });
-      }
-    }
-
-    renderQuizzes();
   }
 
   function renderQuizzes() {
@@ -60,57 +48,55 @@ document.addEventListener("DOMContentLoaded", async () => {
     quizzes.forEach((quiz) => {
       const card = document.createElement("div");
       card.classList.add("subject-card");
-      const isTeacherQuiz = quiz.teacherQuiz;
       card.innerHTML = `
         <div class="subject-header">
           <i class="fas fa-file-alt"></i>
           <span>${quiz.name}</span>
-          ${isTeacherQuiz ? '<div class="teacher-badge">Teacher</div>' : ""}
         </div>
-        ${!isTeacherQuiz ? '<i class="fas fa-ellipsis-v dots"></i>' : ""}
-        ${
-          !isTeacherQuiz
-            ? `
+        <i class="fas fa-ellipsis-v dots"></i>
         <div class="dropdown">
           <ul>
             <li class="edit">Edit</li>
             <li class="delete">Delete</li>
           </ul>
         </div>
-        `
-            : ""
-        }
       `;
       container.appendChild(card);
 
-      if (!isTeacherQuiz) {
-        const dots = card.querySelector(".dots");
-        const dropdown = card.querySelector(".dropdown");
+      const dots = card.querySelector(".dots");
+      const dropdown = card.querySelector(".dropdown");
 
-        dots.addEventListener("click", (e) => {
-          e.stopPropagation();
-          dropdown.style.display =
-            dropdown.style.display === "block" ? "none" : "block";
-        });
+      dots.addEventListener("click", (e) => {
+        e.stopPropagation();
+        dropdown.style.display =
+          dropdown.style.display === "block" ? "none" : "block";
+      });
 
-        dropdown.querySelector(".edit").addEventListener("click", () => {
-          editId = quiz.id;
-          modalTitle.textContent = "Edit Quiz";
-          input.value = quiz.name;
-          modal.style.display = "flex";
+      dropdown.querySelector(".edit").addEventListener("click", () => {
+        editId = quiz.id;
+        modalTitle.textContent = "Edit Quiz";
+        input.value = quiz.name;
+        modal.style.display = "flex";
+        dropdown.style.display = "none";
+      });
+
+      dropdown
+        .querySelector(".delete")
+        .addEventListener("click", async () => {
+          const confirmed = await showConfirmation(
+            `Delete "${quiz.name}"?`,
+            "Delete Quiz"
+          );
+          if (confirmed) {
+            try {
+              await studentQuizApi.deleteQuizSet(quiz.id);
+              loadQuizzes(); // Reload from backend
+            } catch (error) {
+              alert("Failed to delete quiz: " + error.message);
+            }
+          }
           dropdown.style.display = "none";
         });
-
-        dropdown
-          .querySelector(".delete")
-          .addEventListener("click", async () => {
-            if (await showConfirmation(`Delete "${quiz.name}"?`)) {
-              quizzes = quizzes.filter((q) => q.id !== quiz.id);
-              renderQuizzes();
-            }
-            dropdown.style.display = "none";
-          });
-      }
 
       // Navigate to questions page
       card.addEventListener("click", (e) => {
@@ -119,13 +105,11 @@ document.addEventListener("DOMContentLoaded", async () => {
           quiz.id
         }&quizName=${encodeURIComponent(
           quiz.name
-        )}&subjectName=${encodeURIComponent(subjectName)}${
-          isTeacherQuiz ? "&teacherQuiz=true" : ""
-        }`;
+        )}&subjectName=${encodeURIComponent(subjectName)}`;
       });
     });
 
-    // Add Quiz card (only for student-created quizzes)
+    // Add Quiz card
     const addCard = document.createElement("div");
     addCard.classList.add("subject-card", "add-card");
     addCard.innerHTML = `<i class="fas fa-plus"></i><span>Add Quiz</span>`;
@@ -139,19 +123,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  saveBtn.addEventListener("click", () => {
+  saveBtn.addEventListener("click", async () => {
     const name = input.value.trim();
-    if (!name) return;
-
-    if (editId) {
-      const quiz = quizzes.find((q) => q.id === editId);
-      if (quiz) quiz.name = name;
-    } else {
-      quizzes.push({ id: Date.now(), name, questions: [] });
+    if (!name) {
+      alert("Please enter a quiz name");
+      return;
     }
 
-    modal.style.display = "none";
-    renderQuizzes();
+    try {
+      if (editId) {
+        // Update existing quiz set
+        await studentQuizApi.updateQuizSet(editId, { name });
+      } else {
+        // Create new quiz set
+        await studentQuizApi.createQuizSet(subjectId, name);
+      }
+
+      modal.style.display = "none";
+      loadQuizzes(); // Reload from backend
+    } catch (error) {
+      alert("Failed to save quiz: " + error.message);
+    }
   });
 
   closeBtn.addEventListener("click", () => (modal.style.display = "none"));
@@ -162,7 +154,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       .forEach((dd) => (dd.style.display = "none"));
   });
 
-  loadQuizzes();
+  // Load initial data
+  await loadQuizzes();
 
   // ---------------- Take Quiz Logic ----------------
   const takeQuizBtn = document.getElementById("take-quiz-btn");
@@ -180,7 +173,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       option.innerHTML = `
         <label class="checkbox-container">
           <input type="checkbox" value="${quiz.id}" />
-          ${quiz.name}
+          ${quiz.name} (${quiz.question_count || 0} questions)
         </label>
       `;
       quizOptionsContainer.appendChild(option);
@@ -197,46 +190,60 @@ document.addEventListener("DOMContentLoaded", async () => {
     () => (takeQuizModal.style.display = "none")
   );
 
-  confirmTakeQuiz.addEventListener("click", () => {
+  confirmTakeQuiz.addEventListener("click", async () => {
     const selectedIds = [
       ...quizOptionsContainer.querySelectorAll("input:checked"),
     ].map((c) => parseInt(c.value));
 
     if (!selectedIds.length) {
-      alert("Please select at least one topic to take the quiz.");
+      alert("Please select at least one quiz to take.");
       return;
     }
 
-    // Gather questions from selected quizzes and stamp quizId
-    let selectedQuestions = [];
-    selectedIds.forEach((id) => {
-      const quiz = quizzes.find((q) => q.id === id);
-      if (quiz) {
-        quiz.questions.forEach((q) => {
-          selectedQuestions.push({
-            ...q,
-            quizId: quiz.id, // 👈 stamp parent quizId
+    try {
+      // Gather questions from selected quizzes
+      let selectedQuestions = [];
+      for (const quizId of selectedIds) {
+        const quizData = await studentQuizApi.getQuizSet(quizId);
+        if (quizData.questions && quizData.questions.length > 0) {
+          quizData.questions.forEach((q) => {
+            // Transform backend format to frontend format
+            const correctAnswer = q.answers.find((a) => a.is_correct);
+            selectedQuestions.push({
+              id: q.id,
+              question: q.question_text,
+              answers: q.answers.map((a) => a.answer_text),
+              correct: correctAnswer ? correctAnswer.answer_text : null,
+              quizId: quizId,
+            });
           });
-        });
+        }
       }
-    });
 
-    // Shuffle questions
-    selectedQuestions = selectedQuestions.sort(() => Math.random() - 0.5);
+      if (selectedQuestions.length === 0) {
+        alert("The selected quizzes have no questions.");
+        return;
+      }
 
-    // Store in localStorage
-    localStorage.setItem(
-      "currentQuiz",
-      JSON.stringify({
-        subjectId,
-        subjectName,
-        questions: selectedQuestions,
-      })
-    );
+      // Shuffle questions
+      selectedQuestions = selectedQuestions.sort(() => Math.random() - 0.5);
 
-    // Navigate to take quiz page
-    window.location.href = `take-quiz.html?subjectId=${subjectId}&subjectName=${encodeURIComponent(
-      subjectName
-    )}`;
+      // Store in localStorage
+      localStorage.setItem(
+        "currentQuiz",
+        JSON.stringify({
+          subjectId,
+          subjectName,
+          questions: selectedQuestions,
+        })
+      );
+
+      // Navigate to take quiz page
+      window.location.href = `take-quiz.html?subjectId=${subjectId}&subjectName=${encodeURIComponent(
+        subjectName
+      )}`;
+    } catch (error) {
+      alert("Error preparing quiz: " + error.message);
+    }
   });
 });

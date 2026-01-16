@@ -392,6 +392,76 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_student_todos_expires_at ON student_todos(expires_at);
     `);
 
+    // Student Quiz Subjects table (student creates subjects for organizing quizzes)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS student_quiz_subjects (
+        id SERIAL PRIMARY KEY,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name VARCHAR(150) NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Student Quiz Sets table (quizzes within a subject)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS student_quiz_sets (
+        id SERIAL PRIMARY KEY,
+        subject_id INT NOT NULL REFERENCES student_quiz_subjects(id) ON DELETE CASCADE,
+        name VARCHAR(150) NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Student Quiz Questions table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS student_quiz_questions (
+        id SERIAL PRIMARY KEY,
+        quiz_set_id INT NOT NULL REFERENCES student_quiz_sets(id) ON DELETE CASCADE,
+        question_text VARCHAR(1000) NOT NULL,
+        question_order INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Student Quiz Answers table (options for each question)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS student_quiz_answers (
+        id SERIAL PRIMARY KEY,
+        question_id INT NOT NULL REFERENCES student_quiz_questions(id) ON DELETE CASCADE,
+        answer_text VARCHAR(500) NOT NULL,
+        is_correct BOOLEAN DEFAULT FALSE,
+        answer_order INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Create indexes for student quiz tables
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_student_quiz_subjects_student_id ON student_quiz_subjects(student_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_student_quiz_sets_subject_id ON student_quiz_sets(subject_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_student_quiz_questions_quiz_set_id ON student_quiz_questions(quiz_set_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_student_quiz_answers_question_id ON student_quiz_answers(question_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_student_quiz_answers_is_correct ON student_quiz_answers(is_correct);
+    `);
+
     console.log("✅ Database tables and indexes created successfully");
 
     // Check if admin user exists, if not create one

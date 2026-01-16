@@ -7,48 +7,35 @@ const subjectId = parseInt(params.get("subjectId")) || 1;
 const subjectName = params.get("subjectName") || "Unknown Subject";
 const quizId = parseInt(params.get("quizId")) || 0;
 const quizName = params.get("quizName") || "Quiz";
-const isTeacherQuiz = params.get("teacherQuiz") === "true";
 
 subjectHeading.textContent = quizName;
 
 let currentQuestions = [];
 let editingId = null; // Track which question is being edited
 
+// Check authentication
+function checkAuth() {
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    window.location.href = "/login.html";
+    return false;
+  }
+  return true;
+}
+
 async function loadQuestions() {
-  if (isTeacherQuiz) {
-    // Load from teacher localStorage
-    const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-    const subjects = teacherSubjects ? JSON.parse(teacherSubjects) : [];
-    const subject = subjects.find(
-      (s) => s.name.toLowerCase() === subjectName.toLowerCase()
-    );
-    if (subject) {
-      const quiz = subject.quizzes.find((q) => q.id === quizId);
-      if (quiz) {
-        currentQuestions = quiz.questions || [];
-      }
-    }
-  } else {
-    // Load from JSON file
-    const res = await fetch("/data/quiz.json");
-    const data = await res.json();
+  try {
+    if (!checkAuth()) return;
 
-    const subject = data.subjects.find((s) => s.id === subjectId);
-    if (!subject) return;
-
-    const quiz = subject.quizzes.find((q) => q.id === quizId);
-    if (!quiz) return;
-
-    currentQuestions = quiz.questions || [];
+    const questions_data = await studentQuizApi.getQuestions(quizId);
+    currentQuestions = questions_data;
+    renderQuestions();
+  } catch (error) {
+    console.error("Error loading questions:", error);
+    alert("Failed to load questions: " + error.message);
+    currentQuestions = [];
+    renderQuestions();
   }
-
-  // Show/hide add question button based on quiz type
-  const addBtn = document.getElementById("add-question-btn");
-  if (addBtn) {
-    addBtn.style.display = isTeacherQuiz ? "none" : "block";
-  }
-
-  renderQuestions();
 }
 
 function renderQuestions() {
@@ -56,52 +43,50 @@ function renderQuestions() {
   currentQuestions.forEach((q, i) => {
     const card = document.createElement("div");
     card.classList.add("question-card");
+
+    // Find the correct answer
+    const correctAnswer = q.answers.find((a) => a.is_correct);
+
     card.innerHTML = `
     <div class="question-header">
       <div class="question-text">
-      ${i + 1}. ${q.question}
+      ${i + 1}. ${q.question_text}
       </div>
-      ${
-        !isTeacherQuiz
-          ? `
       <div class="question-actions">
         <i class="edit-btn fas fa-edit icon-btn"></i>
         <i class="delete-btn fas fa-trash icon-btn"></i>
       </div>
-      `
-          : ""
-      }
     </div>
       <ul class="answers">
         ${q.answers
           .map(
             (ans) =>
-              `<li class="${ans === q.correct ? "correct" : ""}">${ans}</li>`
+              `<li class="${ans.is_correct ? "correct" : ""}">${ans.answer_text}</li>`
           )
           .join("")}
       </ul>
     `;
 
-    if (!isTeacherQuiz) {
-      // Edit button
-      card.querySelector(".edit-btn").addEventListener("click", () => {
-        openEditModal(q.id);
-      });
+    // Edit button
+    card.querySelector(".edit-btn").addEventListener("click", () => {
+      openEditModal(q.id);
+    });
 
-      // Delete button with confirmation showing question text
-      card.querySelector(".delete-btn").addEventListener("click", async () => {
-        const confirmed = await showConfirmation(
-          `Are you sure you want to delete this question?\n\n"${q.question}"`,
-          "Delete Question"
-        );
-        if (confirmed) {
-          currentQuestions = currentQuestions.filter(
-            (ques) => ques.id !== q.id
-          );
-          renderQuestions();
+    // Delete button with confirmation showing question text
+    card.querySelector(".delete-btn").addEventListener("click", async () => {
+      const confirmed = await showConfirmation(
+        `Are you sure you want to delete this question?\n\n"${q.question_text}"`,
+        "Delete Question"
+      );
+      if (confirmed) {
+        try {
+          await studentQuizApi.deleteQuestion(q.id);
+          loadQuestions(); // Reload from backend
+        } catch (error) {
+          alert("Failed to delete question: " + error.message);
         }
-      });
-    }
+      }
+    });
 
     container.appendChild(card);
   });
@@ -156,51 +141,50 @@ addQuestionBtn.addEventListener("click", () => {
 
 closeBtn.addEventListener("click", () => (modal.style.display = "none"));
 
-function saveQuestion(closeAfter = true) {
+async function saveQuestion(closeAfter = true) {
   const questionText = questionInput.value.trim();
   const answerInputs = [...answersContainer.querySelectorAll(".answer-input")];
-  const answers = answerInputs.map((a) => a.value.trim()).filter(Boolean);
+  const answerTexts = answerInputs.map((a) => a.value.trim()).filter(Boolean);
 
   const correctIndex = [
     ...answersContainer.querySelectorAll("input[type=radio]"),
   ].findIndex((r) => r.checked);
 
-  if (!questionText || answers.length < 2 || correctIndex === -1) {
+  if (!questionText || answerTexts.length < 2 || correctIndex === -1) {
     alert(
       "Please fill in the question, add at least 2 answers, and select the correct one."
     );
     return;
   }
 
-  if (editingId) {
-    // Update existing question
-    const qIndex = currentQuestions.findIndex((q) => q.id === editingId);
-    if (qIndex !== -1) {
-      currentQuestions[qIndex] = {
-        id: editingId,
-        question: questionText,
-        answers,
-        correct: answers[correctIndex],
-      };
+  // Build answers array in backend format
+  const answers = answerTexts.map((text, index) => ({
+    text: text,
+    is_correct: index === correctIndex,
+  }));
+
+  try {
+    if (editingId) {
+      // Update existing question
+      await studentQuizApi.updateQuestion(editingId, {
+        question_text: questionText,
+        answers: answers,
+      });
+      editingId = null;
+    } else {
+      // Create new question
+      await studentQuizApi.createQuestion(quizId, questionText, answers);
     }
-    editingId = null; // clear editing state
-  } else {
-    // Create new question
-    const newQuestion = {
-      id: Date.now(),
-      question: questionText,
-      answers,
-      correct: answers[correctIndex],
-    };
-    currentQuestions.push(newQuestion);
-  }
 
-  renderQuestions();
+    loadQuestions(); // Reload from backend
 
-  if (closeAfter) {
-    modal.style.display = "none";
-  } else {
-    resetModal();
+    if (closeAfter) {
+      modal.style.display = "none";
+    } else {
+      resetModal();
+    }
+  } catch (error) {
+    alert("Failed to save question: " + error.message);
   }
 }
 
@@ -213,11 +197,11 @@ function openEditModal(id) {
   if (!q) return;
 
   editingId = id;
-  questionInput.value = q.question;
+  questionInput.value = q.question_text;
   answersContainer.innerHTML = "";
 
   q.answers.forEach((ans) => {
-    addAnswerField(ans, ans === q.correct);
+    addAnswerField(ans.answer_text, ans.is_correct);
   });
 
   modal.style.display = "flex";

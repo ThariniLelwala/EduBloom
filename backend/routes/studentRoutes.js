@@ -2,6 +2,7 @@
 const subjectController = require("../controllers/student/subjectController");
 const notesController = require("../controllers/student/notesController");
 const flashcardController = require("../controllers/student/flashcardController");
+const quizController = require("../controllers/student/quizController");
 const todoController = require("../controllers/student/todoController");
 const {
   verifyToken,
@@ -375,6 +376,161 @@ function handleStudentRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
         todoController.updateParentTodoCompletion
+      )(req, res);
+    }
+
+    // ========== STUDENT QUIZ MANAGEMENT ROUTES ==========
+
+    // Quiz Subjects routes
+    // Create subject: POST /api/student/quizzes/subjects
+    if (method === "POST" && pathname === "/api/student/quizzes/subjects") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.createSubject
+      )(req, res);
+    }
+
+    // Get all subjects: GET /api/student/quizzes/subjects
+    if (method === "GET" && pathname === "/api/student/quizzes/subjects") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.getSubjects
+      )(req, res);
+    }
+
+    // Get specific subject: GET /api/student/quizzes/subjects/:subjectId
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/student\/quizzes\/subjects\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.getSubject
+      )(req, res);
+    }
+
+    // Update subject: PUT /api/student/quizzes/subjects/:subjectId
+    if (
+      method === "PUT" &&
+      pathname.match(/^\/api\/student\/quizzes\/subjects\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.updateSubject
+      )(req, res);
+    }
+
+    // Delete subject: DELETE /api/student/quizzes/subjects/:subjectId
+    if (
+      method === "DELETE" &&
+      pathname.match(/^\/api\/student\/quizzes\/subjects\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.deleteSubject
+      )(req, res);
+    }
+
+    // Quiz Sets routes
+    // Create quiz set: POST /api/student/quizzes/subjects/:subjectId/sets
+    if (
+      method === "POST" &&
+      pathname.match(/^\/api\/student\/quizzes\/subjects\/\d+\/sets$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.createQuizSet
+      )(req, res);
+    }
+
+    // Get all quiz sets for subject: GET /api/student/quizzes/subjects/:subjectId/sets
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/student\/quizzes\/subjects\/\d+\/sets$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.getQuizSets
+      )(req, res);
+    }
+
+    // Get specific quiz set: GET /api/student/quizzes/sets/:setId
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/student\/quizzes\/sets\/\d+$/) &&
+      !pathname.includes("questions")
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.getQuizSet
+      )(req, res);
+    }
+
+    // Update quiz set: PUT /api/student/quizzes/sets/:setId
+    if (
+      method === "PUT" &&
+      pathname.match(/^\/api\/student\/quizzes\/sets\/\d+$/) &&
+      !pathname.includes("questions")
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.updateQuizSet
+      )(req, res);
+    }
+
+    // Delete quiz set: DELETE /api/student/quizzes/sets/:setId
+    if (
+      method === "DELETE" &&
+      pathname.match(/^\/api\/student\/quizzes\/sets\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.deleteQuizSet
+      )(req, res);
+    }
+
+    // Quiz Questions routes
+    // Create question: POST /api/student/quizzes/sets/:setId/questions
+    if (
+      method === "POST" &&
+      pathname.match(/^\/api\/student\/quizzes\/sets\/\d+\/questions$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.createQuestion
+      )(req, res);
+    }
+
+    // Get all questions: GET /api/student/quizzes/sets/:setId/questions
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/student\/quizzes\/sets\/\d+\/questions$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.getQuestions
+      )(req, res);
+    }
+
+    // Update question: PUT /api/student/quizzes/questions/:questionId
+    if (
+      method === "PUT" &&
+      pathname.match(/^\/api\/student\/quizzes\/questions\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.updateQuestion
+      )(req, res);
+    }
+
+    // Delete question: DELETE /api/student/quizzes/questions/:questionId
+    if (
+      method === "DELETE" &&
+      pathname.match(/^\/api\/student\/quizzes\/questions\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.deleteQuestion
       )(req, res);
     }
 
