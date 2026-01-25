@@ -4,6 +4,7 @@ const notesController = require("../controllers/student/notesController");
 const flashcardController = require("../controllers/student/flashcardController");
 const quizController = require("../controllers/student/quizController");
 const gpaController = require("../controllers/student/gpaController");
+const markController = require("../controllers/student/markController");
 const todoController = require("../controllers/student/todoController");
 const {
   verifyToken,
@@ -637,6 +638,74 @@ function handleStudentRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
         gpaController.updateGradeMappings
+      )(req, res);
+    }
+
+    // ========== MARK TRACKER ROUTES ==========
+
+    // Mark Subjects routes
+    // Create subject: POST /api/student/marks/subjects
+    if (method === "POST" && pathname === "/api/student/marks/subjects") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        markController.createSubject
+      )(req, res);
+    }
+
+    // Get all subjects: GET /api/student/marks/subjects
+    if (method === "GET" && pathname === "/api/student/marks/subjects") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        markController.getSubjects
+      )(req, res);
+    }
+
+    // Get specific subject: GET /api/student/marks/subjects/:id
+    if (method === "GET" && pathname.match(/^\/api\/student\/marks\/subjects\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        markController.getSubject
+      )(req, res);
+    }
+
+    // Update subject: PUT /api/student/marks/subjects/:id
+    if (method === "PUT" && pathname.match(/^\/api\/student\/marks\/subjects\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        markController.updateSubject
+      )(req, res);
+    }
+
+    // Delete subject: DELETE /api/student/marks/subjects/:id
+    if (method === "DELETE" && pathname.match(/^\/api\/student\/marks\/subjects\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        markController.deleteSubject
+      )(req, res);
+    }
+
+    // Mark Tests routes
+    // Create test: POST /api/student/marks/subjects/:id/tests
+    if (method === "POST" && pathname.match(/^\/api\/student\/marks\/subjects\/\d+\/tests$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        markController.createTest
+      )(req, res);
+    }
+
+    // Update test: PUT /api/student/marks/tests/:id
+    if (method === "PUT" && pathname.match(/^\/api\/student\/marks\/tests\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        markController.updateTest
+      )(req, res);
+    }
+
+    // Delete test: DELETE /api/student/marks/tests/:id
+    if (method === "DELETE" && pathname.match(/^\/api\/student\/marks\/tests\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        markController.deleteTest
       )(req, res);
     }
 

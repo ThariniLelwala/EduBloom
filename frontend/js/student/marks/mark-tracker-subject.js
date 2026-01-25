@@ -16,41 +16,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   subjectHeading.textContent = subjectName;
 
-  let subjects = [];
   let currentSubject = null;
   let editTestId = null;
   let chart = null;
 
-  // Load data from localStorage or JSON
+  // Load data from backend
   async function loadData() {
     try {
-      // Try to load from localStorage first
-      const stored = localStorage.getItem("markTrackerSubjects");
-      if (stored) {
-        subjects = JSON.parse(stored);
-      } else {
-        // Fallback to JSON file
-        const res = await fetch("../../../data/mark-tracker.json");
-        const data = await res.json();
-        subjects = data.subjects || [];
-      }
-      currentSubject = subjects.find((s) => s.id === subjectId);
-      if (!currentSubject) {
-        alert("Subject not found");
-        window.location.href = "./mark-tracker.html";
-        return;
-      }
+      currentSubject = await markApi.getSubject(subjectId);
       renderTests();
       renderChart();
     } catch (error) {
       console.error("Error loading data:", error);
+      alert("Subject not found or error loading data");
+    //   window.location.href = "./mark-tracker.html";
     }
   }
 
   function renderTests() {
     testsContainer.innerHTML = "";
 
-    if (!currentSubject.tests || currentSubject.tests.length === 0) {
+    if (!currentSubject || !currentSubject.tests || currentSubject.tests.length === 0) {
       testsContainer.innerHTML = "<p>No tests added yet.</p>";
       return;
     }
@@ -98,7 +84,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       chart.destroy();
     }
 
-    if (!currentSubject.tests || currentSubject.tests.length === 0) {
+    if (!currentSubject || !currentSubject.tests || currentSubject.tests.length === 0) {
       // Show empty chart
       chart = new Chart(ctx, {
         type: "line",
@@ -150,7 +136,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Sort tests by date (assuming they have timestamps)
     const sortedTests = [...currentSubject.tests].sort(
-      (a, b) => (a.date || 0) - (b.date || 0)
+      (a, b) => new Date(a.date || 0) - new Date(b.date || 0)
     );
 
     const labels = sortedTests.map((test) => test.name);
@@ -224,17 +210,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       "Delete Test"
     );
     if (confirmed) {
-      currentSubject.tests = currentSubject.tests.filter(
-        (t) => t.id !== testId
-      );
-      saveData();
-      renderTests();
-      renderChart();
+        try {
+            await markApi.deleteTest(testId);
+            loadData();
+        } catch(e) {
+            alert(e.message);
+        }
     }
-  }
-
-  function saveData() {
-    localStorage.setItem("markTrackerSubjects", JSON.stringify(subjects));
   }
 
   // Event listeners
@@ -246,7 +228,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     testModal.style.display = "flex";
   });
 
-  saveTestBtn.addEventListener("click", () => {
+  saveTestBtn.addEventListener("click", async () => {
     const name = testNameInput.value.trim();
     const mark = parseFloat(testMarkInput.value);
 
@@ -255,25 +237,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    if (editTestId) {
-      const test = currentSubject.tests.find((t) => t.id === editTestId);
-      if (test) {
-        test.name = name;
-        test.mark = mark;
-      }
-    } else {
-      currentSubject.tests.push({
-        id: Date.now(),
-        name: name,
-        mark: mark,
-        date: Date.now(),
-      });
+    try {
+        if (editTestId) {
+            await markApi.updateTest(editTestId, name, mark);
+        } else {
+            await markApi.createTest(subjectId, name, mark);
+        }
+        testModal.style.display = "none";
+        loadData();
+    } catch(e) {
+        alert(e.message);
     }
-
-    saveData();
-    testModal.style.display = "none";
-    renderTests();
-    renderChart();
   });
 
   closeTestBtn.addEventListener(

@@ -10,19 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let subjects = [];
   let editId = null;
 
-  // Load subjects from localStorage or JSON
+  // Load subjects from backend
   async function loadSubjects() {
     try {
-      // Try to load from localStorage first
-      const stored = localStorage.getItem("markTrackerSubjects");
-      if (stored) {
-        subjects = JSON.parse(stored);
-      } else {
-        // Fallback to JSON file
-        const res = await fetch("../../../data/mark-tracker.json");
-        const data = await res.json();
-        subjects = data.subjects || [];
-      }
+      subjects = await markApi.getSubjects();
       renderSubjects();
     } catch (error) {
       console.error("Error loading mark tracker data:", error);
@@ -75,9 +66,12 @@ document.addEventListener("DOMContentLoaded", () => {
           "Delete Subject"
         );
         if (confirmed) {
-          subjects = subjects.filter((s) => s.id !== subj.id);
-          saveSubjects();
-          renderSubjects();
+            try {
+                await markApi.deleteSubject(subj.id);
+                loadSubjects();
+            } catch(e) {
+                alert(e.message);
+            }
         }
         dropdown.style.display = "none";
       });
@@ -105,24 +99,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function saveSubjects() {
-    localStorage.setItem("markTrackerSubjects", JSON.stringify(subjects));
-  }
-
-  saveBtn.addEventListener("click", () => {
+  saveBtn.addEventListener("click", async () => {
     const name = input.value.trim();
     if (!name) return;
 
-    if (editId) {
-      const subj = subjects.find((s) => s.id === editId);
-      if (subj) subj.name = name;
-    } else {
-      subjects.push({ id: Date.now(), name, tests: [] });
+    try {
+        if (editId) {
+            await markApi.updateSubject(editId, name);
+        } else {
+            await markApi.createSubject(name);
+        }
+        modal.style.display = "none";
+        loadSubjects();
+    } catch(e) {
+        alert(e.message);
     }
-
-    saveSubjects();
-    modal.style.display = "none";
-    renderSubjects();
   });
 
   closeBtn.addEventListener("click", () => (modal.style.display = "none"));

@@ -513,6 +513,39 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_gpa_grade_mappings_student_id ON gpa_grade_mappings(student_id);
     `);
 
+    // Mark Tracker Subjects table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS mark_subjects (
+        id SERIAL PRIMARY KEY,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name VARCHAR(150) NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Mark Tracker Tests table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS mark_tests (
+        id SERIAL PRIMARY KEY,
+        subject_id INT NOT NULL REFERENCES mark_subjects(id) ON DELETE CASCADE,
+        name VARCHAR(150) NOT NULL,
+        mark DECIMAL(5,2) NOT NULL,
+        date TIMESTAMP DEFAULT NOW(),
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Create indexes for Mark Tracker tables
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_mark_subjects_student_id ON mark_subjects(student_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_mark_tests_subject_id ON mark_tests(subject_id);
+    `);
+
     console.log("✅ Database tables and indexes created successfully");
 
     // Check if admin user exists, if not create one
