@@ -68,7 +68,7 @@
   align-items: center;
   justify-content: center;
 }
-.timer-controls button {
+.timer-controls button:not(.btn-primary) {
   background-color: transparent;
   border: none;
   color: var(--color-white);

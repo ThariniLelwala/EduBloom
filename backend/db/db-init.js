@@ -546,6 +546,30 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_mark_tests_subject_id ON mark_tests(subject_id);
     `);
 
+    // Pomodoro Sessions table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS pomodoro_sessions (
+        id SERIAL PRIMARY KEY,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        mode VARCHAR(20) NOT NULL CHECK (mode IN ('freestyle', 'custom')),
+        start_time TIMESTAMP NOT NULL,
+        end_time TIMESTAMP,
+        duration_minutes INT DEFAULT 0,
+        cycles_completed INT DEFAULT 0,
+        status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'completed')),
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Create indexes for Pomodoro Sessions table
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_pomodoro_sessions_student_id ON pomodoro_sessions(student_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_pomodoro_sessions_created_at ON pomodoro_sessions(created_at DESC);
+    `);
+
     console.log("✅ Database tables and indexes created successfully");
 
     // Check if admin user exists, if not create one

@@ -6,6 +6,7 @@ const quizController = require("../controllers/student/quizController");
 const gpaController = require("../controllers/student/gpaController");
 const markController = require("../controllers/student/markController");
 const todoController = require("../controllers/student/todoController");
+const pomodoroController = require("../controllers/student/pomodoroController");
 const {
   verifyToken,
   requireRole,
@@ -706,6 +707,65 @@ function handleStudentRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
         markController.deleteTest
+      )(req, res);
+    }
+
+    // ========== POMODORO SESSION ROUTES ==========
+
+    // Start session: POST /api/student/pomodoro/sessions
+    if (method === "POST" && pathname === "/api/student/pomodoro/sessions") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        pomodoroController.createSession
+      )(req, res);
+    }
+
+    // Update session: PUT /api/student/pomodoro/sessions/update
+    if (
+      method === "PUT" &&
+      pathname === "/api/student/pomodoro/sessions/update"
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        pomodoroController.updateSession
+      )(req, res);
+    }
+
+    // Finish session: POST /api/student/pomodoro/sessions/finish
+    if (
+      method === "POST" &&
+      pathname === "/api/student/pomodoro/sessions/finish"
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        pomodoroController.finishSession
+      )(req, res);
+    }
+
+    // Resume session: POST /api/student/pomodoro/sessions/resume
+    if (
+      method === "POST" &&
+      pathname === "/api/student/pomodoro/sessions/resume"
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        pomodoroController.resumeSession
+      )(req, res);
+    }
+
+    // Get sessions: GET /api/student/pomodoro/sessions
+    if (method === "GET" && pathname === "/api/student/pomodoro/sessions") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        pomodoroController.getSessions
+      )(req, res);
+    }
+
+    // Get stats: GET /api/student/pomodoro/stats
+    if (method === "GET" && pathname === "/api/student/pomodoro/stats") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        pomodoroController.getStats
       )(req, res);
     }
 
