@@ -1,5 +1,5 @@
 const { Client } = require("pg");
-require("dotenv").config();
+require("dotenv").config({ path: require('path').resolve(__dirname, '../.env') });
 
 const client = new Client({
   user: process.env.DB_USER,

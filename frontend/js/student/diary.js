@@ -146,74 +146,62 @@ if (selectedEnergy) {
 let isEditing = false;
 let editingEntryId = null;
 
-function saveDiaryEntry() {
+async function saveDiaryEntry() {
   const diaryText = document.getElementById("diary-text").value.trim();
   if (!diaryText) {
     alert("Please write something in your diary before saving.");
     return;
   }
 
-  const entry = {
-    id: isEditing ? editingEntryId : Date.now(),
-    date: isEditing ? getEditingEntryDate() : new Date().toISOString(),
+  const entryData = {
     text: diaryText,
     theme: localStorage.getItem("diaryTheme") || "default",
     font: localStorage.getItem("diaryFont") || "'Indie Flower', cursive",
     mood: localStorage.getItem("diaryMood") || null,
     energy: localStorage.getItem("diaryEnergy") || null,
+    date: isEditing ? getEditingEntryDate() : new Date().toISOString(),
   };
 
-  // Get existing entries
-  const existingEntries = JSON.parse(
-    localStorage.getItem("diaryEntries") || "[]"
-  );
-
-  if (isEditing) {
-    // Update existing entry
-    const index = existingEntries.findIndex((e) => e.id === editingEntryId);
-    if (index !== -1) {
-      existingEntries[index] = entry;
+  try {
+    if (isEditing) {
+      // Update existing entry
+      await window.studentDiaryApi.updateEntry(editingEntryId, entryData);
+    } else {
+      // Add new entry
+      await window.studentDiaryApi.createEntry(entryData);
     }
-  } else {
-    // Add new entry
-    existingEntries.unshift(entry);
 
-    // Keep only last 50 entries to prevent localStorage bloat
-    if (existingEntries.length > 50) {
-      existingEntries.splice(50);
-    }
-  }
-
-  // Save to localStorage
-  localStorage.setItem("diaryEntries", JSON.stringify(existingEntries));
-
-  // Clear the diary text
-  document.getElementById("diary-text").value = "";
-
-  // Clear editing state
-  if (isEditing) {
-    isEditing = false;
-    editingEntryId = null;
-    sessionStorage.removeItem("editEntry");
-    document.getElementById("add-entry-btn").innerHTML =
-      '<i class="fas fa-plus"></i> Add Entry';
-  }
-
-  // Show success message
-  const message = isEditing
-    ? "Diary entry updated successfully!"
-    : "Diary entry saved successfully!";
-  showSuccessMessage(message);
-
-  // Clear the diary text for new entries
-  if (!isEditing) {
+    // Clear the diary text
     document.getElementById("diary-text").value = "";
+
+    // Clear editing state
+    if (isEditing) {
+      isEditing = false;
+      editingEntryId = null;
+      sessionStorage.removeItem("editEntry");
+      document.getElementById("add-entry-btn").innerHTML =
+        '<i class="fas fa-plus"></i> Add Entry';
+    }
+
+    // Show success message
+    const message = isEditing
+      ? "Diary entry updated successfully!"
+      : "Diary entry saved successfully!";
+    showSuccessMessage(message);
+
+    // Optionally redirect back to the main diary view, or refresh
+    setTimeout(() => {
+        window.location.href = "diary.html";
+    }, 1500);
+  } catch (error) {
+    console.error("Error saving diary entry:", error);
+    alert("Failed to save diary entry. Please try again.");
   }
 }
 
 function getEditingEntryDate() {
   const editEntry = JSON.parse(sessionStorage.getItem("editEntry") || "{}");
-  return editEntry.date || new Date().toISOString();
+  return editEntry.entry_date || editEntry.date || new Date().toISOString();
 }
 
 function loadEntryForEditing() {

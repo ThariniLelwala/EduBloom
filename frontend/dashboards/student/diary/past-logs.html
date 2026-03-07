@@ -104,6 +104,7 @@
     </div>
 
     <!-- Scripts -->
+    <script src="../../../js/api/studentDiaryApi.js"></script>
     <script src="../../../js/topbar.js"></script>
     <script src="../../../js/confirmation-modal.js"></script>
     <script src="../../../js/bg-manager.js"></script>
@@ -111,16 +112,23 @@
       let allEntries = [];
 
       // Load all diary entries
-      function loadPastEntries() {
-        allEntries = JSON.parse(localStorage.getItem("diaryEntries") || "[]");
-        displayEntries(allEntries);
+      async function loadPastEntries() {
+        try {
+          allEntries = await window.studentDiaryApi.getEntries();
+          displayEntries(allEntries);
+        } catch (error) {
+          console.error("Failed to load entries:", error);
+          const container = document.getElementById("past-entries");
+          container.innerHTML =
+            '<div class="no-entries">Failed to load diary entries from server.</div>';
+        }
       }
 
       // Display entries with optional filtering
       function displayEntries(entries) {
         const container = document.getElementById("past-entries");
 
-        if (entries.length === 0) {
+        if (!entries || entries.length === 0) {
           container.innerHTML =
             '<div class="no-entries">No diary entries found.</div>';
           return;
@@ -128,7 +136,7 @@
 
         const entriesHtml = entries
           .map((entry) => {
-            const entryDate = new Date(entry.date).toLocaleDateString(
+            const entryDate = new Date(entry.entry_date).toLocaleDateString(
               undefined,
               {
                 weekday: "long",
@@ -242,12 +250,17 @@
           "Delete Diary Entry"
         );
         if (confirmed) {
-          const updatedEntries = allEntries.filter(
-            (entry) => entry.id !== entryId
-          );
-          localStorage.setItem("diaryEntries", JSON.stringify(updatedEntries));
-          allEntries = updatedEntries;
-          displayEntries(allEntries);
+          try {
+            await window.studentDiaryApi.deleteEntry(entryId);
+            const updatedEntries = allEntries.filter(
+              (entry) => entry.id !== entryId
+            );
+            allEntries = updatedEntries;
+            displayEntries(allEntries);
+          } catch (error) {
+             console.error("Error deleting entry:", error);
+             alert("Failed to delete diary entry. Please try again.");
+          }
         }
       }
 
@@ -285,7 +298,7 @@
         const viewEntryPage = document.querySelector(".view-entry-page");
 
         // Set the date
-        const entryDate = new Date(entry.date).toLocaleDateString(undefined, {
+        const entryDate = new Date(entry.entry_date).toLocaleDateString(undefined, {
           weekday: "long",
           year: "numeric",
           month: "long",

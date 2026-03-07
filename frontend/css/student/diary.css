@@ -271,6 +271,8 @@ ul.quick-actions li a i {
   -webkit-box-orient: vertical;
   overflow: hidden;
   margin-top: 8px;
+  word-wrap: break-word;
+  word-break: break-word; /* Ensure long words without spaces don't overflow */
 }
 
 .recent-entry-actions {

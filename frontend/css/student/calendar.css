@@ -125,3 +125,60 @@
   background: var(--color-white);
   color: var(--color-text);
 }
+
+/* Event Indicators & Stats */
+.calendar-date {
+  position: relative; /* For absolute pos of indicators */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 4px;
+}
+
+.calendar-date-number {
+  z-index: 1; /* Ensure number is above indicators if needed */
+}
+
+.event-indicators {
+  display: flex;
+  gap: 2px;
+  margin-top: 2px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.event-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.event-dot.todo {
+  background-color: #3b82f6; /* Blue for student todo */
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.8), 0 0 2px rgba(59, 130, 246, 0.8);
+}
+
+.event-dot.parent-todo {
+  background-color: #ef4444; /* Red for parent todo */
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.8), 0 0 4px rgba(239, 68, 68, 0.6);
+}
+
+.event-dot.pomodoro {
+  background-color: #3de08b; /* Bright Green for pomodoro */
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.8), 0 0 2px rgba(61, 224, 139, 0.6);
+}
+
+.pomodoro-stat {
+  font-size: 0.65rem;
+  color: #3de08b;
+  font-weight: 800;
+  margin-top: auto;
+  margin-bottom: 2px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 1px 6px;
+  border-radius: 12px;
+  border: 1px solid rgba(61, 224, 139, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}

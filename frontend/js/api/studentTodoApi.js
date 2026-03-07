@@ -14,15 +14,19 @@ class StudentTodoApi {
   /**
    * Create a new todo
    */
-  async createTodo(type, text) {
+  async createTodo(type, text, expiresAt = null) {
     try {
+      const body = { type, text };
+      if (expiresAt) {
+        body.expiresAt = expiresAt;
+      }
       const response = await fetch(`${this.baseUrl}/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${this.getToken()}`,
         },
-        body: JSON.stringify({ type, text }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
@@ -236,3 +240,4 @@ class StudentTodoApi {
 
 // Create singleton instance
 const studentTodoApi = new StudentTodoApi();
+window.studentTodoApi = studentTodoApi;

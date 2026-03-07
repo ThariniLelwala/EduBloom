@@ -364,18 +364,127 @@ function bindGlobalEvents() {
     btn.addEventListener("click", () => closeModal(editSemesterModal))
   );
 
+  const editSubjectsContainer = document.getElementById("edit-subjects-container");
+  const editModalAddSubjectBtn = document.getElementById("edit-modal-add-subject-btn");
+
+  // Generate a subject row for the edit modal
+  function createEditSubjectRow(subject = null) {
+    const row = document.createElement("div");
+    row.className = "subject-grade-row edit-subject-row";
+    row.style.display = "flex";
+    row.style.gap = "8px";
+    row.style.alignItems = "center";
+    
+    // If it's an existing subject, store its ID
+    if (subject) {
+      row.dataset.subjectId = subject.id;
+    }
+
+    const nameValue = subject ? subject.name : "";
+    const creditsValue = subject ? subject.credits : "";
+    const gradeValue = subject ? subject.grade : "";
+
+    row.innerHTML = `
+      <input type="text" class="subject-input" placeholder="Subject name..." value="${nameValue}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white;" />
+      <input type="number" class="credits-input" placeholder="Credits" min="0" max="10" step="0.5" value="${creditsValue}" style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white;" />
+      <select class="custom-select grade-select" style="flex: 1; min-width: 80px; padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white;">
+        <option value="">Grade</option>
+        ${availableGrades.map(g => `<option value="${g.key}" ${g.key === gradeValue ? "selected" : ""}>${g.display}</option>`).join('')}
+      </select>
+      <button class="btn-icon-only remove-edit-subject-btn" style="color: #ff6b6b; background: none; border: none; cursor: pointer; padding: 4px;" title="Remove Subject">
+        <i class="fas fa-trash"></i>
+      </button>
+    `;
+
+    // Handle remove row
+    row.querySelector('.remove-edit-subject-btn').addEventListener('click', () => {
+       // Just mark it for deletion in the DOM by hiding and tagging it so the save function knows
+       row.style.display = "none";
+       row.dataset.deleted = "true";
+    });
+
+    return row;
+  }
+
+  // Override openEditSemesterModal globally to inject subjects
+  window.openEditSemesterModal = function(index) {
+    editSemesterContext = index;
+    const semester = gpaData.semesters[index];
+    
+    editSemesterNameInput.value = semester.name;
+    editSubjectsContainer.innerHTML = ""; // Clear existing rows
+    
+    // Inject existing subjects
+    if (semester.subjects && semester.subjects.length > 0) {
+      semester.subjects.forEach(subject => {
+        editSubjectsContainer.appendChild(createEditSubjectRow(subject));
+      });
+    }
+
+    if (window.initCustomSelects) window.initCustomSelects();
+    editSemesterModal.classList.add("show");
+    editSemesterNameInput.focus();
+  };
+
+  // Add new subject row inside edit modal
+  editModalAddSubjectBtn.addEventListener("click", () => {
+    editSubjectsContainer.appendChild(createEditSubjectRow());
+    if (window.initCustomSelects) window.initCustomSelects();
+  });
+
   editSemesterModalSave.addEventListener("click", async () => {
     const newName = editSemesterNameInput.value.trim();
     if (!newName || editSemesterContext === null) return;
 
     try {
       const semester = gpaData.semesters[editSemesterContext];
-      await gpaApi.updateSemester(semester.id, newName);
+      
+      // Update the semester name
+      if (semester.name !== newName) {
+        await gpaApi.updateSemester(semester.id, newName);
+      }
+
+      // Process subjects
+      const subjectRows = editSubjectsContainer.querySelectorAll(".edit-subject-row");
+      const promises = [];
+
+      for (const row of subjectRows) {
+        const subjectId = row.dataset.subjectId;
+        const isDeleted = row.dataset.deleted === "true";
+        
+        // If it was marked for deletion and it existed on the backend, delete it
+        if (subjectId && isDeleted) {
+          promises.push(gpaApi.deleteSubject(subjectId));
+          continue;
+        }
+
+        // If it's a deleted draft (never saved), ignore it
+        if (!subjectId && isDeleted) {
+          continue;
+        }
+
+        const name = row.querySelector(".subject-input").value.trim();
+        const credits = parseFloat(row.querySelector(".credits-input").value) || 0;
+        const grade = row.querySelector(".grade-select").value;
+
+        if (name && grade && credits > 0) {
+          if (subjectId) {
+            // Update existing subject
+            promises.push(gpaApi.updateSubject(subjectId, { name, grade, credits }));
+          } else {
+            // Create new subject
+            promises.push(gpaApi.createSubject(semester.id, name, grade, credits));
+          }
+        }
+      }
+
+      await Promise.all(promises);
+
       closeModal(editSemesterModal);
       editSemesterContext = null;
       await loadGPAData(); // Reload from backend
     } catch (error) {
-      alert("Failed to update semester: " + error.message);
+      alert("Failed to update semester details: " + error.message);
     }
   });
 

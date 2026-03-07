@@ -500,6 +500,43 @@ async function initializeDatabase() {
       );
     `);
 
+    // GPA Semesters Table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS gpa_semesters (
+        id SERIAL PRIMARY KEY,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name VARCHAR(100) NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // GPA Subjects Table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS gpa_subjects (
+        id SERIAL PRIMARY KEY,
+        semester_id INT NOT NULL REFERENCES gpa_semesters(id) ON DELETE CASCADE,
+        name VARCHAR(100) NOT NULL,
+        grade VARCHAR(5) NOT NULL,
+        credits DECIMAL(4,2) NOT NULL,
+        subject_order INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // GPA Grade Mappings Table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS gpa_grade_mappings (
+        id SERIAL PRIMARY KEY,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        grade_key VARCHAR(5) NOT NULL,
+        gpa_value DECIMAL(4,2) NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(student_id, grade_key)
+      );
+    `);
+
     // Create indexes for GPA tables
     await db.query(`
       CREATE INDEX IF NOT EXISTS idx_gpa_semesters_student_id ON gpa_semesters(student_id);
@@ -568,6 +605,31 @@ async function initializeDatabase() {
 
     await db.query(`
       CREATE INDEX IF NOT EXISTS idx_pomodoro_sessions_created_at ON pomodoro_sessions(created_at DESC);
+    `);
+
+    // Student Diary Entries table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS student_diary_entries (
+        id SERIAL PRIMARY KEY,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        text TEXT NOT NULL,
+        theme VARCHAR(50) DEFAULT 'default',
+        font VARCHAR(100) DEFAULT '''Indie Flower'', cursive',
+        mood VARCHAR(50),
+        energy VARCHAR(50),
+        entry_date TIMESTAMP NOT NULL DEFAULT NOW(),
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Create indexes for Student Diary Entries table
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_student_diary_entries_student_id ON student_diary_entries(student_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_student_diary_entries_entry_date ON student_diary_entries(entry_date DESC);
     `);
 
     console.log("✅ Database tables and indexes created successfully");

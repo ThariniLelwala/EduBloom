@@ -1,12 +1,14 @@
 // js/student/tasks.js
 let tasks = {
   todo: [],
+  event: [],
   weekly: [],
   monthly: [],
 };
 
 let parentTasks = {
   todo: [],
+  event: [],
   weekly: [],
   monthly: [],
 };
@@ -50,7 +52,8 @@ async function loadTasks() {
     // Load student-created todos
     const allTodos = await studentTodoApi.getTodos();
     tasks = {
-      todo: allTodos.todos.filter((t) => t.type === "todo"),
+      todo: allTodos.todos.filter((t) => t.type === "todo" && !t.expires_at),
+      event: allTodos.todos.filter((t) => t.type === "todo" && t.expires_at),
       weekly: allTodos.todos.filter((t) => t.type === "weekly"),
       monthly: allTodos.todos.filter((t) => t.type === "monthly"),
     };
@@ -58,7 +61,8 @@ async function loadTasks() {
     // Load parent-assigned todos
     const parentTodosData = await studentTodoApi.getParentTodos();
     parentTasks = {
-      todo: parentTodosData.todos.filter((t) => t.type === "todo"),
+      todo: parentTodosData.todos.filter((t) => t.type === "todo" && !t.expires_at),
+      event: parentTodosData.todos.filter((t) => t.type === "todo" && t.expires_at),
       weekly: parentTodosData.todos.filter((t) => t.type === "weekly"),
       monthly: parentTodosData.todos.filter((t) => t.type === "monthly"),
     };
@@ -67,11 +71,13 @@ async function loadTasks() {
     // Fall back to empty state
     tasks = {
       todo: [],
+      event: [],
       weekly: [],
       monthly: [],
     };
     parentTasks = {
       todo: [],
+      event: [],
       weekly: [],
       monthly: [],
     };
@@ -81,6 +87,7 @@ async function loadTasks() {
 // Render all tasks
 function renderTasks() {
   renderTaskList("todo");
+  renderTaskList("event");
   renderTaskList("weekly");
   renderTaskList("monthly");
   updateSummary();
@@ -114,9 +121,11 @@ function renderTaskList(type) {
       await toggleTaskComplete(task.id, e.target.checked);
     });
 
+    const dateText = type === "event" && task.expires_at ? ` <small>(${new Date(task.expires_at).toDateString()})</small>` : "";
+
     li.innerHTML = `
       <div class="task-content">
-        <span class="task-text">${task.text}</span>
+        <span class="task-text">${task.text}${dateText}</span>
       </div>
       <div class="task-actions">
         <button class="edit-btn" onclick="editTask('${type}', ${index}, false)" title="Edit task">
@@ -159,10 +168,12 @@ function renderTaskList(type) {
       li.classList.add("completed");
     }
 
+    const dateText = type === "event" && task.expires_at ? ` <small>(${new Date(task.expires_at).toDateString()})</small>` : "";
+
     // Parent tasks are read-only (no edit/delete for parent-assigned tasks)
     li.innerHTML = `
       <div class="task-content">
-        <span class="task-text">${task.text}</span>
+        <span class="task-text">${task.text}${dateText}</span>
         <span class="task-badge" style="background-color: white; color: #333; font-size: 0.7em; padding: 2px 8px; border-radius: 4px; margin-left: 8px; display: inline-block; font-weight: 600;">parent</span>
       </div>
     `;
@@ -324,11 +335,18 @@ function setupEventListeners() {
 function openAddModal(type) {
   const modal = document.getElementById("task-modal");
   const title = document.getElementById("modal-title");
-  const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+  const typeLabel = type === "event" ? "Event" : type.charAt(0).toUpperCase() + type.slice(1);
 
   currentAddingType = type;
   title.textContent = `Add ${typeLabel}`;
   document.getElementById("task-input").value = "";
+
+  const dateInput = document.getElementById("task-date");
+  if (dateInput) {
+    dateInput.style.display = type === "event" ? "block" : "none";
+    dateInput.value = "";
+  }
+
   document.getElementById("task-input").focus();
   modal.classList.add("show");
 }
@@ -343,14 +361,22 @@ function closeAddModal() {
 async function saveTask() {
   const input = document.getElementById("task-input");
   const text = input.value.trim();
+  const dateInput = document.getElementById("task-date");
+  const dateValue = dateInput ? dateInput.value : null;
 
   if (!text) {
-    alert("Please enter a task");
+    alert("Please enter a task text");
+    return;
+  }
+
+  if (currentAddingType === "event" && !dateValue) {
+    alert("Please select a date for the event");
     return;
   }
 
   try {
-    await studentTodoApi.createTodo(currentAddingType, text);
+    const apiType = currentAddingType === "event" ? "todo" : currentAddingType;
+    await studentTodoApi.createTodo(apiType, text, currentAddingType === "event" ? dateValue : null);
     await loadTasks();
     renderTasks();
     closeAddModal();
@@ -373,6 +399,20 @@ function editTask(type, index, isParent = false) {
   const input = document.getElementById("edit-input");
 
   input.value = tasks[type][index].text;
+
+  const dateInput = document.getElementById("edit-date");
+  if (dateInput) {
+    dateInput.style.display = type === "event" ? "block" : "none";
+    if (type === "event" && tasks[type][index].expires_at) {
+      const d = new Date(tasks[type][index].expires_at);
+      const day = ("0" + d.getDate()).slice(-2);
+      const month = ("0" + (d.getMonth() + 1)).slice(-2);
+      dateInput.value = `${d.getFullYear()}-${month}-${day}`;
+    } else {
+      dateInput.value = "";
+    }
+  }
+
   input.focus();
   modal.classList.add("show");
 }
@@ -388,15 +428,26 @@ function closeEditModal() {
 async function saveEditedTask() {
   const input = document.getElementById("edit-input");
   const text = input.value.trim();
+  const dateInput = document.getElementById("edit-date");
+  const dateValue = dateInput ? dateInput.value : null;
 
   if (!text) {
-    alert("Please enter a task");
+    alert("Please enter a task text");
+    return;
+  }
+
+  if (currentEditingType === "event" && !dateValue) {
+    alert("Please select a date for the event");
     return;
   }
 
   try {
     const task = tasks[currentEditingType][currentEditingIndex];
-    await studentTodoApi.updateTodo(task.id, { text });
+    const updates = { text };
+    if (currentEditingType === "event") {
+      updates.expiresAt = dateValue;
+    }
+    await studentTodoApi.updateTodo(task.id, updates);
     await loadTasks();
     renderTasks();
     closeEditModal();

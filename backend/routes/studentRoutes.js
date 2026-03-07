@@ -7,6 +7,7 @@ const gpaController = require("../controllers/student/gpaController");
 const markController = require("../controllers/student/markController");
 const todoController = require("../controllers/student/todoController");
 const pomodoroController = require("../controllers/student/pomodoroController");
+const diaryController = require("../controllers/student/diaryController");
 const {
   verifyToken,
   requireRole,
@@ -766,6 +767,46 @@ function handleStudentRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
         pomodoroController.getStats
+      )(req, res);
+    }
+
+    // ========== STUDENT DIARY ROUTES ==========
+
+    // Create entry: POST /api/student/diary/entries
+    if (method === "POST" && pathname === "/api/student/diary/entries") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        diaryController.createEntry
+      )(req, res);
+    }
+
+    // Get all entries: GET /api/student/diary/entries
+    if (method === "GET" && pathname === "/api/student/diary/entries") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        diaryController.getEntries
+      )(req, res);
+    }
+
+    // Update entry: PUT /api/student/diary/entries/:entryId
+    if (
+      method === "PUT" &&
+      pathname.match(/^\/api\/student\/diary\/entries\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        diaryController.updateEntry
+      )(req, res);
+    }
+
+    // Delete entry: DELETE /api/student/diary/entries/:entryId
+    if (
+      method === "DELETE" &&
+      pathname.match(/^\/api\/student\/diary\/entries\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        diaryController.deleteEntry
       )(req, res);
     }
 

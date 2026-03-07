@@ -115,6 +115,7 @@
       </div>
     </div>
 
+    <script src="../../../js/api/studentDiaryApi.js"></script>
     <script src="../../../js/topbar.js"></script>
     <script src="../../../js/confirmation-modal.js"></script>
     <script src="../../../js/bg-manager.js"></script>
@@ -220,79 +221,84 @@
         return energyEmojis[energy] || "😃";
       }
 
-      // Load mood and energy on page load
-      displayMoodAndEnergy();
-      loadRecentEntries();
-      updateSummaryStats();
 
-      function loadRecentEntries() {
+
+      let currentEntriesCache = [];
+
+      async function loadRecentEntries() {
         const recentEntriesContainer =
           document.getElementById("recent-entries");
-        const entries = JSON.parse(
-          localStorage.getItem("diaryEntries") || "[]"
-        );
+        
+        try {
+          const entries = await window.studentDiaryApi.getEntries();
+          currentEntriesCache = entries; // Cache for other methods to use
 
-        if (entries.length === 0) {
-          recentEntriesContainer.innerHTML =
-            '<div class="no-recent-entries">No diary entries yet. Start writing your first entry!</div>';
-          return;
-        }
+          if (entries.length === 0) {
+            recentEntriesContainer.innerHTML =
+              '<div class="no-recent-entries">No diary entries yet. Start writing your first entry!</div>';
+            return entries;
+          }
 
-        // Show only the 3 most recent entries
-        const recentEntries = entries.slice(0, 3);
+          // Show only the 3 most recent entries
+          const recentEntries = entries.slice(0, 3);
 
-        const entriesHtml = recentEntries
-          .map((entry) => {
-            const entryDate = new Date(entry.date).toLocaleDateString(
-              undefined,
-              {
-                weekday: "short",
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              }
-            );
+          const entriesHtml = recentEntries
+            .map((entry) => {
+              const entryDate = new Date(entry.entry_date).toLocaleDateString(
+                undefined,
+                {
+                  weekday: "short",
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                }
+              );
 
-            const moodEmoji = entry.mood ? getMoodEmoji(entry.mood) : "";
-            const energyEmoji = entry.energy
-              ? getEnergyEmoji(entry.energy)
-              : "";
+              const moodEmoji = entry.mood ? getMoodEmoji(entry.mood) : "";
+              const energyEmoji = entry.energy
+                ? getEnergyEmoji(entry.energy)
+                : "";
 
-            return `
-            <div class="recent-entry">
-              <div class="recent-entry-header">
-                <div class="recent-entry-date">${entryDate}</div>
-                <div class="recent-entry-mood-energy">
-                  ${
-                    entry.mood
-                      ? `<span class="recent-entry-mood">${moodEmoji} ${entry.mood}</span>`
-                      : ""
-                  }
-                  ${
-                    entry.energy
-                      ? `<span class="recent-entry-energy">${energyEmoji} ${entry.energy}</span>`
-                      : ""
-                  }
+              return `
+              <div class="recent-entry">
+                <div class="recent-entry-header">
+                  <div class="recent-entry-date">${entryDate}</div>
+                  <div class="recent-entry-mood-energy">
+                    ${
+                      entry.mood
+                        ? `<span class="recent-entry-mood">${moodEmoji} ${entry.mood}</span>`
+                        : ""
+                    }
+                    ${
+                      entry.energy
+                        ? `<span class="recent-entry-energy">${energyEmoji} ${entry.energy}</span>`
+                        : ""
+                    }
+                  </div>
+                </div>
+                <div class="recent-entry-text">${entry.text}</div>
+                <div class="recent-entry-actions">
+                  <button class="btn-small-secondary" onclick="viewFullEntry(${
+                    entry.id
+                  })">View Full</button>
                 </div>
               </div>
-              <div class="recent-entry-text">${entry.text}</div>
-              <div class="recent-entry-actions">
-                <button class="btn-small-secondary" onclick="viewFullEntry(${
-                  entry.id
-                })">View Full</button>
-              </div>
-            </div>
-          `;
-          })
-          .join("");
+            `;
+            })
+            .join("");
 
-        recentEntriesContainer.innerHTML = entriesHtml;
+          recentEntriesContainer.innerHTML = entriesHtml;
+          return entries;
+        } catch (error) {
+          console.error("Failed to load entries:", error);
+          recentEntriesContainer.innerHTML =
+              '<div class="no-recent-entries">Failed to load diary entries from server.</div>';
+          return [];
+        }
       }
 
       function viewFullEntry(entryId) {
-        const entries = JSON.parse(
-          localStorage.getItem("diaryEntries") || "[]"
-        );
+        const entries = currentEntriesCache;
         const entry = entries.find((e) => e.id === entryId);
         if (!entry) return;
 
@@ -302,7 +308,7 @@
         const viewEntryPage = document.querySelector(".view-entry-page");
 
         // Set the date
-        const entryDate = new Date(entry.date).toLocaleDateString(undefined, {
+        const entryDate = new Date(entry.entry_date).toLocaleDateString(undefined, {
           weekday: "long",
           year: "numeric",
           month: "long",
@@ -442,12 +448,8 @@
       }
 
       // Calculate average mood from all entries
-      function calculateAverageMood() {
-        const entries = JSON.parse(
-          localStorage.getItem("diaryEntries") || "[]"
-        );
-
-        if (entries.length === 0) {
+      function calculateAverageMood(entries) {
+        if (!entries || entries.length === 0) {
           return null;
         }
 
@@ -482,18 +484,14 @@
       }
 
       // Calculate day streak (consecutive days with entries)
-      function calculateDayStreak() {
-        const entries = JSON.parse(
-          localStorage.getItem("diaryEntries") || "[]"
-        );
-
-        if (entries.length === 0) {
+      function calculateDayStreak(entries) {
+        if (!entries || entries.length === 0) {
           return 0;
         }
 
         // Sort entries by date in descending order
         const sortedEntries = entries.sort(
-          (a, b) => new Date(b.date) - new Date(a.date)
+          (a, b) => new Date(b.entry_date) - new Date(a.entry_date)
         );
 
         let streak = 0;
@@ -501,7 +499,7 @@
         currentDate.setHours(0, 0, 0, 0);
 
         for (const entry of sortedEntries) {
-          const entryDate = new Date(entry.date);
+          const entryDate = new Date(entry.entry_date);
           entryDate.setHours(0, 0, 0, 0);
 
           const dayDifference = Math.floor(
@@ -510,8 +508,15 @@
 
           if (dayDifference === streak) {
             streak++;
-          } else {
-            break;
+          } else if (dayDifference > streak) {
+              // Missed a day! But check if they posted today.
+              if (streak === 0 && dayDifference === 1) {
+                  // If they didn't post today but posted yesterday, the streak is still alive from yesterday
+                  streak++;
+                  currentDate.setDate(currentDate.getDate() - 1);
+              } else {
+                  break;
+              }
           }
         }
 
@@ -519,25 +524,27 @@
       }
 
       // Update all summary statistics
-      function updateSummaryStats() {
-        const entries = JSON.parse(
-          localStorage.getItem("diaryEntries") || "[]"
-        );
-
+      async function updateSummaryStats() {
+        const entries = await loadRecentEntries(); // Fetch all entries
+        
         // Total entries
         document.getElementById("todo-completed").textContent = entries.length;
 
         // Day streak
-        const streak = calculateDayStreak();
+        const streak = calculateDayStreak(entries);
         document.getElementById("weekly-completed").textContent = streak;
 
         // Average mood
-        const averageMood = calculateAverageMood();
+        const averageMood = calculateAverageMood(entries);
         const moodEmoji = averageMood ? getMoodEmoji(averageMood) : "";
         document.getElementById("monthly-completed").textContent = averageMood
           ? `${moodEmoji} ${averageMood}`
           : "--";
       }
+      
+      // Init page dynamically
+      displayMoodAndEnergy();
+      updateSummaryStats();
     </script>
   </body>
 </html>

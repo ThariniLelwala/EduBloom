@@ -19,6 +19,10 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
       crossorigin="anonymous"
     />
+
+    <!-- Scripts (APIs that need to be globally available early) -->
+    <script src="../../js/api/studentTodoApi.js?v=4"></script>
+    <script src="../../js/api/studentPomodoroApi.js?v=4"></script>
   </head>
 
   <body>
@@ -33,11 +37,10 @@
           <div class="card welcome full">
             <div class="welcome-content">
               <h1 class="heading">
-                <i class="fas fa-clock"></i> Pomodoro Timer
+                <i class="fas fa-calendar-alt"></i> Calendar
               </h1>
               <div>
-                "Choose your pace — set a target or just flow. The focus starts
-                now."
+                "Stay organized, track your milestones, and keep progressing toward your goals!"
               </div>
             </div>
             <div class="welcome-image"></div>
@@ -151,8 +154,8 @@
     </div>
 
     <!-- Scripts -->
-    <script src="../../js/student/calendar.js"></script>
-    <script src="../../js/student/tasks.js"></script>
+    <script src="../../js/student/calendar.js?v=4"></script>
+    <script src="../../js/student/tasks.js?v=4"></script>
     <script src="../../js/topbar.js"></script>
     <script src="../../js/sidebar.js"></script>
     <script src="../../js/bg-manager.js"></script>

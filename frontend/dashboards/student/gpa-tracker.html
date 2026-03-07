@@ -186,7 +186,15 @@
             type="text"
             id="edit-semester-name-input"
             placeholder="Edit semester name..."
+            style="margin-bottom: 16px;"
           />
+          <h3 style="margin-bottom: 8px; font-size: 1.1em;">Edit Subjects</h3>
+          <div id="edit-subjects-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+            <!-- Subjects will be dynamically injected here -->
+          </div>
+          <button class="btn-secondary" id="edit-modal-add-subject-btn" style="width: 100%;">
+            + Add New Subject
+          </button>
         </div>
         <div class="modal-footer">
           <button class="btn-secondary" id="edit-semester-modal-cancel">

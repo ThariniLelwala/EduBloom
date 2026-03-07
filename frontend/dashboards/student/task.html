@@ -74,6 +74,17 @@
             </button>
           </div>
 
+          <!-- Upcoming Events Card -->
+          <div class="card w1 h2">
+            <div class="card-header">
+              <h3>Upcoming Events</h3>
+            </div>
+            <ul id="event-list"></ul>
+            <button class="btn-secondary add-btn" data-type="event">
+              + Add Event
+            </button>
+          </div>
+
           <!-- Weekly Goals Card -->
           <div class="card w1 h2">
             <div class="card-header">
@@ -110,6 +121,7 @@
         </div>
         <div class="modal-body">
           <input type="text" id="task-input" placeholder="Enter task/goal..." />
+          <input type="date" id="task-date" style="display: none; margin-top: 10px;" />
         </div>
         <div class="modal-footer">
           <button class="btn-secondary" id="modal-cancel">Cancel</button>
@@ -127,6 +139,7 @@
         </div>
         <div class="modal-body">
           <input type="text" id="edit-input" placeholder="Edit text..." />
+          <input type="date" id="edit-date" style="display: none; margin-top: 10px;" />
         </div>
         <div class="modal-footer">
           <button class="btn-secondary" id="edit-cancel">Cancel</button>

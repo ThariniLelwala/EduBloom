@@ -52,7 +52,7 @@ class TodoService {
       throw new Error("Student ID and Todo ID are required");
     }
 
-    const { text, completed } = updates;
+    const { text, completed, expiresAt } = updates;
 
     // Verify ownership
     const todo = await db.query(
@@ -68,10 +68,11 @@ class TodoService {
       `UPDATE student_todos
        SET text = COALESCE($1, text),
            completed = COALESCE($2, completed),
+           expires_at = COALESCE($5, expires_at),
            updated_at = NOW()
        WHERE id = $3 AND student_id = $4
        RETURNING id, student_id, type, text, completed, expires_at, created_at, updated_at`,
-      [text, completed, todoId, studentId]
+      [text, completed, todoId, studentId, expiresAt]
     );
 
     return result.rows[0];

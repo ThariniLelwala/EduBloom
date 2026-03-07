@@ -5,7 +5,7 @@ const { parseRequestBody } = require("../../middleware/authMiddleware");
 const createTodo = async (req, res) => {
   try {
     const data = await parseRequestBody(req);
-    const { type, text } = data;
+    const { type, text, expiresAt: customExpiresAt } = data;
     const studentId = req.user.id;
 
     if (!type || !text) {
@@ -29,7 +29,9 @@ const createTodo = async (req, res) => {
     // Calculate expires_at based on type
     let expiresAt = null;
 
-    if (type === "weekly") {
+    if (type === "todo" && customExpiresAt) {
+      expiresAt = customExpiresAt;
+    } else if (type === "weekly") {
       // Expire at end of this Sunday
       const today = new Date();
       const dayOfWeek = today.getDay();
