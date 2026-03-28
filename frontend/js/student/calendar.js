@@ -24,23 +24,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       // 1. Fetch Student Todos
       const todoData = await studentTodoApi.getTodos();
-      const studentTodos = (todoData.todos || []).map((t) => ({
-        id: t.id,
-        title: t.text,
-        date: t.expires_at || t.created_at, // Use expires_at or created_at
-        type: "todo",
-        original: t,
-      }));
+      const studentTodos = (todoData.todos || [])
+        .filter((t) => t.type === "todo" && t.expires_at)
+        .map((t) => ({
+          id: t.id,
+          title: t.text,
+          date: t.expires_at,
+          type: "todo",
+          original: t,
+        }));
 
       // 2. Fetch Parent Todos
       const parentTodosData = await studentTodoApi.getParentTodos();
-      const parentTodos = (parentTodosData.todos || []).map((t) => ({
-        id: t.id,
-        title: t.text,
-        date: t.expires_at || t.created_at,
-        type: "parent-todo",
-        original: t,
-      }));
+      const parentTodos = (parentTodosData.todos || [])
+        .filter((t) => t.type === "todo" && t.expires_at)
+        .map((t) => ({
+          id: t.id,
+          title: t.text,
+          date: t.expires_at,
+          type: "parent-todo",
+          original: t,
+        }));
 
       // 3. Fetch Pomodoro Sessions
       const pomodoroData = await studentPomodoroApi.getSessions(100);

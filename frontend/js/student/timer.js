@@ -73,10 +73,7 @@ function markTileComplete() {
       if (tile) tile.classList.add("completed");
     }
   } else if (mode === "freestyle") {
-    const tile = document.createElement("div");
-    tile.classList.add("session-tile", "completed");
-    tile.textContent = `Session ${completedSessions} Completed`;
-    sessionListElement.appendChild(tile);
+    restoreSessionTiles();
   }
 }
 
@@ -326,14 +323,7 @@ function switchSession() {
   // Continue running
 }
 
-// Warn user before closing browser if session is active
-window.addEventListener("beforeunload", (e) => {
-  if (isRunning || currentSessionId) {
-    const message = "You have an active Pomodoro session. If you leave, the timer will stop and your session will be finished automatically.";
-    e.returnValue = message;
-    return message;
-  }
-});
+// Removed beforeunload alert
 
 // On page hide (refresh or close): just set a flag in sessionStorage
 // We do NOT call finishSession here — the session stays active in DB
@@ -359,6 +349,12 @@ function restoreSessionTiles() {
              tile.classList.add("session-tile", "completed");
              tile.textContent = `Session ${i} Completed`;
              sessionListElement.appendChild(tile);
+        }
+        if (isRunning || currentSessionId) {
+             const activeTile = document.createElement("div");
+             activeTile.classList.add("session-tile");
+             activeTile.textContent = `Session ${completedSessions + 1}`;
+             sessionListElement.appendChild(activeTile);
         }
     } else { // custom
         generateSessionTile(totalSessions);
@@ -401,6 +397,7 @@ if (document.querySelector("#freestyle-section .btn-primary")) {
       pausedCountdownTime = sessionDuration;
       await startTimer();
       updateCountdown();
+      restoreSessionTiles();
       
       if (startButton && !startButton.querySelector('i')) {
           startButton.textContent = "Pause";

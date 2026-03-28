@@ -246,6 +246,32 @@
             </div>
           </div>
 
+          <!-- Mark Tracker Progress Card (School Students Only) -->
+          <div class="card w2 h2" id="mark-tracker-card" style="display: none">
+            <div class="card-header">
+              <h3>Latest Subject Marks</h3>
+              <div class="analytics-filters">
+                <div class="custom-select-wrapper">
+                  <select id="mark-subject-select">
+                    <option value="all">All Subjects Average</option>
+                  </select>
+                  <div class="custom-select-display">All Subjects Average</div>
+                  <div class="custom-select-options" id="mark-subject-options">
+                    <div class="custom-select-option selected" data-value="all">
+                      All Subjects Average
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="markTrackerChart"></canvas>
+            </div>
+            <div class="gpa-stats" id="mark-tracker-stats">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+
           <!-- Average Scores Progress Card (School Students Only) -->
           <div class="card w2 h2" id="avg-scores-card" style="display: none">
             <div class="card-header">
@@ -331,8 +357,11 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../../js/api/markApi.js"></script>
+    <script src="../../js/api/examApi.js"></script>
     <script src="../../js/topbar.js"></script>
     <script src="../../js/bg-manager.js"></script>
+    <script src="../../js/api/studentDiaryApi.js"></script>
     <script src="../../js/progress.js"></script>
   </body>
 </html>

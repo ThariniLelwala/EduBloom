@@ -127,18 +127,27 @@ function initializeProgress() {
 }
 
 // Load and display mental logs data for current week
-function loadMentalLogs() {
+async function loadMentalLogs() {
   try {
-    const diaryEntries = localStorage.getItem("diaryEntries");
+    let entries = [];
+    
+    // Attempt to fetch from API
+    if (window.studentDiaryApi) {
+      entries = await window.studentDiaryApi.getEntries();
+    } else {
+      // Fallback to localStorage if API is not available
+      const diaryEntries = localStorage.getItem("diaryEntries");
+      if (diaryEntries) {
+        entries = JSON.parse(diaryEntries);
+      }
+    }
 
-    if (!diaryEntries) {
+    if (!entries || entries.length === 0) {
       document.getElementById("total-entries").textContent = "0";
       document.getElementById("avg-mood").textContent = "--";
       document.getElementById("avg-energy").textContent = "--";
       return;
     }
-
-    const entries = JSON.parse(diaryEntries);
 
     console.log("Diary entries loaded:", entries);
     console.log("moodValueMap:", moodValueMap);
@@ -150,7 +159,7 @@ function loadMentalLogs() {
     weekAgo.setDate(weekAgo.getDate() - 7);
 
     const currentWeekEntries = entries.filter((entry) => {
-      const entryDate = new Date(entry.date);
+      const entryDate = new Date(entry.entry_date || entry.date); // Handle both DB and local formats
       entryDate.setHours(0, 0, 0, 0);
       return entryDate >= weekAgo && entryDate <= today;
     });
@@ -164,10 +173,6 @@ function loadMentalLogs() {
       .map((entry) => moodValueMap[entry.mood]);
 
     console.log("Moods found:", moodsWithValues);
-    console.log(
-      "Entries with moods:",
-      entries.filter((entry) => entry.mood)
-    );
 
     if (moodsWithValues.length > 0) {
       const averageValue =
@@ -189,12 +194,6 @@ function loadMentalLogs() {
       averageMood = closestMood
         ? `${getMoodEmoji(closestMood)} ${closestMood}`
         : "--";
-      console.log("Average mood calculated:", {
-        averageValue,
-        closestMoodValue,
-        closestMood,
-        averageMood,
-      });
     }
 
     // Calculate average energy from current week entries
@@ -308,23 +307,44 @@ let scoresChart = null;
 
 async function loadExamScores() {
   try {
-    // Try to load from localStorage first
-    const stored = localStorage.getItem("examsData");
-    if (stored) {
-      examsData = JSON.parse(stored);
-    } else {
-      // Fallback to JSON file
-      const response = await fetch("../../data/exams.json");
-      if (!response.ok) throw new Error("Failed to load exams.json");
-      examsData = await response.json();
-    }
+    // Fetch terms from the backend API
+    const terms = await examApi.getTerms();
+    
+    // Format the data to match the expected examsData structure for the chart
+    examsData = {
+      exams: terms.map(term => {
+        const marks = {};
+        if (term.subjects && term.subjects.length > 0) {
+            term.subjects.forEach(subject => {
+                marks[subject.name] = parseFloat(subject.mark);
+            });
+        }
+        return {
+          name: term.name,
+          date: term.created_at,
+          marks: marks
+        };
+      })
+    };
 
-    console.log("Exam data loaded:", examsData);
+    console.log("Exam data loaded from API:", examsData);
     updateLatestAverageScore();
     populateExamSelectFilter();
     updateScoresChart();
   } catch (error) {
-    console.error("Error loading exam scores:", error);
+    console.error("Error loading exam scores from API:", error);
+    // If API fails, try to load from localStorage as fallback
+    try {
+        const stored = localStorage.getItem("examsData");
+        if (stored) {
+            examsData = JSON.parse(stored);
+            updateLatestAverageScore();
+            populateExamSelectFilter();
+            updateScoresChart();
+        }
+    } catch(e) {
+        console.error("Fallback failed", e);
+    }
   }
 }
 
@@ -589,6 +609,8 @@ function checkAndInitializeGPA() {
     tasksCard.style.display = "block";
     avgScoresCard.style.display = "none";
     avgScoreSmallCard.style.display = "none";
+    const markTrackerCard = document.getElementById("mark-tracker-card");
+    if (markTrackerCard) markTrackerCard.style.display = "none";
     loadGPAFromTracker();
     updateGPAStats();
     updateAvgGPACard();
@@ -599,12 +621,191 @@ function checkAndInitializeGPA() {
     tasksCard.style.display = "none";
     avgScoresCard.style.display = "block";
     avgScoreSmallCard.style.display = "block";
+    const markTrackerCard = document.getElementById("mark-tracker-card");
+    if (markTrackerCard) markTrackerCard.style.display = "block";
     // Load exam scores and then initialize chart
     loadExamScores().then(() => {
       initializeScoresChart();
       setupExamCountListener();
     });
+    // Load mark tracker data
+    loadMarkTrackerScores().then(() => {
+        initializeMarkTrackerChart();
+    });
   }
+}
+
+// ==================== MARK TRACKER SCORES FOR SCHOOL STUDENTS ====================
+let marksData = null;
+let markTrackerChart = null;
+
+async function loadMarkTrackerScores() {
+  try {
+      marksData = await markApi.getSubjects();
+      populateMarkSelectFilter();
+      updateMarkTrackerChart();
+  } catch(error) {
+      console.error("Error loading mark tracker scores:", error);
+  }
+}
+
+function processMarksForChart(subjectFilter = "all") {
+    if (!marksData || marksData.length === 0) return { labels: [], data: [] };
+
+    if (subjectFilter === "all") {
+        // Find most recent 10 tests across all subjects to show a general trend, 
+        // or average per subject. Let's show average per subject for "all"
+        const labels = marksData.map(subj => subj.name);
+        const data = marksData.map(subj => {
+            if (!subj.tests || subj.tests.length === 0) return 0;
+            const sum = subj.tests.reduce((a, b) => a + parseFloat(b.mark), 0);
+            return (sum / subj.tests.length).toFixed(2);
+        });
+        return { labels, data, label: "Average Score (%)" };
+    } else {
+        // Find specific subject and chart its tests over time
+        const subject = marksData.find(s => s.id === parseInt(subjectFilter));
+        if (!subject || !subject.tests || subject.tests.length === 0) return { labels: [], data: [], label: "No Tests" };
+        
+        // Sort tests by date
+        const sortedTests = [...subject.tests].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+        const labels = sortedTests.map(t => t.name);
+        const data = sortedTests.map(t => parseFloat(t.mark).toFixed(2));
+        return { labels, data, label: `${subject.name} Marks` };
+    }
+}
+
+function updateMarkTrackerStats(dataArray) {
+    const statsContainer = document.getElementById("mark-tracker-stats");
+    if (!statsContainer) return;
+
+    const numericData = dataArray.map(d => parseFloat(d));
+    if (numericData.length === 0) {
+        statsContainer.innerHTML = '<div>No data available</div>';
+        return;
+    }
+
+    const max = Math.max(...numericData).toFixed(2);
+    const min = Math.min(...numericData).toFixed(2);
+    const avg = (numericData.reduce((a, b) => a + b, 0) / numericData.length).toFixed(2);
+
+    statsContainer.innerHTML = `
+      <div class="gpa-stat">
+        <span class="stat-label">Highest</span>
+        <span class="stat-value">${max}</span>
+      </div>
+      <div class="gpa-stat">
+        <span class="stat-label">Lowest</span>
+        <span class="stat-value">${min}</span>
+      </div>
+      <div class="gpa-stat">
+        <span class="stat-label">Average</span>
+        <span class="stat-value">${avg}</span>
+      </div>
+    `;
+}
+
+function populateMarkSelectFilter() {
+  if (!marksData) return;
+
+  const selectElement = document.getElementById("mark-subject-select");
+  if (!selectElement) return;
+
+  const optionsContainer = document.getElementById("mark-subject-options");
+  if (!optionsContainer) return;
+
+  // Clear existing options except 'all'
+  optionsContainer.innerHTML = `
+    <div class="custom-select-option selected" data-value="all">
+        All Subjects Average
+    </div>
+  `;
+
+  marksData.forEach(subj => {
+      const option = document.createElement("div");
+      option.className = "custom-select-option";
+      option.textContent = subj.name;
+      option.dataset.value = subj.id;
+      
+      optionsContainer.appendChild(option);
+  });
+
+   // Re-bind click events for this specific select
+   const display = selectElement.nextElementSibling;
+   const options = optionsContainer.querySelectorAll(".custom-select-option");
+
+   options.forEach(option => {
+       option.addEventListener("click", () => {
+           const value = option.getAttribute("data-value");
+           const text = option.textContent;
+
+           display.textContent = text;
+           options.forEach(opt => opt.classList.remove("selected"));
+           option.classList.add("selected");
+           selectElement.value = value;
+           optionsContainer.classList.remove("show");
+
+           updateMarkTrackerChart(value);
+       });
+   });
+}
+
+function updateMarkTrackerChart(subjectFilter = "all") {
+    if (!markTrackerChart) return;
+    
+    const chartData = processMarksForChart(subjectFilter);
+    markTrackerChart.data.labels = chartData.labels;
+    markTrackerChart.data.datasets[0].data = chartData.data;
+    markTrackerChart.data.datasets[0].label = chartData.label;
+    markTrackerChart.update();
+    
+    updateMarkTrackerStats(chartData.data);
+}
+
+function initializeMarkTrackerChart() {
+    const ctx = document.getElementById("markTrackerChart");
+    if (!ctx) return;
+
+    const chartData = processMarksForChart("all");
+
+    markTrackerChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: chartData.label,
+                data: chartData.data,
+                backgroundColor: "rgba(255, 255, 255, 0.5)",
+                borderColor: "rgba(255, 255, 255, 1)",
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: { color: "rgba(255, 255, 255, 0.7)" }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: { color: "rgba(255, 255, 255, 0.1)" },
+                    ticks: { color: "rgba(255, 255, 255, 0.7)" }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: "rgba(255, 255, 255, 0.7)" }
+                }
+            }
+        }
+    });
+    
+    updateMarkTrackerStats(chartData.data);
 }
 
 // Load GPA data from gpa-tracker localStorage

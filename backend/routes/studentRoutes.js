@@ -5,6 +5,7 @@ const flashcardController = require("../controllers/student/flashcardController"
 const quizController = require("../controllers/student/quizController");
 const gpaController = require("../controllers/student/gpaController");
 const markController = require("../controllers/student/markController");
+const examController = require("../controllers/student/examController");
 const todoController = require("../controllers/student/todoController");
 const pomodoroController = require("../controllers/student/pomodoroController");
 const diaryController = require("../controllers/student/diaryController");
@@ -708,6 +709,74 @@ function handleStudentRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
         markController.deleteTest
+      )(req, res);
+    }
+
+    // ========== EXAM TRACKER ROUTES ==========
+
+    // Exam Terms routes
+    // Create term: POST /api/student/exams/terms
+    if (method === "POST" && pathname === "/api/student/exams/terms") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        examController.createTerm
+      )(req, res);
+    }
+
+    // Get all terms: GET /api/student/exams/terms
+    if (method === "GET" && pathname === "/api/student/exams/terms") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        examController.getTerms
+      )(req, res);
+    }
+
+    // Get specific term: GET /api/student/exams/terms/:id
+    if (method === "GET" && pathname.match(/^\/api\/student\/exams\/terms\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        examController.getTerm
+      )(req, res);
+    }
+
+    // Update term: PUT /api/student/exams/terms/:id
+    if (method === "PUT" && pathname.match(/^\/api\/student\/exams\/terms\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        examController.updateTerm
+      )(req, res);
+    }
+
+    // Delete term: DELETE /api/student/exams/terms/:id
+    if (method === "DELETE" && pathname.match(/^\/api\/student\/exams\/terms\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        examController.deleteTerm
+      )(req, res);
+    }
+
+    // Exam Subjects routes
+    // Create subject: POST /api/student/exams/terms/:id/subjects
+    if (method === "POST" && pathname.match(/^\/api\/student\/exams\/terms\/\d+\/subjects$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        examController.createSubject
+      )(req, res);
+    }
+
+    // Update subject: PUT /api/student/exams/subjects/:id
+    if (method === "PUT" && pathname.match(/^\/api\/student\/exams\/subjects\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        examController.updateSubject
+      )(req, res);
+    }
+
+    // Delete subject: DELETE /api/student/exams/subjects/:id
+    if (method === "DELETE" && pathname.match(/^\/api\/student\/exams\/subjects\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        examController.deleteSubject
       )(req, res);
     }
 

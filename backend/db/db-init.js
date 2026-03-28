@@ -583,6 +583,39 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_mark_tests_subject_id ON mark_tests(subject_id);
     `);
 
+    // Exam Tracker Terms table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS exam_terms (
+        id SERIAL PRIMARY KEY,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name VARCHAR(150) NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Exam Tracker Subjects table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS exam_subjects (
+        id SERIAL PRIMARY KEY,
+        term_id INT NOT NULL REFERENCES exam_terms(id) ON DELETE CASCADE,
+        name VARCHAR(150) NOT NULL,
+        mark DECIMAL(5,2) NOT NULL,
+        date TIMESTAMP DEFAULT NOW(),
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Create indexes for Exam Tracker tables
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_exam_terms_student_id ON exam_terms(student_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_exam_subjects_term_id ON exam_subjects(term_id);
+    `);
+
     // Pomodoro Sessions table
     await db.query(`
       CREATE TABLE IF NOT EXISTS pomodoro_sessions (

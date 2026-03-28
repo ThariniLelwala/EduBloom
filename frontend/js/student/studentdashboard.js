@@ -9,11 +9,17 @@ let deleteContext = { type: null, index: null };
 // -------------------- Load Tasks --------------------
 async function loadDashboardTasks() {
   try {
-    if (!window.taskData) {
-      const response = await fetch("../../data/tasks.json");
-      if (!response.ok) throw new Error("Failed to load tasks.json");
-      window.taskData = await response.json();
-    }
+    const data = await window.studentTodoApi.getTodos();
+    const allTodos = data.todos || [];
+    
+    // Map backend data to window.taskData structure for compatibility
+    // "todo" should only contain tasks without an expires_at date (separate from upcoming events)
+    window.taskData = {
+      todo: allTodos.filter(t => t.type === 'todo' && !t.expires_at).map(t => ({ id: t.id, task: t.text, done: t.completed })),
+      weeklyGoals: allTodos.filter(t => t.type === 'weekly').map(t => ({ id: t.id, task: t.text, done: t.completed })),
+      monthlyGoals: allTodos.filter(t => t.type === 'monthly').map(t => ({ id: t.id, task: t.text, done: t.completed }))
+    };
+
     renderDashboardTasks();
     updateProgressBars();
     bindDashboardEvents();
@@ -96,11 +102,17 @@ function renderDashboardTasks() {
     label.htmlFor = checkbox.id;
     label.textContent = task.task;
 
-    checkbox.addEventListener("change", () => {
-      task.done = checkbox.checked;
-      li.classList.toggle("completed", checkbox.checked);
-      updateProgressBars();
-      if (typeof updateSummary === "function") updateSummary();
+    checkbox.addEventListener("change", async () => {
+      try {
+        await window.studentTodoApi.updateTodo(task.id, { completed: checkbox.checked });
+        task.done = checkbox.checked;
+        li.classList.toggle("completed", checkbox.checked);
+        updateProgressBars();
+        if (typeof updateSummary === "function") updateSummary();
+      } catch (err) {
+        console.error("Error updating task status:", err);
+        checkbox.checked = !checkbox.checked; // revert UI
+      }
     });
 
     // Actions: Edit / Delete
@@ -171,16 +183,18 @@ function bindDashboardEvents() {
     btn?.addEventListener("click", () => closeModal(modal))
   );
 
-  modalSave.addEventListener("click", () => {
+  modalSave.addEventListener("click", async () => {
     const text = modalInput.value.trim();
     if (!text) return;
 
-    if (!window.taskData.todo) window.taskData.todo = [];
-    window.taskData.todo.push({ task: text, done: false });
-
-    renderDashboardTasks();
-    updateProgressBars();
-    closeModal(modal);
+    try {
+      await window.studentTodoApi.createTodo(currentType, text);
+      await loadDashboardTasks(); // Reload to get the new list
+      closeModal(modal);
+    } catch (err) {
+      console.error("Error creating task:", err);
+      alert("Failed to create task");
+    }
   });
 
   // Edit modal
@@ -188,20 +202,26 @@ function bindDashboardEvents() {
     btn?.addEventListener("click", () => closeModal(editModal))
   );
 
-  editSave.addEventListener("click", () => {
+  editSave.addEventListener("click", async () => {
     if (!editContext) return;
 
     const { type, index } = editContext;
-    const list = type === "todo" ? window.taskData.todo : [];
+    const list = type === "todo" ? window.taskData.todo : 
+                 type === "weekly" ? window.taskData.weeklyGoals :
+                 type === "monthly" ? window.taskData.monthlyGoals : [];
+    
     const newText = editInput.value.trim();
     if (!newText) return;
 
-    list[index].task = newText;
-
-    renderDashboardTasks();
-    updateProgressBars();
-    closeModal(editModal);
-    editContext = { type: null, index: null };
+    try {
+      await window.studentTodoApi.updateTodo(list[index].id, { text: newText });
+      await loadDashboardTasks(); // Reload to get updated data
+      closeModal(editModal);
+      editContext = { type: null, index: null };
+    } catch (err) {
+      console.error("Error updating task:", err);
+      alert("Failed to update task");
+    }
   });
 
   // Delete modal
@@ -209,13 +229,21 @@ function bindDashboardEvents() {
     btn?.addEventListener("click", () => closeModal(deleteModal))
   );
 
-  deleteConfirm.addEventListener("click", () => {
+  deleteConfirm.addEventListener("click", async () => {
     const { type, index } = deleteContext;
-    const list = type === "todo" ? window.taskData.todo : [];
-    list.splice(index, 1);
-    renderDashboardTasks();
-    updateProgressBars();
-    closeModal(deleteModal);
+    const list = type === "todo" ? window.taskData.todo :
+                 type === "weekly" ? window.taskData.weeklyGoals :
+                 type === "monthly" ? window.taskData.monthlyGoals : [];
+    
+    try {
+      await window.studentTodoApi.deleteTodo(list[index].id);
+      await loadDashboardTasks(); // Reload to get updated data
+      closeModal(deleteModal);
+      deleteContext = { type: null, index: null };
+    } catch (err) {
+      console.error("Error deleting task:", err);
+      alert("Failed to delete task");
+    }
   });
 }
 
@@ -225,7 +253,10 @@ function openEditModal(type, index) {
   const editInput = document.getElementById("edit-input");
   editContext = { type, index };
 
-  const list = type === "todo" ? window.taskData.todo : [];
+  const list = type === "todo" ? window.taskData.todo : 
+               type === "weekly" ? window.taskData.weeklyGoals :
+               type === "monthly" ? window.taskData.monthlyGoals : [];
+               
   editInput.value = list[index].task;
   editModal.classList.add("show");
 }
