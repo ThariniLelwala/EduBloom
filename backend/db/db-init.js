@@ -392,6 +392,29 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_student_todos_expires_at ON student_todos(expires_at);
     `);
 
+    // Teacher Todo table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS teacher_todos (
+        id SERIAL PRIMARY KEY,
+        teacher_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        type VARCHAR(20) NOT NULL CHECK (type IN ('todo', 'deadline')),
+        text VARCHAR(500) NOT NULL,
+        completed BOOLEAN DEFAULT FALSE,
+        expires_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Create indexes for teacher_todos
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_teacher_todos_teacher_id ON teacher_todos(teacher_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_teacher_todos_type ON teacher_todos(type);
+    `);
+
     // Student Quiz Subjects table (student creates subjects for organizing quizzes)
     await db.query(`
       CREATE TABLE IF NOT EXISTS student_quiz_subjects (

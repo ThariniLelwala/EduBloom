@@ -3,6 +3,7 @@ const subjectController = require("../controllers/teacher/subjectController");
 const notesController = require("../controllers/teacher/notesController");
 const verificationController = require("../controllers/teacher/verificationController");
 const quizController = require("../controllers/teacher/quizController");
+const todoController = require("../controllers/teacher/todoController");
 const {
   verifyToken,
   requireRole,
@@ -325,6 +326,40 @@ function handleTeacherRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
         quizController.reorderQuestions
+      )(req, res);
+    }
+
+    // ========== TEACHER TODO/CALENDAR MANAGEMENT ROUTES ==========
+
+    // Create todo: POST /api/teacher/todos/create
+    if (method === "POST" && pathname === "/api/teacher/todos/create") {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        todoController.createTodo
+      )(req, res);
+    }
+
+    // Get all todos: GET /api/teacher/todos
+    if (method === "GET" && pathname === "/api/teacher/todos") {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        todoController.getTodos
+      )(req, res);
+    }
+
+    // Update todo: PUT /api/teacher/todos/:todoId
+    if (method === "PUT" && pathname.match(/^\/api\/teacher\/todos\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        todoController.updateTodo
+      )(req, res);
+    }
+
+    // Delete todo: DELETE /api/teacher/todos/:todoId
+    if (method === "DELETE" && pathname.match(/^\/api\/teacher\/todos\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        todoController.deleteTodo
       )(req, res);
     }
 
