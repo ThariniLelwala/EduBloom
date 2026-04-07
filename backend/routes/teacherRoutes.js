@@ -1,7 +1,6 @@
 // routes/teacherRoutes.js
 const subjectController = require("../controllers/teacher/subjectController");
 const notesController = require("../controllers/teacher/notesController");
-const verificationController = require("../controllers/teacher/verificationController");
 const quizController = require("../controllers/teacher/quizController");
 const todoController = require("../controllers/teacher/todoController");
 const forumController = require("../controllers/teacher/forumController");
@@ -17,9 +16,6 @@ function handleTeacherRoutes(req, res) {
   const parsedUrl = url.parse(req.url, true);
   const pathname = parsedUrl.pathname;
   const method = req.method;
-
-  // Debug log to trace routing issues
-  console.log(`[TeacherRoutes] ${method} ${pathname}`);
 
   try {
     // ========== FORUM MANAGEMENT ROUTES ==========

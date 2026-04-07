@@ -234,79 +234,41 @@ function openDeleteModal(type, id) {
 
 // Load overview statistics
 function loadOverviewStats() {
-  // Quiz attempts - count from student quiz results
-  const quizAttempts = getQuizAttemptsCount();
-  document.getElementById("quiz-attempts").textContent = quizAttempts;
+  const authToken = localStorage.getItem("authToken");
 
-  // Forum posts - count from forum data
-  const forumPosts = getForumPostsCount();
-  document.getElementById("forum-posts").textContent = forumPosts;
-
-  // Reviews - count from review data
-  const reviewsCount = getReviewsCount();
-  document.getElementById("reviews-count").textContent = reviewsCount;
-}
-
-// Get quiz attempts count (students who took published teacher quizzes)
-function getQuizAttemptsCount() {
-  // For now, simulate data - in real app this would come from backend
-  // Count how many students have taken published quizzes
-  const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-  if (!teacherSubjects) return 0;
-
-  const subjects = JSON.parse(teacherSubjects);
-  let totalAttempts = 0;
-
-  // Simulate student attempts based on published quizzes
-  subjects.forEach((subject) => {
-    subject.quizzes.forEach((quiz) => {
-      if (quiz.published && quiz.questions && quiz.questions.length > 0) {
-        // Simulate 3-8 students per published quiz
-        totalAttempts += Math.floor(Math.random() * 6) + 3;
-      }
+  fetch("/api/teacher/quiz/subjects", {
+    headers: { Authorization: "Bearer " + authToken },
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (subjects) {
+      var totalQuizzes = 0;
+      var totalQuestions = 0;
+      subjects.forEach(function (subject) {
+        if (subject.quiz_sets) {
+          totalQuizzes += subject.quiz_sets.length;
+          subject.quiz_sets.forEach(function (quiz) {
+            if (quiz.questions) totalQuestions += quiz.questions.length;
+          });
+        }
+      });
+      document.getElementById("quiz-attempts").textContent = totalQuizzes;
+    })
+    .catch(function () {
+      document.getElementById("quiz-attempts").textContent = "0";
     });
-  });
 
-  return totalAttempts;
-}
-
-// Get forum posts count
-function getForumPostsCount() {
-  // For now, simulate forum engagement data
-  // In real app, this would count posts in teacher-managed forums
-  const forumData = localStorage.getItem("forum_posts");
-  if (forumData) {
-    const posts = JSON.parse(forumData);
-    return posts.length || 0;
-  }
-
-  // Simulate forum activity
-  return Math.floor(Math.random() * 50) + 20;
-}
-
-// Get reviews count
-function getReviewsCount() {
-  // For now, simulate review data
-  // In real app, this would count reviews for teacher's content
-  const reviewData = localStorage.getItem("content_reviews");
-  if (reviewData) {
-    const reviews = JSON.parse(reviewData);
-    return reviews.length || 0;
-  }
-
-  // Simulate reviews for published content
-  const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-  if (!teacherSubjects) return 0;
-
-  const subjects = JSON.parse(teacherSubjects);
-  let publishedQuizzes = 0;
-
-  subjects.forEach((subject) => {
-    subject.quizzes.forEach((quiz) => {
-      if (quiz.published) publishedQuizzes++;
+  fetch("/api/teacher/forums/my", {
+    headers: { Authorization: "Bearer " + authToken },
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (forums) {
+      document.getElementById("forum-posts").textContent = forums.length;
+    })
+    .catch(function () {
+      document.getElementById("forum-posts").textContent = "0";
     });
-  });
 
-  // Simulate 1-3 reviews per published quiz
-  return publishedQuizzes * (Math.floor(Math.random() * 3) + 1);
+  document.getElementById("reviews-count").textContent = "0";
 }
+
+

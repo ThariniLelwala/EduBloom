@@ -45,17 +45,14 @@ function loadQuizStatistics() {
         }
       });
 
-      var totalAttempts = totalQuizzes * (Math.floor(Math.random() * 15) + 10);
-      var averageScore = Math.floor(Math.random() * 15) + 80;
-
-      document.getElementById("total-quiz-attempts").textContent = totalAttempts;
-      document.getElementById("average-score").textContent = averageScore + "%";
+      document.getElementById("total-quiz-attempts").textContent = totalQuizzes;
+      document.getElementById("average-score").textContent = totalQuestions;
       document.getElementById("published-quizzes").textContent = publishedCount;
     })
     .catch(function (error) {
       console.error("Error loading quiz statistics:", error);
       document.getElementById("total-quiz-attempts").textContent = "0";
-      document.getElementById("average-score").textContent = "0%";
+      document.getElementById("average-score").textContent = "0";
       document.getElementById("published-quizzes").textContent = "0";
     });
 }
@@ -75,13 +72,13 @@ function loadForumStatistics() {
 
       document.getElementById("forum-views").textContent = totalViews;
       document.getElementById("forum-posts").textContent = totalPosts;
-      document.getElementById("forum-reports").textContent = 0;
+      document.getElementById("forum-replies").textContent = totalReplies;
     })
     .catch(function (error) {
       console.error("Error loading forum statistics:", error);
       document.getElementById("forum-views").textContent = "0";
       document.getElementById("forum-posts").textContent = "0";
-      document.getElementById("forum-reports").textContent = "0";
+      document.getElementById("forum-replies").textContent = "0";
     });
 }
 
@@ -95,15 +92,13 @@ function loadQuizDetails() {
       subjects.forEach(function (subject) {
         if (subject.quiz_sets) {
           subject.quiz_sets.forEach(function (quiz) {
-            var attempts = Math.floor(Math.random() * 15) + 3;
-            var avgScore = Math.floor(Math.random() * 25) + 75;
+            var questionCount = quiz.question_count || (quiz.questions ? quiz.questions.length : 0);
             var status = quiz.is_published ? "Published" : "Draft";
 
             var row = document.createElement("tr");
             row.innerHTML =
               "<td>" + quiz.name + "</td>" +
-              "<td>" + attempts + "</td>" +
-              "<td>" + avgScore + "%</td>" +
+              "<td>" + questionCount + "</td>" +
               '<td><span class="status-' + status.toLowerCase() + '">' + status + "</span></td>";
             tbody.appendChild(row);
           });
@@ -111,13 +106,13 @@ function loadQuizDetails() {
       });
 
       if (tbody.children.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,0.6);">No quizzes created yet</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:rgba(255,255,255,0.6);">No quizzes created yet</td></tr>';
       }
     })
     .catch(function (error) {
       console.error("Error loading quiz details:", error);
       var tbody = document.getElementById("quiz-details-body");
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,0.6);">Failed to load quiz details</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:rgba(255,255,255,0.6);">Failed to load quiz details</td></tr>';
     });
 }
 
@@ -131,12 +126,11 @@ function loadTopQuizzes() {
         if (subject.quiz_sets) {
           subject.quiz_sets.forEach(function (quiz) {
             if (quiz.is_published) {
-              var attempts = Math.floor(Math.random() * 20) + 5;
-              var avgScore = Math.floor(Math.random() * 25) + 75;
+              var questionCount = quiz.question_count || (quiz.questions ? quiz.questions.length : 0);
               quizzes.push({
                 name: quiz.name,
-                attempts: attempts,
-                avgScore: avgScore,
+                questionCount: questionCount,
+                createdAt: quiz.created_at,
               });
             }
           });
@@ -144,7 +138,7 @@ function loadTopQuizzes() {
       });
 
       quizzes.sort(function (a, b) {
-        return b.avgScore - a.avgScore;
+        return b.questionCount - a.questionCount;
       });
       var topQuizzes = quizzes.slice(0, 5);
 
@@ -162,9 +156,9 @@ function loadTopQuizzes() {
         quizItem.innerHTML =
           '<div class="quiz-info">' +
             '<span class="quiz-name">' + quiz.name + '</span>' +
-            '<span class="quiz-stats">' + quiz.attempts + ' attempts • ' + quiz.avgScore + '% avg</span>' +
+            '<span class="quiz-stats">' + quiz.questionCount + ' questions • ' + formatDate(quiz.createdAt) + '</span>' +
           '</div>' +
-          '<div class="quiz-score">' + quiz.avgScore + '%</div>';
+          '<div class="quiz-score">' + quiz.questionCount + ' Q</div>';
         topQuizzesList.appendChild(quizItem);
       });
     })
@@ -177,20 +171,19 @@ function loadTopQuizzes() {
 
 // Load recent activity from backend
 function loadRecentActivity() {
-  var activities = [];
-
   Promise.all([
     apiGet("/api/teacher/quiz/subjects").catch(function () { return []; }),
     apiGet("/api/teacher/forums/my").catch(function () { return []; }),
   ]).then(function (results) {
     var subjects = results[0];
     var forums = results[1];
+    var activities = [];
 
     var recentQuizzes = [];
     subjects.forEach(function (subject) {
       if (subject.quiz_sets) {
         subject.quiz_sets.forEach(function (quiz) {
-          recentQuizzes.push({ name: quiz.name, created_at: quiz.created_at });
+          recentQuizzes.push({ name: quiz.name, created_at: quiz.created_at, is_published: quiz.is_published });
         });
       }
     });
@@ -202,8 +195,8 @@ function loadRecentActivity() {
 
     recentQuizzes.slice(0, 2).forEach(function (quiz) {
       activities.push({
-        icon: "fas fa-upload",
-        text: "Published quiz: " + quiz.name,
+        icon: quiz.is_published ? "fas fa-upload" : "fas fa-edit",
+        text: (quiz.is_published ? "Published quiz: " : "Draft quiz: ") + quiz.name,
         time: formatDate(quiz.created_at),
       });
     });
@@ -214,6 +207,10 @@ function loadRecentActivity() {
         text: "New forum: " + forum.title,
         time: formatDate(forum.created_at),
       });
+    });
+
+    activities.sort(function (a, b) {
+      return new Date(b.time || 0) - new Date(a.time || 0);
     });
 
     if (activities.length === 0) {
@@ -262,70 +259,50 @@ function initializeCharts() {
     var forums = results[1];
 
     var totalQuizzes = 0;
+    var totalQuestions = 0;
+    var quizzesByWeek = {};
+    var forumsByWeek = {};
+
     subjects.forEach(function (subject) {
-      if (subject.quiz_sets) totalQuizzes += subject.quiz_sets.length;
+      if (subject.quiz_sets) {
+        totalQuizzes += subject.quiz_sets.length;
+        subject.quiz_sets.forEach(function (quiz) {
+          if (quiz.questions) totalQuestions += quiz.questions.length;
+          var weekKey = getWeekKey(quiz.created_at);
+          quizzesByWeek[weekKey] = (quizzesByWeek[weekKey] || 0) + 1;
+        });
+      }
     });
 
-    var weeklyAttempts = [];
-    for (var i = 0; i < 7; i++) {
-      weeklyAttempts.push(Math.floor(Math.random() * totalQuizzes * 2) + totalQuizzes);
-    }
-
-    var quizCtx = document.getElementById("quizChart").getContext("2d");
-    new Chart(quizCtx, {
-      type: "line",
-      data: {
-        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-        datasets: [{
-          label: "Quiz Attempts",
-          data: weeklyAttempts,
-          borderColor: "rgba(255, 255, 255, 0.8)",
-          backgroundColor: "rgba(255, 255, 255, 0.1)",
-          tension: 0.4,
-          fill: true,
-        }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: { color: "rgba(255, 255, 255, 0.1)" },
-            ticks: { color: "rgba(255, 255, 255, 0.7)" },
-          },
-          x: {
-            grid: { color: "rgba(255, 255, 255, 0.1)" },
-            ticks: { color: "rgba(255, 255, 255, 0.7)" },
-          },
-        },
-      },
+    forums.forEach(function (forum) {
+      var weekKey = getWeekKey(forum.created_at);
+      forumsByWeek[weekKey] = (forumsByWeek[weekKey] || 0) + 1;
     });
 
-    var weeklyQuizAttempts = [];
-    var weeklyForumPosts = [];
-    for (var j = 0; j < 4; j++) {
-      weeklyQuizAttempts.push(Math.floor(Math.random() * totalQuizzes * 4) + totalQuizzes * 2);
-      weeklyForumPosts.push(Math.floor(Math.random() * Math.max(forums.length, 1) * 3) + forums.length);
-    }
+    var last4Weeks = getLast4Weeks();
+    var weeklyQuizData = last4Weeks.map(function (wk) {
+      return quizzesByWeek[wk] || 0;
+    });
+    var weeklyForumData = last4Weeks.map(function (wk) {
+      return forumsByWeek[wk] || 0;
+    });
 
     var trendsCtx = document.getElementById("trendsChart").getContext("2d");
     new Chart(trendsCtx, {
       type: "line",
       data: {
-        labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+        labels: last4Weeks,
         datasets: [
           {
-            label: "Quiz Attempts",
-            data: weeklyQuizAttempts,
+            label: "Quizzes Created",
+            data: weeklyQuizData,
             borderColor: "rgba(255, 255, 255, 0.8)",
             backgroundColor: "rgba(255, 255, 255, 0.1)",
             tension: 0.4,
           },
           {
-            label: "Forum Posts",
-            data: weeklyForumPosts,
+            label: "Forums Created",
+            data: weeklyForumData,
             borderColor: "rgba(255, 255, 255, 0.5)",
             backgroundColor: "rgba(255, 255, 255, 0.05)",
             tension: 0.4,
@@ -345,7 +322,7 @@ function initializeCharts() {
           y: {
             beginAtZero: true,
             grid: { color: "rgba(255, 255, 255, 0.1)" },
-            ticks: { color: "rgba(255, 255, 255, 0.7)" },
+            ticks: { color: "rgba(255, 255, 255, 0.7)", stepSize: 1 },
           },
           x: {
             grid: { color: "rgba(255, 255, 255, 0.1)" },
@@ -387,7 +364,7 @@ function initializeCharts() {
           y: {
             beginAtZero: true,
             grid: { color: "rgba(255, 255, 255, 0.1)" },
-            ticks: { color: "rgba(255, 255, 255, 0.7)" },
+            ticks: { color: "rgba(255, 255, 255, 0.7)", stepSize: 1 },
           },
           x: {
             grid: { color: "rgba(255, 255, 255, 0.1)" },
@@ -396,5 +373,54 @@ function initializeCharts() {
         },
       },
     });
+
+    var ctx = document.getElementById("quizChart").getContext("2d");
+    new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: ["Total Quizzes", "Total Questions"],
+        datasets: [{
+          data: [totalQuizzes, totalQuestions],
+          backgroundColor: [
+            "rgba(255, 255, 255, 0.8)",
+            "rgba(255, 255, 255, 0.4)",
+          ],
+          borderColor: ["#ffffff", "#cccccc"],
+          borderWidth: 1,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: { color: "rgba(255, 255, 255, 0.7)" },
+          },
+        },
+      },
+    });
   });
+}
+
+function getWeekKey(dateString) {
+  var d = new Date(dateString);
+  var year = d.getFullYear();
+  var oneJan = new Date(year, 0, 1);
+  var weekNum = Math.ceil(((d - oneJan) / 86400000 + oneJan.getDay() + 1) / 7);
+  return year + "-W" + String(weekNum).padStart(2, "0");
+}
+
+function getLast4Weeks() {
+  var now = new Date();
+  var weeks = [];
+  for (var i = 3; i >= 0; i--) {
+    var d = new Date(now);
+    d.setDate(d.getDate() - (i * 7));
+    var year = d.getFullYear();
+    var oneJan = new Date(year, 0, 1);
+    var weekNum = Math.ceil(((d - oneJan) / 86400000 + oneJan.getDay() + 1) / 7);
+    weeks.push("W" + String(weekNum).padStart(2, "0"));
+  }
+  return weeks;
 }

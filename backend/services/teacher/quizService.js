@@ -41,7 +41,7 @@ class QuizService {
   }
 
   /**
-   * Get all quiz subjects for a teacher
+   * Get all quiz subjects for a teacher with nested quiz sets
    */
   async getQuizSubjects(teacherId) {
     if (!teacherId) {
@@ -55,6 +55,36 @@ class QuizService {
        ORDER BY created_at DESC`,
       [teacherId]
     );
+
+    for (let subject of result.rows) {
+      const quizSetsResult = await db.query(
+        `SELECT id, subject_id, name, description, is_published, created_at, updated_at
+         FROM quiz_sets
+         WHERE subject_id = $1
+         ORDER BY created_at DESC`,
+        [subject.id]
+      );
+
+      for (let quiz of quizSetsResult.rows) {
+        const countResult = await db.query(
+          "SELECT COUNT(*) FROM quiz_questions WHERE quiz_set_id = $1",
+          [quiz.id]
+        );
+        quiz.question_count = parseInt(countResult.rows[0].count);
+
+        const questionsResult = await db.query(
+          `SELECT id, quiz_set_id, question_text, question_order, created_at, updated_at
+           FROM quiz_questions
+           WHERE quiz_set_id = $1
+           ORDER BY question_order ASC`,
+          [quiz.id]
+        );
+        quiz.questions = questionsResult.rows;
+      }
+
+      subject.quiz_sets = quizSetsResult.rows;
+      subject.quiz_count = quizSetsResult.rows.length;
+    }
 
     return result.rows;
   }
