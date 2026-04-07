@@ -714,3 +714,32 @@
   border-color: rgba(255, 255, 255, 0.4);
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
 }
+
+/* Forum Create Modal */
+#forum-modal .modal-content {
+  width: 550px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+#forum-modal .modal-body {
+  gap: 14px;
+}
+
+#forum-modal .grade-select-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#forum-modal .grade-select-section label {
+  color: var(--color-white);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+#forum-modal .publish-toggle {
+  margin-top: 4px;
+}
+

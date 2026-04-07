@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="../../../css/sidebar.css" />
     <link rel="stylesheet" href="../../../css/cards.css" />
     <link rel="stylesheet" href="../../../css/student/forums.css" />
+    <link rel="stylesheet" href="../../../css/custom-select.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
@@ -305,6 +306,22 @@
             </small>
           </div>
 
+          <div class="grade-select-section">
+            <label>Target Grade</label>
+            <select id="target-grade" class="custom-select" name="target-grade">
+              <option value="">Select Grade</option>
+              <option value="5">Grade 5</option>
+              <option value="6">Grade 6</option>
+              <option value="7">Grade 7</option>
+              <option value="8">Grade 8</option>
+              <option value="9">Grade 9</option>
+              <option value="10">Grade 10</option>
+              <option value="11">Grade 11</option>
+              <option value="12">Grade 12</option>
+              <option value="13">Grade 13</option>
+            </select>
+          </div>
+
           <div class="publish-toggle">
             <label class="checkbox-container">
               <input type="checkbox" id="publish-checkbox" checked />
@@ -323,6 +340,7 @@
     <script src="../../../js/topbar.js"></script>
     <script src="../../../js/bg-manager.js"></script>
     <script src="../../../js/confirmation-modal.js"></script>
-    <script src="../../../js/teacher/forum/forum.js"></script>
+    <script src="../../../js/custom-select.js"></script>
+    <script src="../../../js/teacher/forums.js"></script>
   </body>
 </html>

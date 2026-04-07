@@ -55,10 +55,23 @@ const initCustomSelects = () => {
       }
 
       const rect = display.getBoundingClientRect();
+      const optionsHeight = optionsContainer.scrollHeight || 250;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      const openUpward = spaceBelow < optionsHeight && spaceAbove > spaceBelow;
+
       optionsContainer.style.position = "absolute";
-      optionsContainer.style.top = rect.bottom + window.scrollY + "px";
       optionsContainer.style.left = rect.left + window.scrollX + "px";
       optionsContainer.style.width = rect.width + "px";
+
+      if (openUpward) {
+        optionsContainer.style.top = (rect.top + window.scrollY - optionsHeight - 4) + "px";
+        optionsContainer.style.maxHeight = Math.min(optionsHeight, spaceAbove - 8) + "px";
+      } else {
+        optionsContainer.style.top = (rect.bottom + window.scrollY) + "px";
+        optionsContainer.style.maxHeight = Math.min(optionsHeight, spaceBelow - 8) + "px";
+      }
+
       optionsContainer.classList.toggle("show");
     });
 

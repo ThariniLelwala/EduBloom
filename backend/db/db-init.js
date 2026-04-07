@@ -716,6 +716,7 @@ async function initializeDatabase() {
         author_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         title VARCHAR(255) NOT NULL,
         description TEXT NOT NULL,
+        target_grade INT,
         published BOOLEAN DEFAULT TRUE,
         archived BOOLEAN DEFAULT FALSE,
         views INT DEFAULT 0,
@@ -723,6 +724,12 @@ async function initializeDatabase() {
         updated_at TIMESTAMP DEFAULT NOW()
       );
     `);
+
+    try {
+      await db.query(`ALTER TABLE forum_posts ADD COLUMN target_grade INT CHECK (target_grade >= 5 AND target_grade <= 13);`);
+    } catch (err) {
+      // Column already exists, ignore error
+    }
 
     // Forum Tags table
     await db.query(`

@@ -15,7 +15,11 @@ class ForumService {
        WHERE fp.published = TRUE AND fp.archived = FALSE
        ORDER BY fp.created_at DESC`
     );
-    return result.rows;
+    return result.rows.map(row => ({
+      ...row,
+      reply_count: parseInt(row.reply_count),
+      target_grade: row.target_grade ? parseInt(row.target_grade) : null
+    }));
   }
 
   /**
@@ -32,7 +36,11 @@ class ForumService {
        ORDER BY fp.created_at DESC`,
       [teacherId]
     );
-    return result.rows;
+    return result.rows.map(row => ({
+      ...row,
+      reply_count: parseInt(row.reply_count),
+      target_grade: row.target_grade ? parseInt(row.target_grade) : null
+    }));
   }
 
   /**
@@ -63,21 +71,22 @@ class ForumService {
 
     const forum = forumResult.rows[0];
     forum.replies = repliesResult.rows;
+    forum.target_grade = forum.target_grade ? parseInt(forum.target_grade) : null;
     return forum;
   }
 
   /**
    * Create a new forum post
    */
-  async createForum(authorId, title, description, tags = [], published = true) {
+  async createForum(authorId, title, description, tags = [], published = true, targetGrade = null) {
     try {
       await db.query("BEGIN");
 
       const postResult = await db.query(
-        `INSERT INTO forum_posts (author_id, title, description, published)
-         VALUES ($1, $2, $3, $4)
+        `INSERT INTO forum_posts (author_id, title, description, published, target_grade)
+         VALUES ($1, $2, $3, $4, $5)
          RETURNING *`,
-        [authorId, title, description, published]
+        [authorId, title, description, published, targetGrade]
       );
 
       const postId = postResult.rows[0].id;

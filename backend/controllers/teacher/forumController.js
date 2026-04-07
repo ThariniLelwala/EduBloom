@@ -66,7 +66,7 @@ class ForumController {
     try {
       const teacherId = req.user.id;
       const data = await parseRequestBody(req);
-      const { title, description, tags, published } = data;
+      const { title, description, tags, published, targetGrade } = data;
 
       if (!title || !description) {
         res.writeHead(400, { "Content-Type": "application/json" });
@@ -74,7 +74,7 @@ class ForumController {
         return;
       }
 
-      const forum = await forumService.createForum(teacherId, title, description, tags, published);
+      const forum = await forumService.createForum(teacherId, title, description, tags, published, targetGrade);
       res.writeHead(201, { "Content-Type": "application/json" });
       res.end(JSON.stringify(forum));
     } catch (err) {
