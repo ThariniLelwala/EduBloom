@@ -8,32 +8,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
 let currentForumId = null;
 let selectedTags = [];
+const authToken = localStorage.getItem("authToken");
 
 // Load and display all published forums
-function loadForums() {
-  // Load teacher-created forums
-  const teacherForums =
-    JSON.parse(localStorage.getItem("teacher_forums")) || [];
-
-  // Load shared forums from quiz.json (if any exist)
-  fetch("../../data/quiz.json")
-    .then((response) => response.json())
-    .then((data) => {
-      // For now, we'll focus on teacher-created forums
-      // In a real app, you might have separate forum data
-      displayForums(teacherForums.filter((forum) => forum.published));
-    })
-    .catch((error) => {
-      console.error("Error loading quiz data:", error);
-      displayForums(teacherForums.filter((forum) => forum.published));
+async function loadForums() {
+  try {
+    const response = await fetch("/api/teacher/forums", {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
     });
+
+    if (!response.ok) throw new Error("Failed to load forums");
+
+    const forums = await response.json();
+    displayForums(forums);
+  } catch (error) {
+    console.error("Error loading forums:", error);
+    displayForums([]);
+  }
 }
 
 // Display forums in the grid
 function displayForums(forums) {
   const container = document.getElementById("forums-container");
 
-  if (forums.length === 0) {
+  if (!forums || forums.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
         <i class="fas fa-users"></i>
@@ -48,24 +48,26 @@ function displayForums(forums) {
   }
 
   container.innerHTML = "";
-  forums.forEach((forum, index) => {
+  forums.forEach((forum) => {
     const forumCard = document.createElement("div");
     forumCard.className = "forum-card";
     forumCard.innerHTML = `
       <div class="forum-header">
         <div class="forum-meta">
           <span class="forum-author">${forum.author || "Teacher"}</span>
-          <span class="forum-date">${formatDate(forum.createdAt)}</span>
+          <span class="forum-date">${formatDate(forum.created_at)}</span>
         </div>
         <div class="forum-stats">
-          <span><i class="fas fa-eye"></i> ${getForumViews(forum.id)}</span>
-          <span><i class="fas fa-reply"></i> ${getForumReplies(forum.id)}</span>
+          <span><i class="fas fa-eye"></i> ${forum.views || 0}</span>
+          <span><i class="fas fa-reply"></i> ${forum.reply_count || 0}</span>
         </div>
       </div>
       <div class="forum-title">${forum.title}</div>
       <div class="forum-description">${forum.description}</div>
       <div class="forum-tags">
-        ${forum.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}
+        ${(forum.tags || [])
+          .map((tag) => `<span class="tag">${tag}</span>`)
+          .join("")}
       </div>
       <div class="forum-actions">
         <button class="btn-secondary view-forum-btn" data-forum-id="${
@@ -86,24 +88,25 @@ function displayForums(forums) {
 }
 
 // Load available tags for filtering
-function loadAvailableTags() {
-  const teacherForums =
-    JSON.parse(localStorage.getItem("teacher_forums")) || [];
-  const allTags = new Set();
+async function loadAvailableTags() {
+  try {
+    const response = await fetch("/api/teacher/forums/tags", {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
 
-  teacherForums.forEach((forum) => {
-    forum.tags.forEach((tag) => allTags.add(tag));
-  });
+    if (!response.ok) throw new Error("Failed to load tags");
 
-  const filterTags = document.querySelector(".filter-tags");
-  const existingButtons = filterTags.querySelectorAll(
-    ".filter-tag:not(.active)"
-  );
-  existingButtons.forEach((btn) => btn.remove());
+    const tags = await response.json();
+    const filterTags = document.querySelector(".filter-tags");
+    
+    // Keep the "All Topics" button
+    const allBtn = filterTags.querySelector("[data-tag='all']");
+    filterTags.innerHTML = "";
+    filterTags.appendChild(allBtn);
 
-  Array.from(allTags)
-    .slice(0, 5)
-    .forEach((tag) => {
+    tags.slice(0, 5).forEach((tag) => {
       const tagButton = document.createElement("button");
       tagButton.className = "filter-tag";
       tagButton.textContent = tag;
@@ -111,106 +114,143 @@ function loadAvailableTags() {
       tagButton.addEventListener("click", () => filterByTag(tag));
       filterTags.appendChild(tagButton);
     });
+  } catch (error) {
+    console.error("Error loading tags:", error);
+  }
 }
 
 // Filter forums by tag
-function filterByTag(tag) {
+async function filterByTag(tag) {
   const buttons = document.querySelectorAll(".filter-tag");
   buttons.forEach((btn) => btn.classList.remove("active"));
 
-  if (tag === "all") {
-    document.querySelector("[data-tag='all']").classList.add("active");
-    loadForums();
-  } else {
-    document.querySelector(`[data-tag='${tag}']`).classList.add("active");
-    const teacherForums =
-      JSON.parse(localStorage.getItem("teacher_forums")) || [];
-    const filteredForums = teacherForums.filter(
-      (forum) => forum.published && forum.tags.includes(tag)
-    );
-    displayForums(filteredForums);
+  const targetBtn = document.querySelector(`[data-tag='${tag}']`);
+  if (targetBtn) targetBtn.classList.add("active");
+
+  try {
+    const response = await fetch("/api/teacher/forums", {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+    if (!response.ok) throw new Error("Failed to load forums");
+    const forums = await response.json();
+
+    if (tag === "all") {
+      displayForums(forums);
+    } else {
+      const filteredForums = forums.filter((forum) =>
+        (forum.tags || []).includes(tag)
+      );
+      displayForums(filteredForums);
+    }
+  } catch (error) {
+    console.error("Error filtering forums:", error);
   }
 }
 
 // Search forums
-function searchForums(query) {
-  const teacherForums =
-    JSON.parse(localStorage.getItem("teacher_forums")) || [];
-  const filteredForums = teacherForums.filter(
-    (forum) =>
-      forum.published &&
-      (forum.title.toLowerCase().includes(query.toLowerCase()) ||
+async function searchForums(query) {
+  try {
+    const response = await fetch("/api/teacher/forums", {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+    if (!response.ok) throw new Error("Failed to load forums");
+    const forums = await response.json();
+
+    const filteredForums = forums.filter(
+      (forum) =>
+        forum.title.toLowerCase().includes(query.toLowerCase()) ||
         forum.description.toLowerCase().includes(query.toLowerCase()) ||
-        forum.tags.some((tag) =>
+        (forum.tags || []).some((tag) =>
           tag.toLowerCase().includes(query.toLowerCase())
-        ))
-  );
-  displayForums(filteredForums);
+        )
+    );
+    displayForums(filteredForums);
+  } catch (error) {
+    console.error("Error searching forums:", error);
+  }
 }
 
 // View forum details and replies
-function viewForum(forumId) {
-  const teacherForums =
-    JSON.parse(localStorage.getItem("teacher_forums")) || [];
-  const forum = teacherForums.find((f) => f.id === forumId);
+async function viewForum(forumId) {
+  try {
+    const response = await fetch(`/api/teacher/forums/${forumId}`, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
 
-  if (!forum) return;
+    if (!response.ok) throw new Error("Failed to load forum details");
 
-  currentForumId = forumId;
+    const forum = await response.json();
+    currentForumId = forumId;
 
-  // Increment view count
-  incrementForumViews(forumId);
+    // Increment view count via API
+    fetch(`/api/teacher/forums/${forumId}/view`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    }).catch(err => console.error("Error incrementing views:", err));
 
-  const modal = document.getElementById("forum-detail-modal");
-  const title = document.getElementById("forum-detail-title");
-  const content = document.getElementById("forum-detail-content");
+    const modal = document.getElementById("forum-detail-modal");
+    const title = document.getElementById("forum-detail-title");
+    const content = document.getElementById("forum-detail-content");
 
-  title.textContent = forum.title;
+    title.textContent = forum.title;
 
-  // Load forum content and replies
-  const replies = getForumRepliesData(forumId);
+    const replies = forum.replies || [];
 
-  content.innerHTML = `
-    <div class="original-post">
-      <div class="post-header">
-        <span class="post-author">${forum.author || "Teacher"}</span>
-        <span class="post-date">${formatDate(forum.createdAt)}</span>
+    content.innerHTML = `
+      <div class="original-post">
+        <div class="post-header">
+          <span class="post-author">${forum.author || "Teacher"}</span>
+          <span class="post-date">${formatDate(forum.created_at)}</span>
+        </div>
+        <div class="post-content">${forum.description}</div>
+        <div class="post-tags">
+          ${(forum.tags || [])
+            .map((tag) => `<span class="tag">${tag}</span>`)
+            .join("")}
+        </div>
       </div>
-      <div class="post-content">${forum.description}</div>
-      <div class="post-tags">
-        ${forum.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}
-      </div>
-    </div>
 
-    <div class="replies-section">
-      <h3>Replies (${replies.length})</h3>
-      <div class="replies-list">
-        ${
-          replies.length === 0
-            ? '<p class="no-replies">No replies yet. Be the first to respond!</p>'
-            : replies
-                .map(
-                  (reply) => `
-            <div class="reply-item">
-              <div class="reply-header">
-                <span class="reply-author">${reply.author}</span>
-                <span class="reply-date">${formatDate(reply.createdAt)}</span>
+      <div class="replies-section">
+        <h3>Replies (${replies.length})</h3>
+        <div class="replies-list">
+          ${
+            replies.length === 0
+              ? '<p class="no-replies">No replies yet. Be the first to respond!</p>'
+              : replies
+                  .map(
+                    (reply) => `
+              <div class="reply-item">
+                <div class="reply-header">
+                  <span class="reply-author">${reply.author}</span>
+                  <span class="reply-date">${formatDate(reply.created_at)}</span>
+                </div>
+                <div class="reply-content">${reply.content}</div>
               </div>
-              <div class="reply-content">${reply.content}</div>
-            </div>
-          `
-                )
-                .join("")
-        }
+            `
+                  )
+                  .join("")
+          }
+        </div>
       </div>
-    </div>
-  `;
+    `;
 
-  modal.classList.add("show");
+    modal.classList.add("show");
+  } catch (error) {
+    console.error("Error loading forum details:", error);
+    alert("Could not load forum details.");
+  }
 }
 
 // Create new discussion post
-function createPost() {
+async function createPost() {
   const title = document.getElementById("post-title").value.trim();
   const content = document.getElementById("post-content").value.trim();
 
@@ -224,31 +264,35 @@ function createPost() {
     return;
   }
 
-  const post = {
-    id: Date.now(),
-    title,
-    description: content,
-    tags: [...selectedTags],
-    published: true,
-    createdAt: new Date().toISOString(),
-    author: localStorage.getItem("username") || "Teacher",
-    views: 0,
-    replies: [],
-  };
+  try {
+    const response = await fetch("/api/teacher/forums/create", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title,
+        description: content,
+        tags: [...selectedTags],
+        published: true,
+      }),
+    });
 
-  const teacherForums =
-    JSON.parse(localStorage.getItem("teacher_forums")) || [];
-  teacherForums.push(post);
-  localStorage.setItem("teacher_forums", JSON.stringify(teacherForums));
+    if (!response.ok) throw new Error("Failed to create post");
 
-  document.getElementById("post-modal").classList.remove("show");
-  resetPostModal();
-  loadForums();
-  loadAvailableTags();
+    document.getElementById("post-modal").classList.remove("show");
+    resetPostModal();
+    loadForums();
+    loadAvailableTags();
+  } catch (error) {
+    console.error("Error creating post:", error);
+    alert("Error creating post. Please try again.");
+  }
 }
 
 // Submit reply to forum
-function submitReply() {
+async function submitReply() {
   const content = document.getElementById("reply-content").value.trim();
 
   if (!content) {
@@ -256,28 +300,27 @@ function submitReply() {
     return;
   }
 
-  const reply = {
-    id: Date.now(),
-    content,
-    author: localStorage.getItem("username") || "Teacher",
-    createdAt: new Date().toISOString(),
-  };
+  try {
+    const response = await fetch(`/api/teacher/forums/${currentForumId}/replies`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ content }),
+    });
 
-  // Save reply to forum
-  const teacherForums =
-    JSON.parse(localStorage.getItem("teacher_forums")) || [];
-  const forumIndex = teacherForums.findIndex((f) => f.id === currentForumId);
-
-  if (forumIndex !== -1) {
-    if (!teacherForums[forumIndex].replies) {
-      teacherForums[forumIndex].replies = [];
-    }
-    teacherForums[forumIndex].replies.push(reply);
-    localStorage.setItem("teacher_forums", JSON.stringify(teacherForums));
+    if (!response.ok) throw new Error("Failed to post reply");
 
     // Refresh the forum view
     viewForum(currentForumId);
     document.getElementById("reply-content").value = "";
+    
+    // Also update main list reply count in background
+    loadForums();
+  } catch (error) {
+    console.error("Error posting reply:", error);
+    alert("Error posting reply. Please try again.");
   }
 }
 
@@ -336,34 +379,48 @@ function bindEvents() {
     .addEventListener("click", () => filterByTag("all"));
 }
 
-// Load tags for selection in create post modal
-function loadTagsForSelection() {
-  const teacherForums =
-    JSON.parse(localStorage.getItem("teacher_forums")) || [];
-  const allTags = new Set();
+// Load tags for selection in create post modal (from all existing tags)
+async function loadTagsForSelection() {
+  try {
+    const response = await fetch("/api/teacher/forums/tags", {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
 
-  teacherForums.forEach((forum) => {
-    forum.tags.forEach((tag) => allTags.add(tag));
-  });
+    if (!response.ok) throw new Error("Failed to load tags");
 
-  const tagsSelection = document.querySelector(".tags-selection");
-  tagsSelection.innerHTML = "";
+    const tags = await response.json();
+    const tagsSelection = document.querySelector(".tags-selection");
+    tagsSelection.innerHTML = "";
 
-  if (allTags.size === 0) {
-    tagsSelection.innerHTML =
-      "<p>No tags available. Tags will be created when you create forums.</p>";
-    return;
+    if (tags.length === 0) {
+      // Allow adding a new tag placeholder if needed, or just let them create posts first
+      tagsSelection.innerHTML = "<p>No existing tags. You can add tags in the Management page.</p>";
+      // For simplicity in this UI, we'll just show some defaults if empty
+      const defaults = ["General", "Question", "Resource"];
+      defaults.forEach(tag => {
+        const tagElement = document.createElement("span");
+        tagElement.className = "selectable-tag";
+        tagElement.textContent = tag;
+        tagElement.addEventListener("click", () => toggleTagSelection(tag, tagElement));
+        tagsSelection.appendChild(tagElement);
+      });
+      return;
+    }
+
+    tags.forEach((tag) => {
+      const tagElement = document.createElement("span");
+      tagElement.className = "selectable-tag";
+      tagElement.textContent = tag;
+      tagElement.addEventListener("click", () =>
+        toggleTagSelection(tag, tagElement)
+      );
+      tagsSelection.appendChild(tagElement);
+    });
+  } catch (error) {
+    console.error("Error loading tags for selection:", error);
   }
-
-  Array.from(allTags).forEach((tag) => {
-    const tagElement = document.createElement("span");
-    tagElement.className = "selectable-tag";
-    tagElement.textContent = tag;
-    tagElement.addEventListener("click", () =>
-      toggleTagSelection(tag, tagElement)
-    );
-    tagsSelection.appendChild(tagElement);
-  });
 }
 
 // Toggle tag selection
@@ -388,32 +445,8 @@ function resetPostModal() {
 }
 
 // Utility functions
-function getForumViews(forumId) {
-  // In a real app, this would be stored in a database
-  const views = localStorage.getItem(`forum_views_${forumId}`);
-  return views ? parseInt(views) : 0;
-}
-
-function incrementForumViews(forumId) {
-  const currentViews = getForumViews(forumId);
-  localStorage.setItem(`forum_views_${forumId}`, currentViews + 1);
-}
-
-function getForumReplies(forumId) {
-  const teacherForums =
-    JSON.parse(localStorage.getItem("teacher_forums")) || [];
-  const forum = teacherForums.find((f) => f.id === forumId);
-  return forum && forum.replies ? forum.replies.length : 0;
-}
-
-function getForumRepliesData(forumId) {
-  const teacherForums =
-    JSON.parse(localStorage.getItem("teacher_forums")) || [];
-  const forum = teacherForums.find((f) => f.id === forumId);
-  return forum && forum.replies ? forum.replies : [];
-}
-
 function formatDate(dateString) {
+  if (!dateString) return "Date unknown";
   const date = new Date(dateString);
   const now = new Date();
   const diffTime = Math.abs(now - date);

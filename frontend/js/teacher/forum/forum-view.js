@@ -1,5 +1,7 @@
 // Forum View Page JavaScript
 
+const authToken = localStorage.getItem("authToken");
+
 document.addEventListener("DOMContentLoaded", function () {
   initializeForumView();
 });
@@ -9,10 +11,10 @@ let allMyForums = [];
 let allOtherForums = [];
 let currentEditTags = [];
 
-function initializeForumView() {
-  loadMyForums();
-  loadAllForums();
-  loadPlatformStats();
+async function initializeForumView() {
+  await loadMyForums();
+  await loadAllForums();
+  await loadPlatformStats();
   setupSearch();
 
   // Set up event listeners
@@ -21,6 +23,7 @@ function initializeForumView() {
 
 function setupSearch() {
   const searchInput = document.getElementById("forum-search");
+  if (!searchInput) return;
   searchInput.addEventListener("input", function () {
     const searchTerm = this.value.toLowerCase().trim();
     filterForums(searchTerm);
@@ -39,8 +42,7 @@ function filterForums(searchTerm) {
   const filteredMyForums = allMyForums.filter(
     (forum) =>
       forum.title.toLowerCase().includes(searchTerm) ||
-      (Array.isArray(forum.tags) &&
-        forum.tags.some((tag) => tag.toLowerCase().includes(searchTerm))) ||
+      ((forum.tags || []).some((tag) => tag.toLowerCase().includes(searchTerm))) ||
       forum.description.toLowerCase().includes(searchTerm)
   );
 
@@ -48,8 +50,7 @@ function filterForums(searchTerm) {
   const filteredOtherForums = allOtherForums.filter(
     (forum) =>
       forum.title.toLowerCase().includes(searchTerm) ||
-      (Array.isArray(forum.tags) &&
-        forum.tags.some((tag) => tag.toLowerCase().includes(searchTerm))) ||
+      ((forum.tags || []).some((tag) => tag.toLowerCase().includes(searchTerm))) ||
       forum.description.toLowerCase().includes(searchTerm)
   );
 
@@ -57,14 +58,22 @@ function filterForums(searchTerm) {
   displayOtherForums(filteredOtherForums);
 }
 
-function loadMyForums() {
-  const currentUser = localStorage.getItem("username") || "Teacher";
-  allMyForums = getAllForums().filter((f) => f.author === currentUser);
-  displayMyForums(allMyForums);
+async function loadMyForums() {
+  try {
+    const response = await fetch("/api/teacher/forums/my", {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    if (!response.ok) throw new Error("Failed to load your forums");
+    allMyForums = await response.json();
+    displayMyForums(allMyForums);
+  } catch (error) {
+    console.error("Error loading my forums:", error);
+  }
 }
 
 function displayMyForums(forums) {
   const container = document.getElementById("my-forums");
+  if (!container) return;
 
   if (forums.length === 0) {
     container.innerHTML = `
@@ -100,10 +109,8 @@ function displayMyForums(forums) {
       <div class="topic-meta">
         <span class="topic-author">by ${forum.author}</span>
         <span class="topic-stats">
-          <i class="fas fa-calendar"></i> ${formatDate(forum.createdAt)} •
-          <i class="fas fa-reply"></i> ${
-            Array.isArray(forum.replies) ? forum.replies.length : 0
-          }
+          <i class="fas fa-calendar"></i> ${formatDate(forum.created_at)} •
+          <i class="fas fa-reply"></i> ${forum.reply_count || 0}
         </span>
       </div>
       <div class="topic-preview">${forum.description}</div>
@@ -114,16 +121,28 @@ function displayMyForums(forums) {
   });
 }
 
-function loadAllForums() {
-  const currentUser = localStorage.getItem("username") || "Teacher";
-  allOtherForums = getAllForums().filter(
-    (f) => f.published && f.author !== currentUser
-  );
-  displayOtherForums(allOtherForums);
+async function loadAllForums() {
+  try {
+    const response = await fetch("/api/teacher/forums", {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    if (!response.ok) throw new Error("Failed to load forums");
+    const forums = await response.json();
+    
+    // We'll filter out own forums in frontend for this specific view if needed
+    // but the API returns all published ones.
+    const currentUser = localStorage.getItem("username") || "Teacher";
+    allOtherForums = forums.filter(f => f.author !== currentUser);
+    
+    displayOtherForums(allOtherForums);
+  } catch (error) {
+    console.error("Error loading all forums:", error);
+  }
 }
 
 function displayOtherForums(forums) {
   const container = document.getElementById("all-forums");
+  if (!container) return;
 
   if (forums.length === 0) {
     container.innerHTML = `
@@ -153,16 +172,14 @@ function displayOtherForums(forums) {
       <div class="topic-header">
         <span class="topic-title">${forum.title}</span>
         <span class="topic-category">${
-          Array.isArray(forum.tags) ? forum.tags.join(", ") : ""
+          (forum.tags || []).join(", ")
         }</span>
       </div>
       <div class="topic-meta">
         <span class="topic-author">by ${forum.author}</span>
         <span class="topic-stats">
-          <i class="fas fa-calendar"></i> ${formatDate(forum.createdAt)} •
-          <i class="fas fa-reply"></i> ${
-            Array.isArray(forum.replies) ? forum.replies.length : 0
-          }
+          <i class="fas fa-calendar"></i> ${formatDate(forum.created_at)} •
+          <i class="fas fa-reply"></i> ${forum.reply_count || 0}
         </span>
       </div>
       <div class="topic-preview">${forum.description}</div>
@@ -173,76 +190,92 @@ function displayOtherForums(forums) {
   });
 }
 
-function getAllForums() {
-  return JSON.parse(localStorage.getItem("teacher_forums")) || [];
-}
+async function loadPlatformStats() {
+  try {
+    const response = await fetch("/api/teacher/forums", {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    if (!response.ok) return;
+    const forums = await response.json();
 
-function loadPlatformStats() {
-  const forums = getAllForums();
-  const publishedForums = forums.filter((f) => f.published);
-  const totalForums = forums.length;
-  const totalReplies = forums.reduce(
-    (sum, f) => sum + (Array.isArray(f.replies) ? f.replies.length : 0),
-    0
-  );
+    const totalForums = forums.length;
+    const totalReplies = forums.reduce((sum, f) => sum + (f.reply_count || 0), 0);
+    const teachers = [...new Set(forums.map((f) => f.author))];
+    const totalTeachers = teachers.length;
 
-  // Get unique teachers
-  const teachers = [...new Set(forums.map((f) => f.author))];
-  const totalTeachers = teachers.length;
-
-  document.getElementById("total-forums").textContent = totalForums;
-  document.getElementById("total-teachers").textContent = totalTeachers;
-  document.getElementById("total-replies").textContent = totalReplies;
-}
-
-function openForumDetail(forumId) {
-  const forums = getAllForums();
-  const forum = forums.find((f) => f.id === forumId);
-  if (!forum) return;
-
-  currentForumId = forumId;
-
-  // Display mode
-  document.getElementById("forum-title-display").textContent = forum.title;
-  document.getElementById("forum-author").textContent = `by ${forum.author}`;
-  document.getElementById("forum-date").textContent = formatDate(
-    forum.createdAt
-  );
-  document.getElementById("forum-description-display").textContent =
-    forum.description;
-
-  // Display tags
-  const tagsContainer = document.getElementById("forum-tags");
-  tagsContainer.innerHTML = Array.isArray(forum.tags)
-    ? forum.tags.map((tag) => `<span class="tag-item">${tag}</span>`).join("")
-    : "";
-
-  // Show edit button if current user is the author
-  const currentUser = localStorage.getItem("username") || "Teacher";
-  const forumActions = document.getElementById("forum-actions");
-  const forumContent = document.querySelector(".forum-content");
-  const forumEdit = document.getElementById("forum-edit");
-
-  if (forum.author === currentUser) {
-    forumActions.style.display = "block";
-    forumContent.style.display = "block";
-    forumEdit.style.display = "none";
-  } else {
-    forumActions.style.display = "none";
-    forumContent.style.display = "block";
-    forumEdit.style.display = "none";
+    document.getElementById("total-forums").textContent = totalForums;
+    document.getElementById("total-teachers").textContent = totalTeachers;
+    document.getElementById("total-replies").textContent = totalReplies;
+  } catch (error) {
+    console.error("Error loading stats:", error);
   }
-
-  // Display replies
-  loadReplies(forum.replies);
-
-  const modal = document.getElementById("forum-detail-modal");
-  modal.classList.add("show");
 }
 
-function loadReplies(replies) {
+async function openForumDetail(forumId) {
+  try {
+    const response = await fetch(`/api/teacher/forums/${forumId}`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    if (!response.ok) throw new Error("Failed to load forum details");
+    const forum = await response.json();
+
+    currentForumId = forumId;
+
+    // Display mode
+    document.getElementById("forum-title-display").textContent = forum.title;
+    document.getElementById("forum-author").textContent = `by ${forum.author}`;
+    document.getElementById("forum-date").textContent = formatDate(forum.created_at);
+    document.getElementById("forum-description-display").textContent = forum.description;
+
+    // Display tags
+    const tagsContainer = document.getElementById("forum-tags");
+    tagsContainer.innerHTML = (forum.tags || [])
+      .map((tag) => `<span class="tag-item">${tag}</span>`)
+      .join("");
+
+    // Show actions if current user is the author
+    const currentUser = localStorage.getItem("username") || "Teacher";
+    const forumActions = document.getElementById("forum-actions");
+    const forumContent = document.querySelector(".forum-content");
+    const forumEdit = document.getElementById("forum-edit");
+
+    if (forum.author === currentUser) {
+      if (forumActions) forumActions.style.display = "block";
+    } else {
+      if (forumActions) forumActions.style.display = "none";
+    }
+    
+    if (forumContent) forumContent.style.display = "block";
+    if (forumEdit) forumEdit.style.display = "none";
+
+    // Increment view count
+    fetch(`/api/teacher/forums/${forumId}/view`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${authToken}` },
+    }).catch(err => console.error("Error incrementing views:", err));
+
+    // Display replies
+    loadReplies(forum.replies, forum.id);
+
+    // Set up delete button listener
+    const deleteBtn = document.getElementById("delete-forum-btn");
+    if (deleteBtn) {
+      deleteBtn.onclick = () => {
+        const replyCount = forum.replies ? forum.replies.length : 0;
+        deleteForum(forumId, replyCount);
+      };
+    }
+
+    const modal = document.getElementById("forum-detail-modal");
+    modal.classList.add("show");
+  } catch (error) {
+    console.error("Error opening forum detail:", error);
+  }
+}
+
+function loadReplies(replies, forumId) {
   const container = document.getElementById("replies-list");
-  if (!Array.isArray(replies) || replies.length === 0) {
+  if (!replies || replies.length === 0) {
     container.innerHTML =
       '<p style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 20px;">No replies yet. Be the first to reply!</p>';
     return;
@@ -250,16 +283,13 @@ function loadReplies(replies) {
 
   container.innerHTML = replies
     .map(
-      (reply, index) => `
+      (reply) => `
     <div class="reply-item">
       <div class="reply-header">
         <span class="reply-author">${reply.author}</span>
-        <span class="reply-date">${formatDate(reply.createdAt)}</span>
+        <span class="reply-date">${formatDate(reply.created_at)}</span>
         <div class="reply-actions">
-          <button class="flag-reply-btn" onclick="flagReply(${index})" title="Flag as inappropriate">
-            <i class="fas fa-flag"></i>
-          </button>
-          <button class="delete-reply-btn" onclick="deleteReply(${index})" title="Delete reply">
+          <button class="delete-reply-btn" onclick="deleteReply(${forumId}, ${reply.id})" title="Delete reply">
             <i class="fas fa-trash"></i>
           </button>
         </div>
@@ -271,221 +301,180 @@ function loadReplies(replies) {
     .join("");
 }
 
-function addReply() {
+async function addReply() {
   const content = document.getElementById("reply-content").value.trim();
   if (!content) {
     showNotification("Please enter a reply", "error");
     return;
   }
 
-  const forums = getAllForums();
-  const forum = forums.find((f) => f.id === currentForumId);
-  if (!forum) return;
-
-  // Ensure replies is an array
-  if (!Array.isArray(forum.replies)) {
-    forum.replies = [];
-  }
-
-  const reply = {
-    id: Date.now(),
-    content,
-    author: localStorage.getItem("username") || "Teacher",
-    createdAt: new Date().toISOString(),
-  };
-
-  forum.replies.push(reply);
-  saveAllForums(forums);
-
-  document.getElementById("reply-content").value = "";
-  loadReplies(forum.replies);
-
-  // Refresh the forum lists
-  loadMyForums();
-  loadAllForums();
-  loadPlatformStats();
-
-  // Re-apply current search filter
-  const searchTerm = document
-    .getElementById("forum-search")
-    .value.toLowerCase()
-    .trim();
-  if (searchTerm) {
-    filterForums(searchTerm);
-  }
-
-  // Close the modal after posting
-  closeForumModal();
-
-  showNotification("Reply posted successfully!", "success");
-}
-
-function saveAllForums(forums) {
-  localStorage.setItem("teacher_forums", JSON.stringify(forums));
-}
-
-function deleteReply(replyIndex) {
-  if (
-    !confirm(
-      "Are you sure you want to delete this reply? This action cannot be undone."
-    )
-  ) {
-    return;
-  }
-
-  const forums = getAllForums();
-  const forum = forums.find((f) => f.id === currentForumId);
-  if (!forum || !Array.isArray(forum.replies)) return;
-
-  forum.replies.splice(replyIndex, 1);
-  saveAllForums(forums);
-
-  // Refresh the display
-  loadReplies(forum.replies);
-  loadMyForums();
-  loadAllForums();
-  loadPlatformStats();
-
-  // Re-apply current search filter
-  const searchTerm = document
-    .getElementById("forum-search")
-    .value.toLowerCase()
-    .trim();
-  if (searchTerm) {
-    filterForums(searchTerm);
-  }
-
-  showNotification("Reply deleted successfully!", "success");
-}
-
-function flagReply(replyIndex) {
-  const forums = getAllForums();
-  const forum = forums.find((f) => f.id === currentForumId);
-  if (!forum || !Array.isArray(forum.replies) || !forum.replies[replyIndex])
-    return;
-
-  const reply = forum.replies[replyIndex];
-  const flagged = confirm(
-    `Flag this reply as inappropriate?\n\n"${reply.content}"\n\nBy: ${reply.author}`
-  );
-
-  if (flagged) {
-    // Mark as flagged (you could store this in a separate array or add a flag property)
-    if (!forum.flaggedReplies) forum.flaggedReplies = [];
-    forum.flaggedReplies.push({
-      replyIndex,
-      reply: reply,
-      flaggedBy: localStorage.getItem("username") || "Teacher",
-      flaggedAt: new Date().toISOString(),
+  try {
+    const response = await fetch(`/api/teacher/forums/${currentForumId}/replies`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ content }),
     });
 
-    saveAllForums(forums);
-    showNotification("Reply has been flagged for review!", "success");
+    if (!response.ok) throw new Error("Failed to post reply");
+
+    document.getElementById("reply-content").value = "";
+    
+    // Refresh the forum view
+    const refreshedResponse = await fetch(`/api/teacher/forums/${currentForumId}`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    const refreshedForum = await refreshedResponse.json();
+    loadReplies(refreshedForum.replies, currentForumId);
+
+    // Refresh the lists
+    loadMyForums();
+    loadAllForums();
+    loadPlatformStats();
+
+    showNotification("Reply posted successfully!", "success");
+  } catch (error) {
+    console.error("Error adding reply:", error);
+    showNotification("Failed to post reply", "error");
   }
 }
 
-function editForum() {
-  const forums = getAllForums();
-  const forum = forums.find((f) => f.id === currentForumId);
-  if (!forum) return;
+async function deleteReply(forumId, replyId) {
+  if (!confirm("Are you sure you want to delete this reply? This action cannot be undone.")) return;
 
-  // Switch to edit mode
-  document.querySelector(".forum-content").style.display = "none";
-  document.getElementById("forum-actions").style.display = "none";
-  document.getElementById("forum-edit").style.display = "block";
+  try {
+    const response = await fetch(`/api/teacher/forums/${forumId}/replies/${replyId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
 
-  // Populate edit fields
-  document.getElementById("edit-forum-title").value = forum.title;
-  document.getElementById("edit-forum-description").value = forum.description;
+    if (!response.ok) throw new Error("Failed to delete reply");
 
-  // Handle tags
-  currentEditTags = Array.isArray(forum.tags) ? [...forum.tags] : [];
-  updateEditTagsDisplay();
+    // Refresh the forum view
+    const refreshedResponse = await fetch(`/api/teacher/forums/${forumId}`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    const refreshedForum = await refreshedResponse.json();
+    loadReplies(refreshedForum.replies, forumId);
 
-  // Set up tag input
-  const tagInput = document.getElementById("edit-tag-input");
-  const addTagBtn = document.getElementById("edit-add-tag-btn");
+    // Refresh the lists
+    loadMyForums();
+    loadAllForums();
+    loadPlatformStats();
 
-  const addTagHandler = () => {
-    const tagValue = tagInput.value.trim();
-    if (!tagValue) return;
+    showNotification("Reply deleted successfully!", "success");
+  } catch (error) {
+    console.error("Error deleting reply:", error);
+    showNotification("Failed to delete reply", "error");
+  }
+}
 
-    const tagRegex = /^[a-zA-Z\s]+$/;
-    if (!tagRegex.test(tagValue)) {
-      alert("Tags can only contain letters and spaces.");
-      return;
-    }
+async function deleteForum(forumId, replyCount) {
+  let message = "Are you sure you want to delete this forum? This action cannot be undone.";
+  
+  if (replyCount > 0) {
+    message = `This forum has ${replyCount} replies and cannot be fully deleted. It will be archived instead. Do you want to archive this forum?`;
+  }
 
-    if (tagValue.length > 20) {
-      alert("Tags cannot exceed 20 characters.");
-      return;
-    }
+  if (!confirm(message)) return;
 
-    if (currentEditTags.includes(tagValue.toLowerCase())) {
-      alert("This tag already exists.");
-      return;
-    }
+  try {
+    const response = await fetch(`/api/teacher/forums/${forumId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
 
-    currentEditTags.push(tagValue.toLowerCase());
+    if (!response.ok) throw new Error("Failed to delete forum");
+
+    closeForumModal();
+    loadMyForums();
+    loadAllForums();
+    loadPlatformStats();
+
+    showNotification(replyCount > 0 ? "Forum archived successfully!" : "Forum deleted successfully!", "success");
+  } catch (error) {
+    console.error("Error deleting forum:", error);
+    showNotification("Failed to delete forum", "error");
+  }
+}
+
+async function editForum() {
+  try {
+    const response = await fetch(`/api/teacher/forums/${currentForumId}`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    const forum = await response.json();
+
+    // Switch to edit mode
+    document.querySelector(".forum-content").style.display = "none";
+    const forumActions = document.getElementById("forum-actions");
+    if (forumActions) forumActions.style.display = "none";
+    document.getElementById("forum-edit").style.display = "block";
+
+    // Populate edit fields
+    document.getElementById("edit-forum-title").value = forum.title;
+    document.getElementById("edit-forum-description").value = forum.description;
+
+    // Handle tags
+    currentEditTags = [...(forum.tags || [])];
     updateEditTagsDisplay();
-    tagInput.value = "";
-    tagInput.focus();
-  };
-
-  addTagBtn.onclick = addTagHandler;
-  tagInput.onkeypress = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addTagHandler();
-    }
-  };
+  } catch (error) {
+    console.error("Error preparing edit:", error);
+  }
 }
 
 function cancelEdit() {
   // Switch back to display mode
   document.querySelector(".forum-content").style.display = "block";
-  document.getElementById("forum-actions").style.display = "block";
+  const forumActions = document.getElementById("forum-actions");
+  if (forumActions) forumActions.style.display = "block";
   document.getElementById("forum-edit").style.display = "none";
 }
 
-function saveForumEdit() {
+async function saveForumEdit() {
   const title = document.getElementById("edit-forum-title").value.trim();
-  const description = document
-    .getElementById("edit-forum-description")
-    .value.trim();
+  const description = document.getElementById("edit-forum-description").value.trim();
 
-  if (!title) {
-    alert("Please enter a forum title.");
+  if (!title || !description) {
+    alert("Please fill in all fields.");
     return;
   }
 
-  if (!description) {
-    alert("Please enter a forum description.");
-    return;
+  try {
+    const response = await fetch(`/api/teacher/forums/${currentForumId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title,
+        description,
+        tags: [...currentEditTags],
+        published: true,
+      }),
+    });
+
+    if (!response.ok) throw new Error("Failed to update forum");
+
+    // Switch back to display mode and refresh
+    cancelEdit();
+    openForumDetail(currentForumId); 
+    loadMyForums();
+    loadAllForums();
+
+    showNotification("Forum updated successfully!", "success");
+  } catch (error) {
+    console.error("Error updating forum:", error);
+    showNotification("Failed to update forum", "error");
   }
-
-  const forums = getAllForums();
-  const forum = forums.find((f) => f.id === currentForumId);
-  if (!forum) return;
-
-  // Update forum
-  forum.title = title;
-  forum.description = description;
-  forum.tags = [...currentEditTags];
-
-  saveAllForums(forums);
-
-  // Switch back to display mode and refresh
-  cancelEdit();
-  openForumDetail(currentForumId); // Refresh the display
-  loadMyForums();
-  loadAllForums();
-
-  showNotification("Forum updated successfully!", "success");
 }
 
 function updateEditTagsDisplay() {
   const tagsList = document.getElementById("edit-tags-list");
+  if (!tagsList) return;
   tagsList.innerHTML = currentEditTags
     .map(
       (tag) => `
@@ -505,12 +494,49 @@ function removeEditTag(tagToRemove) {
 
 function closeForumModal() {
   const modal = document.getElementById("forum-detail-modal");
-  modal.classList.remove("show");
+  if (modal) modal.classList.remove("show");
   currentForumId = null;
 }
 
 function setupForumInteractions() {
-  // Forum click handlers are handled in loadAllForums
+  const addTagBtn = document.getElementById("edit-add-tag-btn");
+  const tagInput = document.getElementById("edit-tag-input");
+
+  if (addTagBtn && tagInput) {
+    const addTagHandler = () => {
+      const tagValue = tagInput.value.trim();
+      if (!tagValue) return;
+
+      const tagRegex = /^[a-zA-Z\s]+$/;
+      if (!tagRegex.test(tagValue)) {
+        alert("Tags can only contain letters and spaces.");
+        return;
+      }
+
+      if (tagValue.length > 20) {
+        alert("Tags cannot exceed 20 characters.");
+        return;
+      }
+
+      if (currentEditTags.includes(tagValue.toLowerCase())) {
+        alert("This tag already exists.");
+        return;
+      }
+
+      currentEditTags.push(tagValue.toLowerCase());
+      updateEditTagsDisplay();
+      tagInput.value = "";
+      tagInput.focus();
+    };
+
+    addTagBtn.onclick = addTagHandler;
+    tagInput.onkeypress = (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addTagHandler();
+      }
+    };
+  }
 }
 
 // Close modal when clicking outside
@@ -529,6 +555,7 @@ document.addEventListener("keydown", function (e) {
 });
 
 function formatDate(dateString) {
+  if (!dateString) return "Date unknown";
   const date = new Date(dateString);
   return date.toLocaleDateString("en-US", {
     year: "numeric",
@@ -538,7 +565,6 @@ function formatDate(dateString) {
 }
 
 function showNotification(message, type = "info") {
-  // Create a simple notification
   const notification = document.createElement("div");
   notification.className = `notification ${type}`;
   notification.textContent = message;
@@ -555,7 +581,6 @@ function showNotification(message, type = "info") {
         animation: slideIn 0.3s ease;
     `;
 
-  // Adjust color based on type
   if (type === "error") {
     notification.style.background = "rgba(239, 68, 68, 0.9)";
   } else if (type === "success") {
@@ -564,7 +589,6 @@ function showNotification(message, type = "info") {
 
   document.body.appendChild(notification);
 
-  // Remove after 3 seconds
   setTimeout(() => {
     notification.style.animation = "slideOut 0.3s ease";
     setTimeout(() => {

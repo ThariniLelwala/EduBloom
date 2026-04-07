@@ -12,7 +12,9 @@ class NotesService {
     title,
     fileName,
     fileUrl = null,
-    googleDriveFileId = null
+    googleDriveFileId = null,
+    description = null,
+    grade = null
   ) {
     if (!topicId || !subjectId || !teacherId || !title || !fileName) {
       throw new Error(
@@ -42,10 +44,10 @@ class NotesService {
 
     // Add the module note
     const result = await db.query(
-      `INSERT INTO teacher_module_notes (topic_id, title, file_name, file_url, google_drive_file_id, is_public)
-       VALUES ($1, $2, $3, $4, $5, FALSE)
-       RETURNING id, topic_id, title, file_name, file_url, google_drive_file_id, is_public, created_at, updated_at`,
-      [topicId, title, fileName, fileUrl, googleDriveFileId]
+      `INSERT INTO teacher_module_notes (topic_id, title, file_name, file_url, google_drive_file_id, description, grade, is_public)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, FALSE)
+       RETURNING id, topic_id, title, file_name, file_url, google_drive_file_id, description, grade, is_public, created_at, updated_at`,
+      [topicId, title, fileName, fileUrl, googleDriveFileId, description, grade]
     );
 
     return result.rows[0];
@@ -80,7 +82,7 @@ class NotesService {
     }
 
     const result = await db.query(
-      `SELECT id, topic_id, title, file_name, file_url, google_drive_file_id, is_public, created_at, updated_at
+      `SELECT id, topic_id, title, file_name, file_url, google_drive_file_id, description, grade, is_public, created_at, updated_at
        FROM teacher_module_notes
        WHERE topic_id = $1
        ORDER BY created_at DESC`,
@@ -174,7 +176,7 @@ class NotesService {
       `UPDATE teacher_module_notes
        SET is_public = $1, updated_at = NOW()
        WHERE id = $2
-       RETURNING id, topic_id, title, file_name, file_url, google_drive_file_id, is_public, created_at, updated_at`,
+       RETURNING id, topic_id, title, file_name, file_url, google_drive_file_id, description, grade, is_public, created_at, updated_at`,
       [isPublic, noteId]
     );
 
@@ -190,7 +192,7 @@ class NotesService {
     }
 
     const result = await db.query(
-      `SELECT tmn.id, tmn.title, tmn.file_name, tmn.file_url, tmn.google_drive_file_id,
+      `SELECT tmn.id, tmn.title, tmn.file_name, tmn.file_url, tmn.google_drive_file_id, tmn.description, tmn.grade,
               tmt.name as topic_name, tms.name as subject_name, tms.id as subject_id
        FROM teacher_module_notes tmn
        INNER JOIN teacher_module_topics tmt ON tmn.topic_id = tmt.id

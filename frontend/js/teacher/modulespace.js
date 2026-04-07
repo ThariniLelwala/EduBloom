@@ -1,10 +1,8 @@
 /**
  * Teacher Module Space JavaScript
- * Handles subject, topic, and public file management for teachers
+ * Serves as the root dashboard for classes, rendering combined Grade/Subject cards.
  */
 
-let currentSubjectId = null;
-let currentPublicFileContext = null;
 const API_BASE_URL = "http://localhost:3000/api/teacher"; // Backend API base URL
 
 // Get authentication token from localStorage
@@ -15,76 +13,40 @@ function getAuthToken() {
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", function () {
   setupEventListeners();
-  loadSubjects();
+  loadClasses();
 });
 
 /**
  * Setup event listeners for buttons
  */
 function setupEventListeners() {
-  // Setup Create Subject Modal buttons
+  // Setup Create Class Modal buttons
   const saveSubjectBtn = document.getElementById("save-subject-btn");
   const subjectModal = document.getElementById("subject-modal");
-  const subjectInput = document.getElementById("subject-input");
-  const modalTitle = document.getElementById("modal-title");
-  const closeBtn = subjectModal
-    ? subjectModal.querySelector(".modal-close")
-    : null;
+  const closeBtn = subjectModal ? subjectModal.querySelector(".modal-close") : null;
 
   if (saveSubjectBtn) {
-    saveSubjectBtn.addEventListener("click", () =>
-      handleSaveSubject(subjectInput, modalTitle)
-    );
+    saveSubjectBtn.addEventListener("click", () => handleSaveClass());
   }
 
   if (closeBtn) {
-    closeBtn.addEventListener("click", () =>
-      closeCreateSubjectModal(subjectModal)
-    );
+    closeBtn.addEventListener("click", () => closeCreateClassModal());
   }
 
   // Close modal when clicking outside of it
   if (subjectModal) {
     window.addEventListener("click", function (event) {
       if (event.target === subjectModal) {
-        closeCreateSubjectModal(subjectModal);
-      }
-    });
-  }
-
-  // Public file status modal
-  const publicStatusModal = document.getElementById("public-status-modal");
-  const publicCloseBtn = publicStatusModal
-    ? publicStatusModal.querySelector(".modal-close")
-    : null;
-  const publicSaveBtn = document.getElementById("public-save");
-  const publicCancelBtn = document.getElementById("public-cancel");
-
-  if (publicCloseBtn) {
-    publicCloseBtn.addEventListener("click", () => closePublicStatusModal());
-  }
-
-  if (publicCancelBtn) {
-    publicCancelBtn.addEventListener("click", () => closePublicStatusModal());
-  }
-
-  if (publicSaveBtn) {
-    publicSaveBtn.addEventListener("click", () => handleSavePublicStatus());
-  }
-
-  if (publicStatusModal) {
-    window.addEventListener("click", function (event) {
-      if (event.target === publicStatusModal) {
-        closePublicStatusModal();
+        closeCreateClassModal();
       }
     });
   }
 }
 
 /**
- * Load subjects from API and display them
+ * Load classes (subjects) from API and display them
  */
-async function loadSubjects() {
+async function loadClasses() {
   try {
     const authToken = getAuthToken();
     if (!authToken) {
@@ -92,6 +54,7 @@ async function loadSubjects() {
       return;
     }
 
+    // Call /subjects without grade param to fetch all
     const response = await fetch(`${API_BASE_URL}/subjects`, {
       method: "GET",
       headers: {
@@ -101,27 +64,25 @@ async function loadSubjects() {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to load subjects");
+      throw new Error("Failed to load classes");
     }
 
     const result = await response.json();
     const subjects = result.subjects || [];
 
-    displaySubjects(subjects);
+    displayClasses(subjects);
   } catch (error) {
-    console.error("Error loading subjects:", error);
-    showNotification("Failed to load subjects", "error");
+    console.error("Error loading classes:", error);
+    showNotification("Failed to load classes", "error");
   }
 }
 
 /**
- * Display subjects as cards
+ * Display classes as cards
  */
-function displaySubjects(subjects) {
+function displayClasses(subjects) {
   const grid = document.getElementById("subjects-container");
-
   if (!grid) return;
-
   grid.innerHTML = "";
 
   subjects.forEach((subject) => {
@@ -130,12 +91,12 @@ function displaySubjects(subjects) {
     card.innerHTML = `
       <div class="subject-header">
         <i class="fas fa-folder"></i>
-        <span>${subject.name}</span>
+        <span>Grade ${subject.grade} - ${subject.name}</span>
       </div>
       <i class="fas fa-ellipsis-v dots"></i>
       <div class="dropdown">
         <ul>
-          <li class="open">Open Subject</li>
+          <li class="open">Open Class</li>
           <li class="edit">Edit</li>
           <li class="delete">Delete</li>
         </ul>
@@ -155,26 +116,24 @@ function displaySubjects(subjects) {
 
     // Open subject
     dropdown.querySelector(".open").addEventListener("click", () => {
-      window.location.href = `./subject.html?subjectId=${
-        subject.id
-      }&subjectName=${encodeURIComponent(subject.name)}`;
+      window.location.href = `./subject.html?subjectId=${subject.id}&subjectName=${encodeURIComponent(subject.name)}&grade=${subject.grade}`;
       dropdown.style.display = "none";
     });
 
     // Edit subject
     dropdown.querySelector(".edit").addEventListener("click", () => {
-      openEditSubjectModal(subject);
+      openEditClassModal(subject);
       dropdown.style.display = "none";
     });
 
     // Delete subject
     dropdown.querySelector(".delete").addEventListener("click", async () => {
-      const confirmed = await showConfirmation(
-        `Delete "${subject.name}" and all its topics?`,
-        "Delete Subject"
+      const confirmed = await window.showConfirmation(
+        `Delete "Grade ${subject.grade} - ${subject.name}" and all its topics/resources?`,
+        "Delete Class"
       );
       if (confirmed) {
-        deleteSubject(subject.id);
+        deleteClass(subject.id);
       }
       dropdown.style.display = "none";
     });
@@ -182,83 +141,102 @@ function displaySubjects(subjects) {
     // Navigate to subject (click anywhere except dropdown)
     card.addEventListener("click", (e) => {
       if (e.target.closest(".dots") || e.target.closest(".dropdown")) return;
-      window.location.href = `./subject.html?subjectId=${
-        subject.id
-      }&subjectName=${encodeURIComponent(subject.name)}`;
+      window.location.href = `./subject.html?subjectId=${subject.id}&subjectName=${encodeURIComponent(subject.name)}&grade=${subject.grade}`;
     });
   });
 
   // Close dropdowns when clicking outside
   document.addEventListener("click", () => {
-    document
-      .querySelectorAll(".dropdown")
-      .forEach((dd) => (dd.style.display = "none"));
+    document.querySelectorAll(".dropdown").forEach((dd) => (dd.style.display = "none"));
   });
 
-  // Always add the "Add Subject" card at the end
-  const addSubjectCard = document.createElement("div");
-  addSubjectCard.classList.add("subject-card", "add-card");
-  addSubjectCard.onclick = openCreateSubjectModal;
-  addSubjectCard.innerHTML = `
-    <i class="fas fa-plus"></i><span>Add Subject</span>
+  // Always add the "Add Class" card at the end
+  const addClassCard = document.createElement("div");
+  addClassCard.classList.add("subject-card", "add-card");
+  addClassCard.onclick = openCreateClassModal;
+  addClassCard.innerHTML = `
+    <i class="fas fa-plus"></i><span>Create Class</span>
   `;
-  grid.appendChild(addSubjectCard);
+  grid.appendChild(addClassCard);
 }
 
 /**
- * Open create subject modal
+ * Open create class modal
  */
-function openCreateSubjectModal() {
+function openCreateClassModal() {
   const modal = document.getElementById("subject-modal");
-  const input = document.getElementById("subject-input");
+  const gradeInput = document.getElementById("grade-input");
+  const subjectInput = document.getElementById("subject-input");
   const title = document.getElementById("modal-title");
 
-  title.textContent = "Add Subject";
-  input.value = "";
-  delete input.dataset.editId;
+  title.textContent = "Create Class Module";
+  
+  // Reset grade to 5
+  gradeInput.value = "5";
+  gradeInput.disabled = false;
+  if (window.refreshCustomSelects) window.refreshCustomSelects();
+
+  subjectInput.value = "";
+  delete subjectInput.dataset.editId;
 
   modal.classList.add("show");
   modal.style.display = "flex";
 }
 
 /**
- * Open edit subject modal
+ * Open edit class modal
  */
-function openEditSubjectModal(subject) {
+function openEditClassModal(subject) {
   const modal = document.getElementById("subject-modal");
-  const input = document.getElementById("subject-input");
+  const gradeInput = document.getElementById("grade-input");
+  const subjectInput = document.getElementById("subject-input");
   const title = document.getElementById("modal-title");
 
-  title.textContent = "Edit Subject";
-  input.value = subject.name;
-  input.dataset.editId = subject.id;
+  title.textContent = "Edit Class Module";
+  
+  // Set grade
+  gradeInput.value = subject.grade.toString();
+  // Disable grade changing for existing subjects as per existing logic
+  gradeInput.disabled = true;
+  if (window.refreshCustomSelects) window.refreshCustomSelects();
+
+  subjectInput.value = subject.name;
+  subjectInput.dataset.editId = subject.id;
 
   modal.classList.add("show");
   modal.style.display = "flex";
 }
 
 /**
- * Close subject modal
+ * Close class modal
  */
-function closeCreateSubjectModal(modal) {
-  const input = document.getElementById("subject-input");
+function closeCreateClassModal() {
+  const modal = document.getElementById("subject-modal");
+  const gradeInput = document.getElementById("grade-input");
+  const subjectInput = document.getElementById("subject-input");
 
   modal.classList.remove("show");
   modal.style.display = "none";
 
-  input.value = "";
-  delete input.dataset.editId;
+  gradeInput.disabled = false;
+  if (window.refreshCustomSelects) window.refreshCustomSelects();
+
+  subjectInput.value = "";
+  delete subjectInput.dataset.editId;
 }
 
 /**
- * Save subject (create or edit)
+ * Save class (create or edit)
  */
-async function handleSaveSubject(input, title) {
-  const subjectName = input.value.trim();
-  const editId = input.dataset.editId;
+async function handleSaveClass() {
+  const gradeInput = document.getElementById("grade-input");
+  const subjectInput = document.getElementById("subject-input");
+  const subjectName = subjectInput.value.trim();
+  const selectGrade = parseInt(gradeInput.value, 10);
+  const editId = subjectInput.dataset.editId;
 
   if (!subjectName) {
-    showNotification("Please enter a subject name", "error");
+    showNotification("Please enter a class name", "error");
     return;
   }
 
@@ -277,14 +255,15 @@ async function handleSaveSubject(input, title) {
           Authorization: `Bearer ${authToken}`,
           "Content-Type": "application/json",
         },
+        // The backend updateSubject currently only updates name and description
         body: JSON.stringify({ name: subjectName }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update subject");
+        throw new Error("Failed to update class");
       }
 
-      showNotification("Subject updated successfully!", "success");
+      showNotification("Class updated successfully!", "success");
     } else {
       // Create subject
       const response = await fetch(`${API_BASE_URL}/subjects/create`, {
@@ -293,29 +272,28 @@ async function handleSaveSubject(input, title) {
           Authorization: `Bearer ${authToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name: subjectName }),
+        body: JSON.stringify({ name: subjectName, grade: selectGrade }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create subject");
+        throw new Error("Failed to create class");
       }
 
-      showNotification("Subject created successfully!", "success");
+      showNotification("Class created successfully!", "success");
     }
 
-    const modal = document.getElementById("subject-modal");
-    closeCreateSubjectModal(modal);
-    loadSubjects();
+    closeCreateClassModal();
+    loadClasses();
   } catch (error) {
-    console.error("Error saving subject:", error);
-    showNotification(error.message || "Failed to save subject", "error");
+    console.error("Error saving class:", error);
+    showNotification(error.message || "Failed to save class", "error");
   }
 }
 
 /**
- * Delete subject
+ * Delete a class
  */
-async function deleteSubject(subjectId) {
+async function deleteClass(subjectId) {
   try {
     const authToken = getAuthToken();
     if (!authToken) {
@@ -331,78 +309,14 @@ async function deleteSubject(subjectId) {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to delete subject");
+      throw new Error("Failed to delete class");
     }
 
-    showNotification("Subject deleted successfully!", "success");
-    loadSubjects();
+    showNotification("Class deleted successfully!", "success");
+    loadClasses();
   } catch (error) {
-    console.error("Error deleting subject:", error);
-    showNotification("Failed to delete subject", "error");
-  }
-}
-
-/**
- * Open public file status modal
- */
-function openPublicStatusModal(fileId, currentStatus) {
-  currentPublicFileContext = { fileId, currentStatus };
-  const modal = document.getElementById("public-status-modal");
-  const toggle = document.getElementById("file-public-toggle");
-
-  toggle.checked = currentStatus;
-  modal.classList.add("show");
-  modal.style.display = "flex";
-}
-
-/**
- * Close public file status modal
- */
-function closePublicStatusModal() {
-  const modal = document.getElementById("public-status-modal");
-  modal.classList.remove("show");
-  modal.style.display = "none";
-  currentPublicFileContext = null;
-}
-
-/**
- * Handle saving public file status
- */
-async function handleSavePublicStatus() {
-  if (!currentPublicFileContext) return;
-
-  try {
-    const authToken = getAuthToken();
-    if (!authToken) {
-      showNotification("User not authenticated", "error");
-      return;
-    }
-
-    const { fileId } = currentPublicFileContext;
-    const isPublic = document.getElementById("file-public-toggle").checked;
-
-    const response = await fetch(`${API_BASE_URL}/notes/${fileId}/visibility`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ is_public: isPublic }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to update file visibility");
-    }
-
-    showNotification("File visibility updated successfully!", "success");
-    closePublicStatusModal();
-    // Reload current subject data to reflect changes
-    if (currentSubjectId) {
-      window.location.reload();
-    }
-  } catch (error) {
-    console.error("Error updating file visibility:", error);
-    showNotification("Failed to update file visibility", "error");
+    console.error("Error deleting class:", error);
+    showNotification("Failed to delete class", "error");
   }
 }
 

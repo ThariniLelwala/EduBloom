@@ -10,7 +10,14 @@ class NotesController {
   async addModuleNote(req, res) {
     try {
       const data = await parseRequestBody(req);
-      const { title, file_name, file_url, google_drive_file_id } = data;
+      const {
+        title,
+        file_name,
+        file_url,
+        google_drive_file_id,
+        description,
+        grade,
+      } = data;
       const teacherId = req.user.id;
       const pathname = req.url.split("?")[0];
       const parts = pathname.split("/");
@@ -36,7 +43,9 @@ class NotesController {
         title,
         file_name,
         file_url || null,
-        google_drive_file_id || null
+        google_drive_file_id || null,
+        description || null,
+        grade || null
       );
 
       res.writeHead(201, { "Content-Type": "application/json" });

@@ -67,6 +67,31 @@ const initCustomSelects = () => {
         optionsContainer.classList.remove("show");
       }
     });
+
+    // Handle external value changes (sync UI)
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "attributes" && mutation.attributeName === "value") {
+          // This doesn't always trigger for .value changes, so we also listen for 'change'
+        }
+      });
+    });
+    observer.observe(select, { attributes: true });
+
+    select.addEventListener("sync", () => {
+      const selectedOption = select.options[select.selectedIndex];
+      display.textContent = selectedOption ? selectedOption.text : "Select...";
+      optionsContainer.querySelectorAll(".custom-select-option").forEach((optDiv, idx) => {
+        optDiv.classList.toggle("selected", idx === select.selectedIndex);
+      });
+    });
+  });
+};
+
+// Function to manually refresh all custom selects
+window.refreshCustomSelects = () => {
+  document.querySelectorAll("select.custom-select").forEach(select => {
+    select.dispatchEvent(new Event("sync"));
   });
 };
 

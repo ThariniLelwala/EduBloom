@@ -130,10 +130,17 @@ async function initializeDatabase() {
         teacher_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         name VARCHAR(100) NOT NULL,
         description TEXT,
+        grade INT DEFAULT 5,
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
       );
     `);
+
+    try {
+      await db.query(`ALTER TABLE teacher_module_subjects ADD COLUMN grade INT DEFAULT 5;`);
+    } catch (err) {
+      // Column already exists, ignore error
+    }
 
     // Teacher Module Topics table
     await db.query(`
@@ -157,10 +164,24 @@ async function initializeDatabase() {
         file_url VARCHAR(500),
         google_drive_file_id VARCHAR(255),
         is_public BOOLEAN DEFAULT FALSE,
+        description TEXT,
+        grade INT CHECK (grade >= 5 AND grade <= 13),
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
       );
     `);
+
+    try {
+      await db.query(`ALTER TABLE teacher_module_notes ADD COLUMN description TEXT;`);
+    } catch (err) {
+      // Column already exists, ignore error
+    }
+
+    try {
+      await db.query(`ALTER TABLE teacher_module_notes ADD COLUMN grade INT CHECK (grade >= 5 AND grade <= 13);`);
+    } catch (err) {
+      // Column already exists, ignore error
+    }
 
     // Create indexes for better performance
     await db.query(`
@@ -686,6 +707,60 @@ async function initializeDatabase() {
 
     await db.query(`
       CREATE INDEX IF NOT EXISTS idx_student_diary_entries_entry_date ON student_diary_entries(entry_date DESC);
+    `);
+
+    // Forum Posts table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS forum_posts (
+        id SERIAL PRIMARY KEY,
+        author_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        published BOOLEAN DEFAULT TRUE,
+        archived BOOLEAN DEFAULT FALSE,
+        views INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Forum Tags table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS forum_tags (
+        id SERIAL PRIMARY KEY,
+        post_id INT NOT NULL REFERENCES forum_posts(id) ON DELETE CASCADE,
+        tag_name VARCHAR(50) NOT NULL,
+        UNIQUE(post_id, tag_name)
+      );
+    `);
+
+    // Forum Replies table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS forum_replies (
+        id SERIAL PRIMARY KEY,
+        post_id INT NOT NULL REFERENCES forum_posts(id) ON DELETE CASCADE,
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Create indexes for better performance
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_forum_posts_author_id ON forum_posts(author_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_forum_posts_published ON forum_posts(published);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_forum_tags_post_id ON forum_tags(post_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_forum_replies_post_id ON forum_replies(post_id);
     `);
 
     console.log("✅ Database tables and indexes created successfully");

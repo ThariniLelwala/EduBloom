@@ -41,6 +41,7 @@ function loadSubjectFromURL() {
   const params = new URLSearchParams(window.location.search);
   currentSubjectId = params.get("subjectId");
   const subjectName = params.get("subjectName");
+  const grade = params.get("grade");
 
   if (!currentSubjectId) {
     showNotification("Subject not found. Redirecting...", "error");
@@ -48,6 +49,14 @@ function loadSubjectFromURL() {
       window.location.href = "./modulespace.html";
     }, 2000);
     return;
+  }
+
+  // Dynamic back button routing
+  const backBtn = document.getElementById("back-btn");
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      window.location.href = "./modulespace.html";
+    });
   }
 
   // Update page title
@@ -84,7 +93,7 @@ function initializeGoogleAPI() {
 /**
  * Check for previously stored Google Drive connection
  */
-function checkStoredGoogleDriveConnection() {
+async function checkStoredGoogleDriveConnection() {
   const wasConnected = localStorage.getItem("googleDriveConnected") === "true";
   const storedToken = localStorage.getItem("googleDriveAccessToken");
 
@@ -92,6 +101,24 @@ function checkStoredGoogleDriveConnection() {
     isGoogleDriveConnected = true;
     currentAccessToken = storedToken;
     updateModalDriveStatus();
+
+    try {
+      const response = await fetch(
+        "https://www.googleapis.com/drive/v3/about?fields=user",
+        {
+          headers: {
+            Authorization: `Bearer ${storedToken}`,
+          },
+        }
+      );
+
+      if (!response.ok && response.status === 401) {
+        console.warn("Google Drive token expired. User must reconnect.");
+        setGoogleDriveConnected(false);
+      }
+    } catch (error) {
+      console.error("Error verifying Google Drive token:", error);
+    }
   }
 }
 
@@ -151,6 +178,10 @@ function setGoogleDriveConnected(connected) {
   localStorage.setItem("googleDriveConnected", connected);
   if (connected && currentAccessToken) {
     localStorage.setItem("googleDriveAccessToken", currentAccessToken);
+  } else {
+    localStorage.removeItem("googleDriveAccessToken");
+    localStorage.setItem("googleDriveConnected", "false");
+    currentAccessToken = null;
   }
   updateModalDriveStatus();
 }
@@ -297,6 +328,9 @@ async function loadTopics() {
 /**
  * Display topics as cards
  */
+/**
+ * Render all topics in the grid
+ */
 function displayTopics() {
   const container = document.getElementById("topics-container");
   if (!container) return;
@@ -305,34 +339,106 @@ function displayTopics() {
 
   topics.forEach((topic) => {
     const card = document.createElement("div");
-    card.classList.add("subject-card");
+    card.className = "subject-card";
+    
+    // Create card content with dots menu
     card.innerHTML = `
+      <div class="subject-dots" onclick="event.stopPropagation(); toggleTopicMenu(event, ${topic.id})">
+        <i class="fas fa-ellipsis-v"></i>
+      </div>
+      <div class="subject-menu" id="topic-menu-${topic.id}">
+        <div class="menu-item" onclick="event.stopPropagation(); openEditTopicModal(${JSON.stringify(topic).replace(/"/g, '&quot;')})">
+          <i class="fas fa-edit"></i> Edit
+        </div>
+        <div class="menu-item delete" onclick="event.stopPropagation(); handleDeleteTopic(${topic.id})">
+          <i class="fas fa-trash-alt"></i> Delete
+        </div>
+      </div>
       <div class="subject-header">
         <i class="fas fa-bookmark"></i>
         <span>${topic.name}</span>
       </div>
     `;
+    
     card.addEventListener("click", () => openTopicMenuModal(topic));
     container.appendChild(card);
   });
 
   const addTopicCard = document.createElement("div");
-  addTopicCard.classList.add("subject-card", "add-card");
-  addTopicCard.innerHTML = '<i class="fas fa-plus"></i><span>Add Topic</span>';
+  addTopicCard.className = "subject-card add-card";
+  addTopicCard.innerHTML = `
+    <div class="subject-header" style="justify-content: center; width: 100%;">
+      <i class="fas fa-plus"></i>
+      <span>Add Topic</span>
+    </div>
+  `;
   addTopicCard.addEventListener("click", openTopicModal);
   container.appendChild(addTopicCard);
 }
 
 /**
- * Open topic modal
+ * Toggle topic dropdown menu
+ */
+function toggleTopicMenu(event, topicId) {
+  event.stopPropagation();
+  
+  // Close all other menus first
+  document.querySelectorAll(".subject-menu.show").forEach(menu => {
+    if (menu.id !== `topic-menu-${topicId}`) {
+      menu.classList.remove("show");
+    }
+  });
+
+  const menu = document.getElementById(`topic-menu-${topicId}`);
+  if (menu) {
+    menu.classList.toggle("show");
+  }
+
+  // Close menu when clicking outside
+  const closeMenu = (e) => {
+    if (menu && !menu.contains(e.target)) {
+      menu.classList.remove("show");
+      document.removeEventListener("click", closeMenu);
+    }
+  };
+  document.addEventListener("click", closeMenu);
+}
+
+/**
+ * Open topic modal for creating
  */
 function openTopicModal() {
   const modal = document.getElementById("topic-modal");
-  const input = document.getElementById("topic-name");
-  if (modal && input) {
-    input.value = "";
+  const title = document.getElementById("topic-modal-title");
+  const nameInput = document.getElementById("topic-name");
+  
+  if (modal && nameInput) {
+    title.textContent = "Add Topic";
+    nameInput.value = "";
+    delete nameInput.dataset.editId;
     modal.classList.add("show");
     modal.style.display = "flex";
+  }
+}
+
+/**
+ * Open topic modal for editing
+ */
+function openEditTopicModal(topic) {
+  const modal = document.getElementById("topic-modal");
+  const title = document.getElementById("topic-modal-title");
+  const nameInput = document.getElementById("topic-name");
+  
+  if (modal && nameInput) {
+    title.textContent = "Edit Topic";
+    nameInput.value = topic.name;
+    nameInput.dataset.editId = topic.id;
+    modal.classList.add("show");
+    modal.style.display = "flex";
+    
+    // Close the dots menu
+    const menu = document.getElementById(`topic-menu-${topic.id}`);
+    if (menu) menu.classList.remove("show");
   }
 }
 
@@ -341,18 +447,24 @@ function openTopicModal() {
  */
 function closeTopicModal() {
   const modal = document.getElementById("topic-modal");
+  const nameInput = document.getElementById("topic-name");
   if (modal) {
     modal.classList.remove("show");
     modal.style.display = "none";
   }
+  if (nameInput) {
+    nameInput.value = "";
+    delete nameInput.dataset.editId;
+  }
 }
 
 /**
- * Handle save topic
+ * Handle save topic (Create or Update)
  */
 async function handleSaveTopic() {
   const input = document.getElementById("topic-name");
   const topicName = input.value.trim();
+  const editId = input.dataset.editId;
 
   if (!topicName) {
     showNotification("Please enter a topic name", "error");
@@ -366,28 +478,31 @@ async function handleSaveTopic() {
       return;
     }
 
-    const response = await fetch(
-      `${API_BASE_URL}/subjects/${currentSubjectId}/topics/create`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: topicName }),
-      }
-    );
+    const url = editId 
+      ? `${API_BASE_URL}/subjects/${currentSubjectId}/topics/${editId}`
+      : `${API_BASE_URL}/subjects/${currentSubjectId}/topics/create`;
+    
+    const method = editId ? "PUT" : "POST";
+
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name: topicName }),
+    });
 
     if (!response.ok) {
-      throw new Error("Failed to create topic");
+      throw new Error(editId ? "Failed to update topic" : "Failed to create topic");
     }
 
-    showNotification("Topic created successfully!", "success");
+    showNotification(editId ? "Topic updated successfully!" : "Topic created successfully!", "success");
     closeTopicModal();
     loadTopics();
   } catch (error) {
-    console.error("Error creating topic:", error);
-    showNotification("Failed to create topic", "error");
+    console.error("Error saving topic:", error);
+    showNotification(error.message, "error");
   }
 }
 
@@ -413,9 +528,18 @@ function openTopicMenuModal(topic) {
  */
 function closeTopicMenuModal() {
   const modal = document.getElementById("topic-menu-modal");
-  if (modal) {
-    modal.classList.remove("show");
-    modal.style.display = "none";
+  modal.classList.remove("show");
+  modal.style.display = "none";
+  currentTopicId = null;
+
+  // Clear metadata inputs
+  const descInput = document.getElementById("upload-description");
+  const gradeInput = document.getElementById("upload-grade");
+
+  if (descInput) descInput.value = "";
+  if (gradeInput) {
+    gradeInput.value = "";
+    if (window.refreshCustomSelects) window.refreshCustomSelects();
   }
 }
 
@@ -487,38 +611,66 @@ function displayTopicFiles(files) {
       <i class="fas fa-file-pdf"></i>
       <div>
         <p class="file-name">${file.title || file.file_name}</p>
-        <p class="file-size">
+        <p class="file-size" style="margin-bottom: 2px;">
           ${
             file.is_public
               ? '<i class="fas fa-globe" style="margin-right: 4px;"></i>Public'
               : '<i class="fas fa-lock" style="margin-right: 4px;"></i>Private'
           }
+          ${
+            file.grade
+              ? `<span style="margin-left: 8px; color: #a8b2d1;"><i class="fas fa-graduation-cap" style="margin-right: 4px;"></i>Grade ${file.grade}</span>`
+              : ""
+          }
         </p>
+        ${
+          file.description
+            ? `<p style="font-size: 0.8em; color: #8892b0; margin-top: 2px;">${file.description}</p>`
+            : ""
+        }
       </div>
     `;
 
     const fileActions = document.createElement("div");
     fileActions.className = "file-actions";
     fileActions.innerHTML = `
+      <button class="btn-icon open-btn" title="Open File">
+        <i class="fas fa-external-link-alt"></i>
+      </button>
       <button class="btn-icon visibility-btn" data-file-id="${
         file.id
-      }" data-is-public="${file.is_public}">
+      }" data-is-public="${file.is_public}" title="${
+      file.is_public ? "Make Private" : "Make Public"
+    }">
         <i class="fas fa-${file.is_public ? "lock-open" : "lock"}"></i>
       </button>
-      <button class="btn-icon delete-btn" data-file-id="${file.id}">
+      <button class="btn-icon delete-btn" data-file-id="${file.id}" title="Delete File">
         <i class="fas fa-trash"></i>
       </button>
     `;
 
+    const openBtn = fileActions.querySelector(".open-btn");
     const visibilityBtn = fileActions.querySelector(".visibility-btn");
     const deleteBtn = fileActions.querySelector(".delete-btn");
 
+    if (file.file_url) {
+      openBtn.onclick = () => window.open(file.file_url, "_blank");
+    } else {
+      openBtn.disabled = true;
+      openBtn.style.opacity = "0.5";
+      openBtn.title = "No URL available";
+    }
+
     visibilityBtn.addEventListener("click", () => {
-      handleToggleFileVisibility(file.id, !file.is_public);
+      handleToggleFileVisibility(
+        file.id,
+        !file.is_public,
+        file.google_drive_file_id
+      );
     });
 
     deleteBtn.addEventListener("click", () => {
-      handleDeleteFile(file.id);
+      handleDeleteFile(file.id, file.google_drive_file_id);
     });
 
     fileItem.appendChild(fileInfo);
@@ -530,12 +682,75 @@ function displayTopicFiles(files) {
 /**
  * Handle toggle file visibility
  */
-async function handleToggleFileVisibility(fileId, isPublic) {
+async function handleToggleFileVisibility(fileId, isPublic, googleDriveFileId) {
   try {
     const authToken = getAuthToken();
     if (!authToken) {
       showNotification("User not authenticated", "error");
       return;
+    }
+
+    if (googleDriveFileId) {
+      const gDriveToken = getGoogleAccessToken();
+      if (!gDriveToken) {
+        showNotification(
+          "Please connect to Google Drive first to change visibility",
+          "error"
+        );
+        return;
+      }
+
+      showNotification(`Updating Google Drive permissions...`, "info");
+
+      if (isPublic) {
+        const permissionRes = await fetch(
+          `https://www.googleapis.com/drive/v3/files/${googleDriveFileId}/permissions`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${gDriveToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              role: "reader",
+              type: "anyone",
+            }),
+          }
+        );
+        if (!permissionRes.ok) {
+          throw new Error("Failed to update Google Drive permissions");
+        }
+      } else {
+        const permListRes = await fetch(
+          `https://www.googleapis.com/drive/v3/files/${googleDriveFileId}/permissions`,
+          {
+            headers: {
+              Authorization: `Bearer ${gDriveToken}`,
+            },
+          }
+        );
+
+        if (permListRes.ok) {
+          const permData = await permListRes.json();
+          const anyonePerm = permData.permissions?.find(
+            (p) => p.type === "anyone"
+          );
+
+          if (anyonePerm) {
+            await fetch(
+              `https://www.googleapis.com/drive/v3/files/${googleDriveFileId}/permissions/${anyonePerm.id}`,
+              {
+                method: "DELETE",
+                headers: {
+                  Authorization: `Bearer ${gDriveToken}`,
+                },
+              }
+            );
+          }
+        } else {
+          throw new Error("Failed to fetch Google Drive permissions");
+        }
+      }
     }
 
     const response = await fetch(`${API_BASE_URL}/notes/${fileId}/visibility`, {
@@ -563,12 +778,58 @@ async function handleToggleFileVisibility(fileId, isPublic) {
 }
 
 /**
+ * Move a file to Google Drive Trash
+ */
+async function moveFileToTrash(googleFileId) {
+  if (!googleFileId) return false;
+  
+  const accessToken = getGoogleAccessToken();
+  if (!accessToken) {
+    console.warn("No Google Drive access token found. Cannot trash file.");
+    return false;
+  }
+
+  try {
+    const response = await fetch(`https://www.googleapis.com/drive/v3/files/${googleFileId}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ trashed: true }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Google Drive Trash Error:", errorData);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error trashing file on Google Drive:", error);
+    return false;
+  }
+}
+
+/**
+ * Show trash notification
+ */
+function showTrashNotification(isMultiple = false) {
+  const message = isMultiple 
+    ? "All associated files have been moved to Google Drive trash. They will be permanently deleted after 30 days."
+    : "The file has been moved to Google Drive trash. It will be permanently deleted after 30 days.";
+  
+  showNotification(message, "info");
+}
+
+/**
  * Handle delete file
  */
-async function handleDeleteFile(fileId) {
+async function handleDeleteFile(fileId, googleFileId) {
   const confirmed = await showConfirmation(
-    "Are you sure you want to delete this file?",
-    "Delete File"
+    "Are you sure you want to delete this file? This action will move it to your Google Drive trash.",
+    "Move to Trash"
   );
   if (!confirmed) {
     return;
@@ -581,6 +842,13 @@ async function handleDeleteFile(fileId) {
       return;
     }
 
+    // 1. First move to Google Drive trash
+    let trashed = false;
+    if (googleFileId) {
+      trashed = await moveFileToTrash(googleFileId);
+    }
+
+    // 2. Delete from database
     const response = await fetch(
       `${API_BASE_URL}/subjects/${currentSubjectId}/topics/${currentTopicId}/notes/${fileId}`,
       {
@@ -592,10 +860,17 @@ async function handleDeleteFile(fileId) {
     );
 
     if (!response.ok) {
-      throw new Error("Failed to delete file");
+      throw new Error("Failed to delete file record");
     }
 
-    showNotification("File deleted successfully!", "success");
+    if (trashed) {
+      showTrashNotification(false);
+    } else if (googleFileId) {
+      showNotification("File record deleted, but failed to move Google Drive file to trash.", "warning");
+    } else {
+      showNotification("File record deleted successfully.", "success");
+    }
+    
     await loadTopicFiles(currentTopicId);
   } catch (error) {
     console.error("Error deleting file:", error);
@@ -606,9 +881,9 @@ async function handleDeleteFile(fileId) {
 /**
  * Handle delete topic
  */
-async function handleDeleteTopic() {
+async function handleDeleteTopic(topicId) {
   const confirmed = await showConfirmation(
-    "Are you sure you want to delete this topic and all its files?",
+    "Are you sure you want to delete this topic? All associated files will be moved to Google Drive trash.",
     "Delete Topic"
   );
   if (!confirmed) {
@@ -622,8 +897,32 @@ async function handleDeleteTopic() {
       return;
     }
 
+    // 1. Get all notes for this topic to trash them in GD
+    const filesResponse = await fetch(
+      `${API_BASE_URL}/subjects/${currentSubjectId}/topics/${topicId}/notes`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      }
+    );
+
+    let trashCount = 0;
+    if (filesResponse.ok) {
+      const data = await filesResponse.json();
+      const files = data.notes || [];
+      
+      for (const file of files) {
+        if (file.google_drive_file_id) {
+          const success = await moveFileToTrash(file.google_drive_file_id);
+          if (success) trashCount++;
+        }
+      }
+    }
+
+    // 2. Delete topic from database
     const response = await fetch(
-      `${API_BASE_URL}/subjects/${currentSubjectId}/topics/${currentTopicId}`,
+      `${API_BASE_URL}/subjects/${currentSubjectId}/topics/${topicId}`,
       {
         method: "DELETE",
         headers: {
@@ -636,7 +935,12 @@ async function handleDeleteTopic() {
       throw new Error("Failed to delete topic");
     }
 
-    showNotification("Topic deleted successfully!", "success");
+    if (trashCount > 0) {
+      showTrashNotification(true);
+    } else {
+      showNotification("Topic deleted successfully!", "success");
+    }
+    
     closeTopicMenuModal();
     loadTopics();
   } catch (error) {
@@ -724,10 +1028,17 @@ async function handleFiles(files) {
       return;
     }
 
+    const descInput = document.getElementById("upload-description");
+    const gradeInput = document.getElementById("upload-grade");
+    const fileMetadataDetails = {
+      description: descInput ? descInput.value.trim() : null,
+      grade: gradeInput && gradeInput.value ? parseInt(gradeInput.value, 10) : null,
+    };
+
     showUploadIndicator();
 
     for (const file of pdfFiles) {
-      await uploadFileToDriveAndSave(file, authToken);
+      await uploadFileToDriveAndSave(file, authToken, fileMetadataDetails);
     }
 
     showNotification(
@@ -750,7 +1061,7 @@ async function handleFiles(files) {
 /**
  * Upload file to Google Drive and save metadata
  */
-async function uploadFileToDriveAndSave(file, authToken) {
+async function uploadFileToDriveAndSave(file, authToken, fileMetadataDetails) {
   try {
     const driveResponse = await uploadToGoogleDrive(file);
 
@@ -759,6 +1070,8 @@ async function uploadFileToDriveAndSave(file, authToken) {
       file_name: file.name,
       file_url: driveResponse.webViewLink,
       google_drive_file_id: driveResponse.id,
+      description: fileMetadataDetails?.description || null,
+      grade: fileMetadataDetails?.grade || null,
     };
 
     const response = await fetch(
