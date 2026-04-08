@@ -85,7 +85,7 @@ function initializeGoogleAPI() {
 /**
  * Check for previously stored Google Drive connection
  */
-function checkStoredGoogleDriveConnection() {
+async function checkStoredGoogleDriveConnection() {
   const wasConnected = localStorage.getItem("googleDriveConnected") === "true";
   const storedToken = localStorage.getItem("googleDriveAccessToken");
 
@@ -93,6 +93,24 @@ function checkStoredGoogleDriveConnection() {
     isGoogleDriveConnected = true;
     currentAccessToken = storedToken;
     updateModalDriveStatus();
+
+    try {
+      const response = await fetch(
+        "https://www.googleapis.com/drive/v3/about?fields=user",
+        {
+          headers: {
+            Authorization: `Bearer ${storedToken}`,
+          },
+        }
+      );
+
+      if (!response.ok && response.status === 401) {
+        console.warn("Google Drive token expired. User must reconnect.");
+        setGoogleDriveConnected(false);
+      }
+    } catch (error) {
+      console.error("Error verifying Google Drive token:", error);
+    }
   }
 }
 

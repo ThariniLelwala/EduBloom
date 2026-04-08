@@ -10,7 +10,7 @@ class SubjectController {
   async createSubject(req, res) {
     try {
       const data = await parseRequestBody(req);
-      const { name, description } = data;
+      const { name, description, grade } = data;
       const teacherId = req.user.id;
 
       if (!name) {
@@ -22,7 +22,8 @@ class SubjectController {
       const subject = await subjectService.createSubject(
         teacherId,
         name,
-        description || null
+        description || null,
+        grade || 5
       );
 
       res.writeHead(201, { "Content-Type": "application/json" });
@@ -45,7 +46,10 @@ class SubjectController {
   async getSubjects(req, res) {
     try {
       const teacherId = req.user.id;
-      const subjects = await subjectService.getTeacherSubjects(teacherId);
+      const urlParams = new URL(req.url, `http://${req.headers.host}`).searchParams;
+      const grade = urlParams.get("grade") ? parseInt(urlParams.get("grade"), 10) : null;
+      
+      const subjects = await subjectService.getTeacherSubjects(teacherId, grade);
 
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(
@@ -257,6 +261,45 @@ class SubjectController {
 
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
+    } catch (err) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  /**
+   * Update a topic
+   * PUT /api/teacher/subjects/:subjectId/topics/:topicId
+   */
+  async updateTopic(req, res) {
+    try {
+      const data = await parseRequestBody(req);
+      const teacherId = req.user.id;
+      const pathname = req.url.split("?")[0];
+      const parts = pathname.split("/");
+      const subjectId = parseInt(parts[4]);
+      const topicId = parseInt(parts[6]);
+
+      if (!subjectId || isNaN(subjectId) || !topicId || isNaN(topicId)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid subject or topic ID" }));
+        return;
+      }
+
+      const topic = await subjectService.updateTopic(
+        topicId,
+        subjectId,
+        teacherId,
+        data
+      );
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          message: "Topic updated successfully",
+          topic,
+        })
+      );
     } catch (err) {
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));

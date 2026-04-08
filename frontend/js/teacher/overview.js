@@ -1,9 +1,19 @@
 // Teacher Overview Page JavaScript
 
+const authToken = localStorage.getItem("authToken");
+
 document.addEventListener("DOMContentLoaded", function () {
   loadOverviewData();
-  initializeCharts();
 });
+
+function apiGet(url) {
+  return fetch(url, {
+    headers: { Authorization: "Bearer " + authToken },
+  }).then(function (r) {
+    if (!r.ok) throw new Error("Failed: " + r.status);
+    return r.json();
+  });
+}
 
 // Load all overview data
 function loadOverviewData() {
@@ -12,431 +22,331 @@ function loadOverviewData() {
   loadQuizDetails();
   loadTopQuizzes();
   loadRecentActivity();
+  initializeCharts();
 }
 
-// Load quiz statistics
+// Load quiz statistics from backend
 function loadQuizStatistics() {
-  // Load data from quiz.json
-  fetch("../../data/quiz.json")
-    .then((response) => response.json())
-    .then((data) => {
-      let totalQuizzes = 0;
-      let totalQuestions = 0;
+  apiGet("/api/teacher/quiz/subjects")
+    .then(function (subjects) {
+      var totalQuizzes = 0;
+      var totalQuestions = 0;
+      var publishedCount = 0;
 
-      data.subjects.forEach((subject) => {
-        totalQuizzes += subject.quizzes.length;
-        subject.quizzes.forEach((quiz) => {
-          totalQuestions += quiz.questions.length;
-        });
+      subjects.forEach(function (subject) {
+        if (subject.quiz_sets) {
+          totalQuizzes += subject.quiz_sets.length;
+          subject.quiz_sets.forEach(function (quiz) {
+            if (quiz.is_published) publishedCount++;
+            if (quiz.questions) {
+              totalQuestions += quiz.questions.length;
+            }
+          });
+        }
       });
 
-      // Simulate attempts based on quiz count (in a real app, this would come from a database)
-      const totalAttempts =
-        totalQuizzes * (Math.floor(Math.random() * 15) + 10);
-      const averageScore = Math.floor(Math.random() * 15) + 80; // 80-95%
-
-      document.getElementById("total-quiz-attempts").textContent =
-        totalAttempts;
-      document.getElementById("average-score").textContent = averageScore + "%";
-      document.getElementById("published-quizzes").textContent = totalQuizzes;
+      document.getElementById("total-quiz-attempts").textContent = totalQuizzes;
+      document.getElementById("average-score").textContent = totalQuestions;
+      document.getElementById("published-quizzes").textContent = publishedCount;
     })
-    .catch((error) => {
-      console.error("Error loading quiz data:", error);
-      // Fallback to localStorage if quiz.json fails
-      loadQuizStatisticsFromLocalStorage();
+    .catch(function (error) {
+      console.error("Error loading quiz statistics:", error);
+      document.getElementById("total-quiz-attempts").textContent = "0";
+      document.getElementById("average-score").textContent = "0";
+      document.getElementById("published-quizzes").textContent = "0";
     });
 }
 
-// Fallback function for localStorage data
-function loadQuizStatisticsFromLocalStorage() {
-  const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-  if (!teacherSubjects) return;
-
-  const subjects = JSON.parse(teacherSubjects);
-  let totalAttempts = 0;
-  let totalScore = 0;
-  let scoreCount = 0;
-  let publishedCount = 0;
-
-  subjects.forEach((subject) => {
-    subject.quizzes.forEach((quiz) => {
-      if (quiz.published) {
-        publishedCount++;
-        const attempts = Math.floor(Math.random() * 20) + 5;
-        totalAttempts += attempts;
-        const avgScore = Math.floor(Math.random() * 30) + 70;
-        totalScore += avgScore * attempts;
-        scoreCount += attempts;
-      }
-    });
-  });
-
-  document.getElementById("total-quiz-attempts").textContent = totalAttempts;
-  document.getElementById("published-quizzes").textContent = publishedCount;
-
-  if (scoreCount > 0) {
-    const overallAverage = Math.round(totalScore / scoreCount);
-    document.getElementById("average-score").textContent = overallAverage + "%";
-  }
-}
-
-// Load forum statistics
+// Load forum statistics from backend
 function loadForumStatistics() {
-  // Simulate forum data
-  const views = Math.floor(Math.random() * 500) + 200;
-  const posts = Math.floor(Math.random() * 100) + 50;
-  const reports = Math.floor(Math.random() * 10) + 1;
+  apiGet("/api/teacher/forums/my")
+    .then(function (forums) {
+      var totalViews = 0;
+      var totalPosts = forums.length;
+      var totalReplies = 0;
 
-  document.getElementById("forum-views").textContent = views;
-  document.getElementById("forum-posts").textContent = posts;
-  document.getElementById("forum-reports").textContent = reports;
+      forums.forEach(function (forum) {
+        totalViews += forum.views || 0;
+        totalReplies += parseInt(forum.reply_count) || 0;
+      });
+
+      document.getElementById("forum-views").textContent = totalViews;
+      document.getElementById("forum-posts").textContent = totalPosts;
+      document.getElementById("forum-replies").textContent = totalReplies;
+    })
+    .catch(function (error) {
+      console.error("Error loading forum statistics:", error);
+      document.getElementById("forum-views").textContent = "0";
+      document.getElementById("forum-posts").textContent = "0";
+      document.getElementById("forum-replies").textContent = "0";
+    });
 }
 
-// Load quiz details table
+// Load quiz details table from backend
 function loadQuizDetails() {
-  fetch("../../data/quiz.json")
-    .then((response) => response.json())
-    .then((data) => {
-      const tbody = document.getElementById("quiz-details-body");
+  apiGet("/api/teacher/quiz/subjects")
+    .then(function (subjects) {
+      var tbody = document.getElementById("quiz-details-body");
       tbody.innerHTML = "";
 
-      data.subjects.forEach((subject) => {
-        subject.quizzes.forEach((quiz) => {
-          // Simulate attempts and scores for each quiz
-          const attempts = Math.floor(Math.random() * 15) + 3;
-          const avgScore = Math.floor(Math.random() * 25) + 75;
-          const status = "Published"; // All quizzes in quiz.json are considered published/shared
+      subjects.forEach(function (subject) {
+        if (subject.quiz_sets) {
+          subject.quiz_sets.forEach(function (quiz) {
+            var questionCount = quiz.question_count || (quiz.questions ? quiz.questions.length : 0);
+            var status = quiz.is_published ? "Published" : "Draft";
 
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${quiz.name}</td>
-            <td>${attempts}</td>
-            <td>${avgScore}%</td>
-            <td><span class="status-${status.toLowerCase()}">${status}</span></td>
-          `;
-          tbody.appendChild(row);
-        });
+            var row = document.createElement("tr");
+            row.innerHTML =
+              "<td>" + quiz.name + "</td>" +
+              "<td>" + questionCount + "</td>" +
+              '<td><span class="status-' + status.toLowerCase() + '">' + status + "</span></td>";
+            tbody.appendChild(row);
+          });
+        }
       });
-    })
-    .catch((error) => {
-      console.error("Error loading quiz details:", error);
-      // Fallback to localStorage if quiz.json fails
-      loadQuizDetailsFromLocalStorage();
-    });
-}
 
-// Fallback function for localStorage quiz details
-function loadQuizDetailsFromLocalStorage() {
-  const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-  if (!teacherSubjects) return;
-
-  const subjects = JSON.parse(teacherSubjects);
-  const tbody = document.getElementById("quiz-details-body");
-  tbody.innerHTML = "";
-
-  subjects.forEach((subject) => {
-    subject.quizzes.forEach((quiz) => {
-      if (quiz.published) {
-        const attempts = Math.floor(Math.random() * 15) + 3;
-        const avgScore = Math.floor(Math.random() * 25) + 75;
-        const status = quiz.published ? "Published" : "Draft";
-
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${quiz.name}</td>
-          <td>${attempts}</td>
-          <td>${avgScore}%</td>
-          <td><span class="status-${status.toLowerCase()}">${status}</span></td>
-        `;
-        tbody.appendChild(row);
+      if (tbody.children.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:rgba(255,255,255,0.6);">No quizzes created yet</td></tr>';
       }
+    })
+    .catch(function (error) {
+      console.error("Error loading quiz details:", error);
+      var tbody = document.getElementById("quiz-details-body");
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:rgba(255,255,255,0.6);">Failed to load quiz details</td></tr>';
     });
-  });
 }
 
-// Load top performing quizzes
+// Load top performing quizzes from backend
 function loadTopQuizzes() {
-  fetch("../../data/quiz.json")
-    .then((response) => response.json())
-    .then((data) => {
-      const topQuizzesList = document.getElementById("top-quizzes-list");
+  apiGet("/api/teacher/quiz/subjects")
+    .then(function (subjects) {
+      var quizzes = [];
+
+      subjects.forEach(function (subject) {
+        if (subject.quiz_sets) {
+          subject.quiz_sets.forEach(function (quiz) {
+            if (quiz.is_published) {
+              var questionCount = quiz.question_count || (quiz.questions ? quiz.questions.length : 0);
+              quizzes.push({
+                name: quiz.name,
+                questionCount: questionCount,
+                createdAt: quiz.created_at,
+              });
+            }
+          });
+        }
+      });
+
+      quizzes.sort(function (a, b) {
+        return b.questionCount - a.questionCount;
+      });
+      var topQuizzes = quizzes.slice(0, 5);
+
+      var topQuizzesList = document.getElementById("top-quizzes-list");
       topQuizzesList.innerHTML = "";
 
-      const quizzes = [];
-      data.subjects.forEach((subject) => {
-        subject.quizzes.forEach((quiz) => {
-          const attempts = Math.floor(Math.random() * 20) + 5;
-          const avgScore = Math.floor(Math.random() * 25) + 75;
-          quizzes.push({
-            name: quiz.name,
-            attempts: attempts,
-            avgScore: avgScore,
-            score: avgScore, // for sorting
-          });
-        });
-      });
+      if (topQuizzes.length === 0) {
+        topQuizzesList.innerHTML = '<div style="text-align:center;padding:24px;color:rgba(255,255,255,0.6);"><p>No published quizzes yet</p></div>';
+        return;
+      }
 
-      // Sort by average score and take top 5
-      quizzes.sort((a, b) => b.avgScore - a.avgScore);
-      const topQuizzes = quizzes.slice(0, 5);
-
-      topQuizzes.forEach((quiz) => {
-        const quizItem = document.createElement("div");
+      topQuizzes.forEach(function (quiz) {
+        var quizItem = document.createElement("div");
         quizItem.className = "top-quiz-item";
-        quizItem.innerHTML = `
-          <div class="quiz-info">
-            <span class="quiz-name">${quiz.name}</span>
-            <span class="quiz-stats">${quiz.attempts} attempts • ${quiz.avgScore}% avg</span>
-          </div>
-          <div class="quiz-score">${quiz.avgScore}%</div>
-        `;
+        quizItem.innerHTML =
+          '<div class="quiz-info">' +
+            '<span class="quiz-name">' + quiz.name + '</span>' +
+            '<span class="quiz-stats">' + quiz.questionCount + ' questions • ' + formatDate(quiz.createdAt) + '</span>' +
+          '</div>' +
+          '<div class="quiz-score">' + quiz.questionCount + ' Q</div>';
         topQuizzesList.appendChild(quizItem);
       });
     })
-    .catch((error) => {
+    .catch(function (error) {
       console.error("Error loading top quizzes:", error);
-      // Fallback to localStorage if quiz.json fails
-      loadTopQuizzesFromLocalStorage();
+      var topQuizzesList = document.getElementById("top-quizzes-list");
+      topQuizzesList.innerHTML = '<div style="text-align:center;padding:24px;color:rgba(255,255,255,0.6);"><p>Failed to load top quizzes</p></div>';
     });
 }
 
-// Fallback function for localStorage top quizzes
-function loadTopQuizzesFromLocalStorage() {
-  const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-  if (!teacherSubjects) return;
+// Load recent activity from backend
+function loadRecentActivity() {
+  Promise.all([
+    apiGet("/api/teacher/quiz/subjects").catch(function () { return []; }),
+    apiGet("/api/teacher/forums/my").catch(function () { return []; }),
+  ]).then(function (results) {
+    var subjects = results[0];
+    var forums = results[1];
+    var activities = [];
 
-  const subjects = JSON.parse(teacherSubjects);
-  const topQuizzesList = document.getElementById("top-quizzes-list");
-  topQuizzesList.innerHTML = "";
-
-  const quizzes = [];
-  subjects.forEach((subject) => {
-    subject.quizzes.forEach((quiz) => {
-      if (quiz.published) {
-        const attempts = Math.floor(Math.random() * 20) + 5;
-        const avgScore = Math.floor(Math.random() * 25) + 75;
-        quizzes.push({
-          name: quiz.name,
-          attempts: attempts,
-          avgScore: avgScore,
-          score: avgScore, // for sorting
+    var recentQuizzes = [];
+    subjects.forEach(function (subject) {
+      if (subject.quiz_sets) {
+        subject.quiz_sets.forEach(function (quiz) {
+          recentQuizzes.push({ name: quiz.name, created_at: quiz.created_at, is_published: quiz.is_published });
         });
       }
     });
-  });
-
-  // Sort by average score and take top 5
-  quizzes.sort((a, b) => b.avgScore - a.avgScore);
-  const topQuizzes = quizzes.slice(0, 5);
-
-  topQuizzes.forEach((quiz) => {
-    const quizItem = document.createElement("div");
-    quizItem.className = "top-quiz-item";
-    quizItem.innerHTML = `
-      <div class="quiz-info">
-        <span class="quiz-name">${quiz.name}</span>
-        <span class="quiz-stats">${quiz.attempts} attempts • ${quiz.avgScore}% avg</span>
-      </div>
-      <div class="quiz-score">${quiz.avgScore}%</div>
-    `;
-    topQuizzesList.appendChild(quizItem);
-  });
-}
-
-// Load recent activity
-function loadRecentActivity() {
-  const activities = [
-    {
-      icon: "fas fa-question-circle",
-      text: "New quiz attempt on Mathematics",
-      time: "2 hours ago",
-    },
-    {
-      icon: "fas fa-comments",
-      text: "New forum post in Science discussion",
-      time: "4 hours ago",
-    },
-    {
-      icon: "fas fa-star",
-      text: "New review on Physics quiz",
-      time: "1 day ago",
-    },
-    {
-      icon: "fas fa-upload",
-      text: "Published new Chemistry quiz",
-      time: "2 days ago",
-    },
-    { icon: "fas fa-flag", text: "Forum post reported", time: "3 days ago" },
-  ];
-
-  const activityList = document.getElementById("recent-activity");
-  activityList.innerHTML = "";
-
-  activities.forEach((activity) => {
-    const activityItem = document.createElement("div");
-    activityItem.className = "activity-item";
-    activityItem.innerHTML = `
-      <i class="${activity.icon}"></i>
-      <div class="activity-content">
-        <span>${activity.text}</span>
-        <small>${activity.time}</small>
-      </div>
-    `;
-    activityList.appendChild(activityItem);
-  });
-}
-
-// Initialize charts
-function initializeCharts() {
-  // Load quiz data for charts
-  fetch("../../data/quiz.json")
-    .then((response) => response.json())
-    .then((data) => {
-      const quizCount = data.subjects.reduce(
-        (total, subject) => total + subject.quizzes.length,
-        0
-      );
-
-      // Generate realistic chart data based on quiz count
-      const weeklyAttempts = [];
-      for (let i = 0; i < 7; i++) {
-        weeklyAttempts.push(
-          Math.floor(Math.random() * quizCount * 2) + quizCount
-        );
-      }
-
-      // Quiz Engagement Chart
-      const quizCtx = document.getElementById("quizChart").getContext("2d");
-      new Chart(quizCtx, {
-        type: "line",
-        data: {
-          labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-          datasets: [
-            {
-              label: "Quiz Attempts",
-              data: weeklyAttempts,
-              borderColor: "rgba(255, 255, 255, 0.8)",
-              backgroundColor: "rgba(255, 255, 255, 0.1)",
-              tension: 0.4,
-              fill: true,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false,
-            },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: "rgba(255, 255, 255, 0.1)",
-              },
-              ticks: {
-                color: "rgba(255, 255, 255, 0.7)",
-              },
-            },
-            x: {
-              grid: {
-                color: "rgba(255, 255, 255, 0.1)",
-              },
-              ticks: {
-                color: "rgba(255, 255, 255, 0.7)",
-              },
-            },
-          },
-        },
-      });
-
-      // Trends Chart with real quiz data
-      const trendsCtx = document.getElementById("trendsChart").getContext("2d");
-      const weeklyQuizAttempts = [];
-      const weeklyForumPosts = [];
-      for (let i = 0; i < 4; i++) {
-        weeklyQuizAttempts.push(
-          Math.floor(Math.random() * quizCount * 4) + quizCount * 2
-        );
-        weeklyForumPosts.push(Math.floor(Math.random() * 50) + 20);
-      }
-
-      new Chart(trendsCtx, {
-        type: "line",
-        data: {
-          labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-          datasets: [
-            {
-              label: "Quiz Attempts",
-              data: weeklyQuizAttempts,
-              borderColor: "rgba(255, 255, 255, 0.8)",
-              backgroundColor: "rgba(255, 255, 255, 0.1)",
-              tension: 0.4,
-            },
-            {
-              label: "Forum Posts",
-              data: weeklyForumPosts,
-              borderColor: "rgba(255, 255, 255, 0.5)",
-              backgroundColor: "rgba(255, 255, 255, 0.05)",
-              tension: 0.4,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: "top",
-              labels: {
-                color: "rgba(255, 255, 255, 0.7)",
-              },
-            },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: "rgba(255, 255, 255, 0.1)",
-              },
-              ticks: {
-                color: "rgba(255, 255, 255, 0.7)",
-              },
-            },
-            x: {
-              grid: {
-                color: "rgba(255, 255, 255, 0.1)",
-              },
-              ticks: {
-                color: "rgba(255, 255, 255, 0.7)",
-              },
-            },
-          },
-        },
-      });
-    })
-    .catch((error) => {
-      console.error("Error loading chart data:", error);
-      // Fallback to hardcoded chart data
-      initializeChartsFallback();
+    recentQuizzes.sort(function (a, b) {
+      return new Date(b.created_at) - new Date(a.created_at);
     });
 
-  // Forum Engagement Chart
-  const forumCtx = document.getElementById("forumChart").getContext("2d");
-  new Chart(forumCtx, {
-    type: "bar",
-    data: {
-      labels: ["Views", "Posts", "Reports"],
-      datasets: [
-        {
+    var recentForums = forums.slice(0, 3);
+
+    recentQuizzes.slice(0, 2).forEach(function (quiz) {
+      activities.push({
+        icon: quiz.is_published ? "fas fa-upload" : "fas fa-edit",
+        text: (quiz.is_published ? "Published quiz: " : "Draft quiz: ") + quiz.name,
+        time: formatDate(quiz.created_at),
+      });
+    });
+
+    recentForums.forEach(function (forum) {
+      activities.push({
+        icon: "fas fa-comments",
+        text: "New forum: " + forum.title,
+        time: formatDate(forum.created_at),
+      });
+    });
+
+    activities.sort(function (a, b) {
+      return new Date(b.time || 0) - new Date(a.time || 0);
+    });
+
+    if (activities.length === 0) {
+      activities.push({
+        icon: "fas fa-info-circle",
+        text: "No recent activity",
+        time: "",
+      });
+    }
+
+    var activityList = document.getElementById("recent-activity");
+    activityList.innerHTML = "";
+
+    activities.forEach(function (activity) {
+      var activityItem = document.createElement("div");
+      activityItem.className = "activity-item";
+      activityItem.innerHTML =
+        '<i class="' + activity.icon + '"></i>' +
+        '<div class="activity-content">' +
+          '<span>' + activity.text + '</span>' +
+          (activity.time ? '<small>' + activity.time + '</small>' : '') +
+        '</div>';
+      activityList.appendChild(activityItem);
+    });
+  });
+}
+
+function formatDate(dateString) {
+  if (!dateString) return "";
+  var date = new Date(dateString);
+  var now = new Date();
+  var diffDays = Math.floor(Math.abs(now - date) / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return diffDays + " days ago";
+  return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+}
+
+// Initialize charts with real data
+function initializeCharts() {
+  var quizDataPromise = apiGet("/api/teacher/quiz/subjects").catch(function () { return []; });
+  var forumDataPromise = apiGet("/api/teacher/forums/my").catch(function () { return []; });
+
+  Promise.all([quizDataPromise, forumDataPromise]).then(function (results) {
+    var subjects = results[0];
+    var forums = results[1];
+
+    var totalQuizzes = 0;
+    var totalQuestions = 0;
+    var quizzesByWeek = {};
+    var forumsByWeek = {};
+
+    subjects.forEach(function (subject) {
+      if (subject.quiz_sets) {
+        totalQuizzes += subject.quiz_sets.length;
+        subject.quiz_sets.forEach(function (quiz) {
+          if (quiz.questions) totalQuestions += quiz.questions.length;
+          var weekKey = getWeekKey(quiz.created_at);
+          quizzesByWeek[weekKey] = (quizzesByWeek[weekKey] || 0) + 1;
+        });
+      }
+    });
+
+    forums.forEach(function (forum) {
+      var weekKey = getWeekKey(forum.created_at);
+      forumsByWeek[weekKey] = (forumsByWeek[weekKey] || 0) + 1;
+    });
+
+    var last4Weeks = getLast4Weeks();
+    var weeklyQuizData = last4Weeks.map(function (wk) {
+      return quizzesByWeek[wk] || 0;
+    });
+    var weeklyForumData = last4Weeks.map(function (wk) {
+      return forumsByWeek[wk] || 0;
+    });
+
+    var trendsCtx = document.getElementById("trendsChart").getContext("2d");
+    new Chart(trendsCtx, {
+      type: "line",
+      data: {
+        labels: last4Weeks,
+        datasets: [
+          {
+            label: "Quizzes Created",
+            data: weeklyQuizData,
+            borderColor: "rgba(255, 255, 255, 0.8)",
+            backgroundColor: "rgba(255, 255, 255, 0.1)",
+            tension: 0.4,
+          },
+          {
+            label: "Forums Created",
+            data: weeklyForumData,
+            borderColor: "rgba(255, 255, 255, 0.5)",
+            backgroundColor: "rgba(255, 255, 255, 0.05)",
+            tension: 0.4,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "top",
+            labels: { color: "rgba(255, 255, 255, 0.7)" },
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: "rgba(255, 255, 255, 0.1)" },
+            ticks: { color: "rgba(255, 255, 255, 0.7)", stepSize: 1 },
+          },
+          x: {
+            grid: { color: "rgba(255, 255, 255, 0.1)" },
+            ticks: { color: "rgba(255, 255, 255, 0.7)" },
+          },
+        },
+      },
+    });
+
+    var totalViews = 0;
+    var totalReplies = 0;
+    forums.forEach(function (forum) {
+      totalViews += forum.views || 0;
+      totalReplies += parseInt(forum.reply_count) || 0;
+    });
+
+    var forumCtx = document.getElementById("forumChart").getContext("2d");
+    new Chart(forumCtx, {
+      type: "bar",
+      data: {
+        labels: ["Views", "Posts", "Replies"],
+        datasets: [{
           label: "Forum Activity",
-          data: [
-            parseInt(document.getElementById("forum-views").textContent),
-            parseInt(document.getElementById("forum-posts").textContent),
-            parseInt(document.getElementById("forum-reports").textContent),
-          ],
+          data: [totalViews, forums.length, totalReplies],
           backgroundColor: [
             "rgba(255, 255, 255, 0.8)",
             "rgba(255, 255, 255, 0.5)",
@@ -444,142 +354,73 @@ function initializeCharts() {
           ],
           borderColor: ["#ffffff", "#cccccc", "#999999"],
           borderWidth: 1,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false,
-        },
+        }],
       },
-      scales: {
-        y: {
-          beginAtZero: true,
-          grid: {
-            color: "rgba(255, 255, 255, 0.1)",
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: "rgba(255, 255, 255, 0.1)" },
+            ticks: { color: "rgba(255, 255, 255, 0.7)", stepSize: 1 },
           },
-          ticks: {
-            color: "rgba(255, 255, 255, 0.7)",
-          },
-        },
-        x: {
-          grid: {
-            color: "rgba(255, 255, 255, 0.1)",
-          },
-          ticks: {
-            color: "rgba(255, 255, 255, 0.7)",
+          x: {
+            grid: { color: "rgba(255, 255, 255, 0.1)" },
+            ticks: { color: "rgba(255, 255, 255, 0.7)" },
           },
         },
       },
-    },
+    });
+
+    var ctx = document.getElementById("quizChart").getContext("2d");
+    new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: ["Total Quizzes", "Total Questions"],
+        datasets: [{
+          data: [totalQuizzes, totalQuestions],
+          backgroundColor: [
+            "rgba(255, 255, 255, 0.8)",
+            "rgba(255, 255, 255, 0.4)",
+          ],
+          borderColor: ["#ffffff", "#cccccc"],
+          borderWidth: 1,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: { color: "rgba(255, 255, 255, 0.7)" },
+          },
+        },
+      },
+    });
   });
 }
 
-// Fallback chart initialization with hardcoded data
-function initializeChartsFallback() {
-  // Quiz Engagement Chart
-  const quizCtx = document.getElementById("quizChart").getContext("2d");
-  new Chart(quizCtx, {
-    type: "line",
-    data: {
-      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-      datasets: [
-        {
-          label: "Quiz Attempts",
-          data: [12, 19, 15, 25, 22, 18, 14],
-          borderColor: "rgba(255, 255, 255, 0.8)",
-          backgroundColor: "rgba(255, 255, 255, 0.1)",
-          tension: 0.4,
-          fill: true,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false,
-        },
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          grid: {
-            color: "rgba(255, 255, 255, 0.1)",
-          },
-          ticks: {
-            color: "rgba(255, 255, 255, 0.7)",
-          },
-        },
-        x: {
-          grid: {
-            color: "rgba(255, 255, 255, 0.1)",
-          },
-          ticks: {
-            color: "rgba(255, 255, 255, 0.7)",
-          },
-        },
-      },
-    },
-  });
+function getWeekKey(dateString) {
+  var d = new Date(dateString);
+  var year = d.getFullYear();
+  var oneJan = new Date(year, 0, 1);
+  var weekNum = Math.ceil(((d - oneJan) / 86400000 + oneJan.getDay() + 1) / 7);
+  return year + "-W" + String(weekNum).padStart(2, "0");
+}
 
-  // Trends Chart
-  const trendsCtx = document.getElementById("trendsChart").getContext("2d");
-  new Chart(trendsCtx, {
-    type: "line",
-    data: {
-      labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-      datasets: [
-        {
-          label: "Quiz Attempts",
-          data: [45, 59, 80, 81],
-          borderColor: "rgba(255, 255, 255, 0.8)",
-          backgroundColor: "rgba(255, 255, 255, 0.1)",
-          tension: 0.4,
-        },
-        {
-          label: "Forum Posts",
-          data: [28, 48, 40, 19],
-          borderColor: "rgba(255, 255, 255, 0.5)",
-          backgroundColor: "rgba(255, 255, 255, 0.05)",
-          tension: 0.4,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: "top",
-          labels: {
-            color: "rgba(255, 255, 255, 0.7)",
-          },
-        },
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          grid: {
-            color: "rgba(255, 255, 255, 0.1)",
-          },
-          ticks: {
-            color: "rgba(255, 255, 255, 0.7)",
-          },
-        },
-        x: {
-          grid: {
-            color: "rgba(255, 255, 255, 0.1)",
-          },
-          ticks: {
-            color: "rgba(255, 255, 255, 0.7)",
-          },
-        },
-      },
-    },
-  });
+function getLast4Weeks() {
+  var now = new Date();
+  var weeks = [];
+  for (var i = 3; i >= 0; i--) {
+    var d = new Date(now);
+    d.setDate(d.getDate() - (i * 7));
+    var year = d.getFullYear();
+    var oneJan = new Date(year, 0, 1);
+    var weekNum = Math.ceil(((d - oneJan) / 86400000 + oneJan.getDay() + 1) / 7);
+    weeks.push("W" + String(weekNum).padStart(2, "0"));
+  }
+  return weeks;
 }

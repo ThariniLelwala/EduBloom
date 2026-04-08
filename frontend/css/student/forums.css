@@ -595,11 +595,14 @@
 /* Forum Actions */
 .forum-actions {
   margin: 16px 0;
-  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .forum-actions button {
-  margin-left: 8px;
+  width: auto !important;
+  margin-left: 0;
 }
 
 /* Scrollable Modal */
@@ -647,13 +650,18 @@
 
 /* Topic Status */
 .topic-category.published {
-  color: var(--color-white);
-  font-weight: 500;
+  background: rgba(46, 213, 115, 0.2);
+  color: #2ed573;
 }
 
 .topic-category.draft {
-  color: var(--color-white);
-  font-weight: 500;
+  background: rgba(255, 165, 2, 0.2);
+  color: #ffa502;
+}
+
+.topic-category.archived {
+  background: rgba(164, 176, 190, 0.2);
+  color: #a4b0be;
 }
 
 /* Search Bar */
@@ -706,3 +714,32 @@
   border-color: rgba(255, 255, 255, 0.4);
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
 }
+
+/* Forum Create Modal */
+#forum-modal .modal-content {
+  width: 550px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+#forum-modal .modal-body {
+  gap: 14px;
+}
+
+#forum-modal .grade-select-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#forum-modal .grade-select-section label {
+  color: var(--color-white);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+#forum-modal .publish-toggle {
+  margin-top: 4px;
+}
+

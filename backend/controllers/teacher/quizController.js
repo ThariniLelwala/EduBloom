@@ -1,7 +1,6 @@
 // controllers/teacher/quizController.js
 const quizService = require("../../services/teacher/quizService");
 const { parseRequestBody } = require("../../middleware/authMiddleware");
-const authService = require("../../services/authService");
 
 class QuizController {
   /**
@@ -20,6 +19,7 @@ class QuizController {
       res.writeHead(201, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {
+      console.error("[QuizController] createSubject error:", err.message);
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }
@@ -36,6 +36,7 @@ class QuizController {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {
+      console.error("[QuizController] getSubjects error:", err.message);
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }
@@ -53,6 +54,7 @@ class QuizController {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {
+      console.error("[QuizController] getSubject error:", err.message);
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }
@@ -75,6 +77,7 @@ class QuizController {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {
+      console.error("[QuizController] updateSubject error:", err.message);
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }
@@ -95,6 +98,7 @@ class QuizController {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {
+      console.error("[QuizController] deleteSubject error:", err.message);
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }
@@ -118,6 +122,7 @@ class QuizController {
       res.writeHead(201, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {
+      console.error("[QuizController] createQuizSet error:", err.message);
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }
@@ -135,6 +140,7 @@ class QuizController {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {
+      console.error("[QuizController] getQuizSets error:", err.message);
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }
@@ -152,6 +158,7 @@ class QuizController {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {
+      console.error("[QuizController] getQuizSet error:", err.message);
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }
@@ -170,6 +177,7 @@ class QuizController {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {
+      console.error("[QuizController] updateQuizSet error:", err.message);
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }
@@ -187,6 +195,7 @@ class QuizController {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {
+      console.error("[QuizController] deleteQuizSet error:", err.message);
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }
@@ -209,6 +218,7 @@ class QuizController {
       res.writeHead(201, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {
+      console.error("[QuizController] createQuestion error:", err.message);
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }
@@ -226,6 +236,7 @@ class QuizController {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {
+      console.error("[QuizController] getQuestions error:", err.message);
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }
@@ -243,6 +254,7 @@ class QuizController {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {
+      console.error("[QuizController] getQuestion error:", err.message);
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }
@@ -261,6 +273,7 @@ class QuizController {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {
+      console.error("[QuizController] updateQuestion error:", err.message);
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }
@@ -278,6 +291,7 @@ class QuizController {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {
+      console.error("[QuizController] deleteQuestion error:", err.message);
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }
@@ -299,6 +313,7 @@ class QuizController {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {
+      console.error("[QuizController] reorderQuestions error:", err.message);
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }

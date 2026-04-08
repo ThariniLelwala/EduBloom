@@ -96,11 +96,37 @@
   background: rgba(255, 255, 255, 0.1) !important;
 }
 
+.task-item.completed {
+  opacity: 0.6 !important;
+}
+
 .task-item.completed label {
   color: rgba(255, 255, 255, 0.55) !important;
   text-decoration: line-through !important;
   text-decoration-thickness: 2px !important;
   text-decoration-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Event Tile specific completed state */
+.event-tile.completed {
+  opacity: 0.6 !important;
+}
+
+.event-tile.completed .event-title {
+  color: rgba(255, 255, 255, 0.55) !important;
+  text-decoration: line-through !important;
+  text-decoration-thickness: 2px !important;
+  text-decoration-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.event-tile.completed .event-date {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.event-tile {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
 }
 
 /* Responsive adjustments */

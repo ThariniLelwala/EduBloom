@@ -241,19 +241,24 @@ function openEditModal(id) {
 function showMessage(msg, type) {
   const messageDiv = document.createElement("div");
   messageDiv.textContent = msg;
-  messageDiv.style.padding = "10px 15px";
-  messageDiv.style.marginTop = "10px";
-  messageDiv.style.borderRadius = "4px";
-  messageDiv.style.color = type === "error" ? "#d32f2f" : "#388e3c";
-  messageDiv.style.backgroundColor = type === "error" ? "#ffebee" : "#e8f5e9";
-  messageDiv.style.border =
-    type === "error" ? "1px solid #d32f2f" : "1px solid #388e3c";
+  messageDiv.style.position = "fixed";
+  messageDiv.style.top = "20px";
+  messageDiv.style.left = "50%";
+  messageDiv.style.transform = "translateX(-50%)";
+  messageDiv.style.padding = "12px 20px";
+  messageDiv.style.borderRadius = "8px";
+  messageDiv.style.fontWeight = "600";
+  messageDiv.style.fontSize = "14px";
+  messageDiv.style.zIndex = "10000";
+  messageDiv.style.color = type === "error" ? "#fff" : "#fff";
+  messageDiv.style.backgroundColor = type === "error" ? "rgba(239,68,68,0.95)" : "rgba(34,197,94,0.95)";
+  messageDiv.style.boxShadow = "0 4px 20px rgba(0,0,0,0.3)";
 
   const existingMessage = document.querySelector("[data-message]");
   if (existingMessage) existingMessage.remove();
 
   messageDiv.setAttribute("data-message", "true");
-  container.parentElement.insertBefore(messageDiv, container);
+  document.body.appendChild(messageDiv);
 
   setTimeout(() => messageDiv.remove(), 3000);
 }

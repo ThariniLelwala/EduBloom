@@ -15,21 +15,16 @@ function updateWelcomeMessage() {
   }
 }
 
-// Task management functions (similar to student dashboard)
+// Task management functions (connected to backend)
 let currentType = "todo";
-let editContext = { type: null, index: null };
-let deleteContext = { type: null, index: null };
+let editContext = { type: null, id: null };
+let deleteContext = { type: null, id: null };
+let allTodos = []; // Store fetched todos
 
 async function loadDashboardTasks() {
   try {
-    // For now, use localStorage or default tasks
-    let tasks = JSON.parse(localStorage.getItem("teacherTasks")) || {
-      todo: [
-        { task: "Create a new quiz for Mathematics", done: false },
-        { task: "Upload study notes for Science", done: true },
-      ],
-    };
-    localStorage.setItem("teacherTasks", JSON.stringify(tasks));
+    const result = await window.teacherTodoApi.getTodos();
+    allTodos = result.todos || [];
     renderDashboardTasks();
     bindDashboardEvents();
   } catch (err) {
@@ -38,7 +33,8 @@ async function loadDashboardTasks() {
 }
 
 function renderDashboardTasks() {
-  const tasks = JSON.parse(localStorage.getItem("teacherTasks"))?.todo || [];
+  // Only show 'todo' type on the dashboard task list
+  const tasks = allTodos.filter((t) => t.type === "todo");
   const list = document.getElementById("dashboard-tasks-list");
   if (!list) return;
 
@@ -49,25 +45,32 @@ function renderDashboardTasks() {
     return;
   }
 
-  tasks.forEach((task, index) => {
+  tasks.forEach((task) => {
     const li = document.createElement("li");
     li.className = "task-item";
-    if (task.done) li.classList.add("completed");
+    if (task.completed) li.classList.add("completed");
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.className = "task-checkbox";
-    checkbox.id = `dash-task-${index}`;
-    checkbox.checked = !!task.done;
+    checkbox.id = `dash-task-${task.id}`;
+    checkbox.checked = !!task.completed;
 
     const label = document.createElement("label");
     label.htmlFor = checkbox.id;
-    label.textContent = task.task;
+    label.textContent = task.text;
 
-    checkbox.addEventListener("change", () => {
-      task.done = checkbox.checked;
-      li.classList.toggle("completed", checkbox.checked);
-      saveTasks();
+    checkbox.addEventListener("change", async () => {
+      try {
+        await window.teacherTodoApi.updateTodo(task.id, {
+          completed: checkbox.checked,
+        });
+        task.completed = checkbox.checked;
+        li.classList.toggle("completed", checkbox.checked);
+      } catch (err) {
+        console.error("Error updating task status:", err);
+        checkbox.checked = !checkbox.checked; // Revert
+      }
     });
 
     const actions = document.createElement("div");
@@ -76,12 +79,12 @@ function renderDashboardTasks() {
     const editBtn = document.createElement("i");
     editBtn.className = "fa fa-pencil";
     editBtn.title = "Edit";
-    editBtn.addEventListener("click", () => openEditModal("todo", index));
+    editBtn.addEventListener("click", () => openEditModal("todo", task.id));
 
     const deleteBtn = document.createElement("i");
     deleteBtn.className = "fa fa-trash";
     deleteBtn.title = "Delete";
-    deleteBtn.addEventListener("click", () => openDeleteModal("todo", index));
+    deleteBtn.addEventListener("click", () => openDeleteModal("todo", task.id));
 
     actions.appendChild(editBtn);
     actions.appendChild(deleteBtn);
@@ -91,11 +94,6 @@ function renderDashboardTasks() {
     li.appendChild(actions);
     list.appendChild(li);
   });
-}
-
-function saveTasks() {
-  const tasks = JSON.parse(localStorage.getItem("teacherTasks"));
-  localStorage.setItem("teacherTasks", JSON.stringify(tasks));
 }
 
 function bindDashboardEvents() {
@@ -126,161 +124,151 @@ function bindDashboardEvents() {
 
   const addBtn = document.getElementById("dashboard-add-btn");
   if (addBtn) {
-    addBtn.addEventListener("click", () => {
-      currentType = "todo";
-      modalTitle.textContent = "Add Task";
-      modalInput.value = "";
-      openModal(modal);
-      modalInput.focus();
-    });
+    // Check if listener already exists to avoid duplicates
+    if (!addBtn.dataset.listener) {
+      addBtn.addEventListener("click", () => {
+        currentType = "todo";
+        modalTitle.textContent = "Add Task";
+        modalInput.value = "";
+        openModal(modal);
+        modalInput.focus();
+      });
+      addBtn.dataset.listener = "true";
+    }
   }
 
-  [modalClose, modalCancel].forEach((btn) =>
-    btn?.addEventListener("click", () => closeModal(modal))
-  );
-
-  modalSave.addEventListener("click", () => {
-    const text = modalInput.value.trim();
-    if (!text) return;
-
-    let tasks = JSON.parse(localStorage.getItem("teacherTasks")) || {
-      todo: [],
-    };
-    tasks.todo.push({ task: text, done: false });
-    localStorage.setItem("teacherTasks", JSON.stringify(tasks));
-
-    renderDashboardTasks();
-    closeModal(modal);
+  [modalClose, modalCancel].forEach((btn) => {
+    if (btn && !btn.dataset.listener) {
+      btn.addEventListener("click", () => closeModal(modal));
+      btn.dataset.listener = "true";
+    }
   });
 
-  [editCancel, editClose].forEach((btn) =>
-    btn?.addEventListener("click", () => closeModal(editModal))
-  );
+  if (modalSave && !modalSave.dataset.listener) {
+    modalSave.addEventListener("click", async () => {
+      const text = modalInput.value.trim();
+      if (!text) return;
 
-  editSave.addEventListener("click", () => {
-    if (!editContext) return;
+      try {
+        await window.teacherTodoApi.createTodo("todo", text);
+        await loadDashboardTasks(); // Refresh list
+        closeModal(modal);
+      } catch (err) {
+        console.error("Error saving task:", err);
+      }
+    });
+    modalSave.dataset.listener = "true";
+  }
 
-    const { type, index } = editContext;
-    const tasks = JSON.parse(localStorage.getItem("teacherTasks"));
-    const newText = editInput.value.trim();
-    if (!newText) return;
-
-    tasks[type][index].task = newText;
-    localStorage.setItem("teacherTasks", JSON.stringify(tasks));
-
-    renderDashboardTasks();
-    closeModal(editModal);
-    editContext = { type: null, index: null };
+  [editCancel, editClose].forEach((btn) => {
+    if (btn && !btn.dataset.listener) {
+      btn.addEventListener("click", () => closeModal(editModal));
+      btn.dataset.listener = "true";
+    }
   });
 
-  [deleteCancel, deleteClose].forEach((btn) =>
-    btn?.addEventListener("click", () => closeModal(deleteModal))
-  );
+  if (editSave && !editSave.dataset.listener) {
+    editSave.addEventListener("click", async () => {
+      if (!editContext.id) return;
 
-  deleteConfirm.addEventListener("click", () => {
-    const { type, index } = deleteContext;
-    const tasks = JSON.parse(localStorage.getItem("teacherTasks"));
-    tasks[type].splice(index, 1);
-    localStorage.setItem("teacherTasks", JSON.stringify(tasks));
-    renderDashboardTasks();
-    closeModal(deleteModal);
+      const newText = editInput.value.trim();
+      if (!newText) return;
+
+      try {
+        await window.teacherTodoApi.updateTodo(editContext.id, {
+          text: newText,
+        });
+        await loadDashboardTasks();
+        closeModal(editModal);
+        editContext = { type: null, id: null };
+      } catch (err) {
+        console.error("Error updating task:", err);
+      }
+    });
+    editSave.dataset.listener = "true";
+  }
+
+  [deleteCancel, deleteClose].forEach((btn) => {
+    if (btn && !btn.dataset.listener) {
+      btn.addEventListener("click", () => closeModal(deleteModal));
+      btn.dataset.listener = "true";
+    }
   });
+
+  if (deleteConfirm && !deleteConfirm.dataset.listener) {
+    deleteConfirm.addEventListener("click", async () => {
+      if (!deleteContext.id) return;
+      try {
+        await window.teacherTodoApi.deleteTodo(deleteContext.id);
+        await loadDashboardTasks();
+        closeModal(deleteModal);
+        deleteContext = { type: null, id: null };
+      } catch (err) {
+        console.error("Error deleting task:", err);
+      }
+    });
+    deleteConfirm.dataset.listener = "true";
+  }
 }
 
-function openEditModal(type, index) {
+function openEditModal(type, id) {
   const editModal = document.getElementById("edit-modal");
   const editInput = document.getElementById("edit-input");
-  editContext = { type, index };
+  editContext = { type, id };
 
-  const tasks = JSON.parse(localStorage.getItem("teacherTasks"));
-  editInput.value = tasks[type][index].task;
-  // Set title for tasks
+  const task = allTodos.find((t) => t.id === id);
+  if (task) {
+    editInput.value = task.text;
+  }
+
   document.querySelector("#edit-modal .modal-header h2").textContent =
     "Edit Task";
   editModal.classList.add("show");
 }
 
-function openDeleteModal(type, index) {
-  deleteContext = { type, index };
+function openDeleteModal(type, id) {
+  deleteContext = { type, id };
   const deleteModal = document.getElementById("delete-modal");
   deleteModal.classList.add("show");
 }
 
 // Load overview statistics
 function loadOverviewStats() {
-  // Quiz attempts - count from student quiz results
-  const quizAttempts = getQuizAttemptsCount();
-  document.getElementById("quiz-attempts").textContent = quizAttempts;
+  const authToken = localStorage.getItem("authToken");
 
-  // Forum posts - count from forum data
-  const forumPosts = getForumPostsCount();
-  document.getElementById("forum-posts").textContent = forumPosts;
-
-  // Reviews - count from review data
-  const reviewsCount = getReviewsCount();
-  document.getElementById("reviews-count").textContent = reviewsCount;
-}
-
-// Get quiz attempts count (students who took published teacher quizzes)
-function getQuizAttemptsCount() {
-  // For now, simulate data - in real app this would come from backend
-  // Count how many students have taken published quizzes
-  const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-  if (!teacherSubjects) return 0;
-
-  const subjects = JSON.parse(teacherSubjects);
-  let totalAttempts = 0;
-
-  // Simulate student attempts based on published quizzes
-  subjects.forEach((subject) => {
-    subject.quizzes.forEach((quiz) => {
-      if (quiz.published && quiz.questions && quiz.questions.length > 0) {
-        // Simulate 3-8 students per published quiz
-        totalAttempts += Math.floor(Math.random() * 6) + 3;
-      }
+  fetch("/api/teacher/quiz/subjects", {
+    headers: { Authorization: "Bearer " + authToken },
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (subjects) {
+      var totalQuizzes = 0;
+      var totalQuestions = 0;
+      subjects.forEach(function (subject) {
+        if (subject.quiz_sets) {
+          totalQuizzes += subject.quiz_sets.length;
+          subject.quiz_sets.forEach(function (quiz) {
+            if (quiz.questions) totalQuestions += quiz.questions.length;
+          });
+        }
+      });
+      document.getElementById("quiz-attempts").textContent = totalQuizzes;
+    })
+    .catch(function () {
+      document.getElementById("quiz-attempts").textContent = "0";
     });
-  });
 
-  return totalAttempts;
-}
-
-// Get forum posts count
-function getForumPostsCount() {
-  // For now, simulate forum engagement data
-  // In real app, this would count posts in teacher-managed forums
-  const forumData = localStorage.getItem("forum_posts");
-  if (forumData) {
-    const posts = JSON.parse(forumData);
-    return posts.length || 0;
-  }
-
-  // Simulate forum activity
-  return Math.floor(Math.random() * 50) + 20;
-}
-
-// Get reviews count
-function getReviewsCount() {
-  // For now, simulate review data
-  // In real app, this would count reviews for teacher's content
-  const reviewData = localStorage.getItem("content_reviews");
-  if (reviewData) {
-    const reviews = JSON.parse(reviewData);
-    return reviews.length || 0;
-  }
-
-  // Simulate reviews for published content
-  const teacherSubjects = localStorage.getItem("teacher_quiz_subjects");
-  if (!teacherSubjects) return 0;
-
-  const subjects = JSON.parse(teacherSubjects);
-  let publishedQuizzes = 0;
-
-  subjects.forEach((subject) => {
-    subject.quizzes.forEach((quiz) => {
-      if (quiz.published) publishedQuizzes++;
+  fetch("/api/teacher/forums/my", {
+    headers: { Authorization: "Bearer " + authToken },
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (forums) {
+      document.getElementById("forum-posts").textContent = forums.length;
+    })
+    .catch(function () {
+      document.getElementById("forum-posts").textContent = "0";
     });
-  });
 
-  // Simulate 1-3 reviews per published quiz
-  return publishedQuizzes * (Math.floor(Math.random() * 3) + 1);
+  document.getElementById("reviews-count").textContent = "0";
 }
+
+

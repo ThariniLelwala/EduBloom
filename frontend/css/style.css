@@ -435,6 +435,65 @@ input[type="checkbox"]:checked {
   color: var(--color-white);
 }
 
+/* Card Menu & Dots */
+.subject-dots {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 5px;
+  z-index: 5;
+  transition: color 0.3s ease;
+}
+
+.subject-dots:hover {
+  color: var(--color-white);
+}
+
+.subject-menu {
+  position: absolute;
+  top: 40px;
+  right: 15px;
+  background: rgba(13, 12, 12, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  display: none;
+  flex-direction: column;
+  z-index: 100;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  min-width: 120px;
+}
+
+.subject-menu.show {
+  display: flex;
+}
+
+.menu-item {
+  padding: 10px 15px;
+  font-size: 0.9rem;
+  color: var(--color-white);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background 0.3s ease;
+}
+
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.menu-item.delete {
+  color: #ff4d4d;
+}
+
+.menu-item.delete:hover {
+  background: rgba(255, 77, 77, 0.1);
+}
+
 /* =======================
    Custom Glassmorphic Select
 ======================= */

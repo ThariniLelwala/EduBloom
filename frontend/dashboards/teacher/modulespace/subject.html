@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="../../../css/cards.css" />
     <link rel="stylesheet" href="../../../css/student/quiz.css" />
     <link rel="stylesheet" href="../../../css/student/subject.css" />
+    <link rel="stylesheet" href="../../../css/custom-select.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
@@ -33,7 +34,7 @@
             <i
               class="fas fa-chevron-left"
               id="back-btn"
-              onclick="window.location.href = './modulespace.html';"
+              style="cursor: pointer;"
             ></i>
             <span id="subject-name">Subject</span>
           </div>
@@ -91,6 +92,30 @@
               multiple
               style="display: none"
             />
+
+            <!-- Metadata Inputs for File Upload -->
+            <div class="metadata-inputs" style="margin-top: 15px; margin-bottom: 15px; text-align: left; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+              <div style="margin-bottom: 10px;">
+                <label for="upload-description" style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em;">Description (optional)</label>
+                <textarea id="upload-description" placeholder="Enter a brief description for these files..." style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; resize: vertical; min-height: 60px; font-family: inherit;"></textarea>
+              </div>
+              <div>
+                <label for="upload-grade" style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em;">Target Grade</label>
+                <select id="upload-grade" class="custom-select" style="width: 100%;">
+                  <option value="">Any Grade</option>
+                  <option value="5">Grade 5</option>
+                  <option value="6">Grade 6</option>
+                  <option value="7">Grade 7</option>
+                  <option value="8">Grade 8</option>
+                  <option value="9">Grade 9</option>
+                  <option value="10">Grade 10</option>
+                  <option value="11">Grade 11</option>
+                  <option value="12">Grade 12</option>
+                  <option value="13">Grade 13</option>
+                </select>
+              </div>
+            </div>
+
             <button
               class="btn-secondary"
               onclick="document.getElementById('file-input').click()"
@@ -158,6 +183,7 @@
     <script src="../../../js/topbar.js"></script>
     <script src="../../../js/confirmation-modal.js"></script>
     <script src="../../../js/teacher/subject.js"></script>
+    <script src="../../../js/custom-select.js"></script>
     <script src="../../../js/bg-manager.js"></script>
 
     <!-- Google APIs -->
