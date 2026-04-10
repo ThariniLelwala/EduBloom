@@ -753,6 +753,28 @@ async function initializeDatabase() {
       );
     `);
 
+    // Announcements table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS announcements (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(200) NOT NULL,
+        message TEXT NOT NULL,
+        target_role VARCHAR(20) DEFAULT 'all' CHECK (target_role IN ('all', 'student', 'teacher', 'parent')),
+        created_by INT REFERENCES users(id) ON DELETE SET NULL,
+        scheduled_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_announcements_target_role ON announcements(target_role);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_announcements_created_by ON announcements(created_by);
+    `);
+
     // Create indexes for better performance
     await db.query(`
       CREATE INDEX IF NOT EXISTS idx_forum_posts_author_id ON forum_posts(author_id);
