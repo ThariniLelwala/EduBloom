@@ -8,6 +8,7 @@ const profileController = require("../controllers/admin/profileController");
 const analyticsController = require("../controllers/admin/analyticsController");
 const helpController = require("../controllers/admin/helpController");
 const verificationController = require("../controllers/admin/verificationController");
+const todoController = require("../controllers/admin/todoController");
 const {
   verifyToken,
   requireRole,
@@ -322,6 +323,22 @@ function handleAdminRoutes(req, res) {
       }
       if (method === "POST" && pathname.match(/^\/api\/admin\/verifications\/\d+\/reject$/)) {
         return applyMiddleware([verifyToken, requireRole("admin")], verificationController.reject)(req, res);
+      }
+    }
+
+    // Todo routes
+    if (pathname.startsWith("/api/admin/todos")) {
+      if (method === "GET" && pathname === "/api/admin/todos") {
+        return applyMiddleware([verifyToken, requireRole("admin")], todoController.getAll)(req, res);
+      }
+      if (method === "POST" && pathname === "/api/admin/todos") {
+        return applyMiddleware([verifyToken, requireRole("admin")], todoController.create)(req, res);
+      }
+      if (method === "PUT" && pathname.match(/^\/api\/admin\/todos\/\d+$/)) {
+        return applyMiddleware([verifyToken, requireRole("admin")], todoController.update)(req, res);
+      }
+      if (method === "DELETE" && pathname.match(/^\/api\/admin\/todos\/\d+$/)) {
+        return applyMiddleware([verifyToken, requireRole("admin")], todoController.delete)(req, res);
       }
     }
 

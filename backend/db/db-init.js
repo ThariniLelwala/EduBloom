@@ -863,6 +863,18 @@ async function initializeDatabase() {
     await db.query(`CREATE INDEX IF NOT EXISTS idx_help_requests_status ON help_requests(status);`);
     console.log("✅ Help requests table created successfully");
 
+    // Admin Todos table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS admin_todos (
+        id SERIAL PRIMARY KEY,
+        text VARCHAR(500) NOT NULL,
+        completed BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    console.log("✅ Admin todos table created successfully");
+
     // Check if admin user exists, if not create one
     const adminCheck = await db.query(
       "SELECT * FROM users WHERE role = 'admin' LIMIT 1"

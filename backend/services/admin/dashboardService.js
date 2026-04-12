@@ -84,7 +84,8 @@ class DashboardService {
         'Created a new quiz' as action,
         qs.created_at as timestamp
       FROM quiz_sets qs
-      JOIN users u ON qs.teacher_id = u.id
+      JOIN quiz_subjects qsub ON qs.subject_id = qsub.id
+      JOIN users u ON qsub.teacher_id = u.id
       ORDER BY timestamp DESC
       LIMIT $1
     `, [limit]);

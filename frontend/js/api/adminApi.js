@@ -984,4 +984,72 @@ const adminApi = {
       throw error;
     }
   },
+
+  // ===== Todo API =====
+
+  async getTodos() {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/admin/todos", {
+        method: "GET",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to fetch todos");
+      return data.todos;
+    } catch (error) {
+      console.error("Error fetching todos:", error);
+      throw error;
+    }
+  },
+
+  async createTodo(text) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/admin/todos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to create todo");
+      return data.todo;
+    } catch (error) {
+      console.error("Error creating todo:", error);
+      throw error;
+    }
+  },
+
+  async updateTodo(id, text, completed) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/admin/todos/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text, completed })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to update todo");
+      return data.todo;
+    } catch (error) {
+      console.error("Error updating todo:", error);
+      throw error;
+    }
+  },
+
+  async deleteTodo(id) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/admin/todos/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to delete todo");
+      return data;
+    } catch (error) {
+      console.error("Error deleting todo:", error);
+      throw error;
+    }
+  },
 };
