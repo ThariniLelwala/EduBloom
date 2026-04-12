@@ -77,7 +77,7 @@ class UserController {
     try {
       const userId = parseInt(req.url.split("/")[4]);
       const data = await parseRequestBody(req);
-      const { password } = data;
+      const { password, reason } = data;
 
       if (isNaN(userId)) {
         res.writeHead(400, { "Content-Type": "application/json" });
@@ -87,6 +87,11 @@ class UserController {
       if (!password) {
         res.writeHead(400, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ error: "Password is required for deletion" }));
+      }
+
+      if (!reason) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ error: "Reason is required for deletion" }));
       }
 
       // Get admin user from request (added by middleware)
@@ -103,7 +108,7 @@ class UserController {
         return res.end(JSON.stringify({ error: "Admin not found" }));
       }
 
-      const result = await userService.deleteUser(userId, adminUser, password);
+      const result = await userService.deleteUser(userId, adminUser, password, reason);
 
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
@@ -120,7 +125,7 @@ class UserController {
   async deleteMultipleUsers(req, res) {
     try {
       const data = await parseRequestBody(req);
-      const { user_ids, password } = data;
+      const { user_ids, password, reason } = data;
 
       if (!Array.isArray(user_ids) || user_ids.length === 0) {
         res.writeHead(400, { "Content-Type": "application/json" });
@@ -130,6 +135,11 @@ class UserController {
       if (!password) {
         res.writeHead(400, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ error: "Password is required for deletion" }));
+      }
+
+      if (!reason) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ error: "Reason is required for deletion" }));
       }
 
       // Get admin user from request (added by middleware)
@@ -146,7 +156,7 @@ class UserController {
         return res.end(JSON.stringify({ error: "Admin not found" }));
       }
 
-      const result = await userService.deleteMultipleUsers(user_ids, adminUser, password);
+      const result = await userService.deleteMultipleUsers(user_ids, adminUser, password, reason);
 
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));

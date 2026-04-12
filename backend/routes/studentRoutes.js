@@ -9,6 +9,7 @@ const examController = require("../controllers/student/examController");
 const todoController = require("../controllers/student/todoController");
 const pomodoroController = require("../controllers/student/pomodoroController");
 const diaryController = require("../controllers/student/diaryController");
+const helpController = require("../controllers/student/helpController");
 const {
   verifyToken,
   requireRole,
@@ -876,6 +877,23 @@ function handleStudentRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
         diaryController.deleteEntry
+      )(req, res);
+    }
+
+    // Help requests
+    // Submit request: POST /api/student/help/request
+    if (method === "POST" && pathname === "/api/student/help/request") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        helpController.submitRequest
+      )(req, res);
+    }
+
+    // Get my requests: GET /api/student/help/my-requests
+    if (method === "GET" && pathname === "/api/student/help/my-requests") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        helpController.getMyRequests
       )(req, res);
     }
 

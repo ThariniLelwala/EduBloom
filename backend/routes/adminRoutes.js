@@ -302,6 +302,9 @@ function handleAdminRoutes(req, res) {
       if (method === "POST" && pathname.match(/^\/api\/admin\/help\/requests\/\d+\/reply$/)) {
         return applyMiddleware([verifyToken, requireRole("admin")], helpController.replyToRequest)(req, res);
       }
+      if (method === "POST" && pathname.match(/^\/api\/admin\/help\/requests\/\d+\/resolve$/)) {
+        return applyMiddleware([verifyToken, requireRole("admin")], helpController.resolveRequest)(req, res);
+      }
     }
 
     // Verification routes
@@ -323,6 +326,9 @@ function handleAdminRoutes(req, res) {
       }
       if (method === "POST" && pathname.match(/^\/api\/admin\/verifications\/\d+\/reject$/)) {
         return applyMiddleware([verifyToken, requireRole("admin")], verificationController.reject)(req, res);
+      }
+      if (method === "GET" && pathname.match(/^\/api\/admin\/verifications\/\d+\/download$/)) {
+        return applyMiddleware([verifyToken, requireRole("admin")], verificationController.download)(req, res);
       }
     }
 

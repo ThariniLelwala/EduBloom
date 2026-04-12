@@ -42,6 +42,12 @@ async function initializeDatabase() {
       // Column already exists, ignore error
     }
 
+    try {
+      await db.query(`ALTER TABLE users ADD COLUMN status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'suspended') OR status IS NULL);`);
+    } catch (err) {
+      // Column already exists, ignore error
+    }
+
     // Parent-Student Links table
     await db.query(`
       CREATE TABLE IF NOT EXISTS parent_student_links (
@@ -810,13 +816,14 @@ async function initializeDatabase() {
     await db.query(`
       CREATE TABLE IF NOT EXISTS announcements (
         id SERIAL PRIMARY KEY,
-        author_id INT NOT NULL REFERENCES users(id),
+        author_id INT REFERENCES users(id),
         title VARCHAR(255) NOT NULL,
         message TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    await db.query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS author_id INT REFERENCES users(id);`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_announcements_created_at ON announcements(created_at DESC);`);
     console.log("✅ Announcements table created successfully");
 
@@ -826,23 +833,31 @@ async function initializeDatabase() {
         id SERIAL PRIMARY KEY,
         question VARCHAR(500) NOT NULL,
         answer TEXT NOT NULL,
+        target_role VARCHAR(20) DEFAULT NULL CHECK (target_role IS NULL OR target_role IN ('admin', 'teacher', 'student', 'parent')),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    await db.query(`ALTER TABLE faqs ADD COLUMN IF NOT EXISTS target_role VARCHAR(20) CHECK (target_role IS NULL OR target_role IN ('admin', 'teacher', 'student', 'parent'));`);
     console.log("✅ FAQs table created successfully");
 
-    // Seed default FAQs
+    // Seed default FAQs with role filtering
     const faqsCheck = await db.query("SELECT COUNT(*) as count FROM faqs");
     if (parseInt(faqsCheck.rows[0].count) === 0) {
       await db.query(`
-        INSERT INTO faqs (question, answer) VALUES
-        ('How do I reset my password?', 'Click on "Forgot Password" on the login page and follow the instructions sent to your email.'),
-        ('How do I create a forum?', 'Navigate to the forums section and click "Create Forum". Fill in the details and submit for approval.'),
-        ('Can I edit my posts after publishing?', 'Yes, you can edit your posts within 24 hours of publishing. After that, contact support.'),
-        ('How do I report inappropriate content?', 'Click the flag icon on any post to report it. Our moderation team will review it within 48 hours.'),
-        ('How do I become a verified teacher?', 'Go to your profile settings and submit your teaching credentials. We will review your documents within 2-3 business days.'),
-        ('Is this platform free to use?', 'Yes, EduBloom is completely free for all users. You can access quizzes, forums, study notes, and more without any payment.')
+        INSERT INTO faqs (question, answer, target_role) VALUES
+        ('How do I reset my password?', 'Click on "Forgot Password" on the login page and follow the instructions sent to your email.', NULL),
+        ('How do I create a forum?', 'Navigate to the forums section and click "Create Forum". Fill in the details and submit for approval.', NULL),
+        ('Can I edit my posts after publishing?', 'Yes, you can edit your posts within 24 hours of publishing. After that, contact support.', NULL),
+        ('How do I report inappropriate content?', 'Click the flag icon on any post to report it. Our moderation team will review it within 48 hours.', NULL),
+        ('How do I become a verified teacher?', 'Go to your profile settings and submit your teaching credentials. We will review your documents within 2-3 business days.', 'teacher'),
+        ('How do I create a new course?', 'Navigate to your dashboard and click "Create Course". Fill in the course details, select subject, and set the curriculum.', 'teacher'),
+        ('How do I grade assignments?', 'Open the "Grading" panel, select the assignment, and review student submissions. Provide feedback and assign grades.', 'teacher'),
+        ('How do I submit an assignment?', 'Navigate to the assignment in your course. Click "Submit", upload your work, and click "Submit Assignment".', 'student'),
+        ('How do I take a quiz?', 'Go to the "Quiz" section in your course. Click on the quiz to start. Answer all questions and submit.', 'student'),
+        ('How do I track my progress?', 'Visit your "Progress" dashboard to see grades, completed assignments, and quiz scores.', 'student'),
+        ('How do I monitor my child''s progress?', 'Go to "Child''s Progress" on your dashboard. You will see grades, assignments, and attendance.', 'parent'),
+        ('How do I link my child''s account?', 'In your profile settings, click "Link Child Account". Enter your child email or student ID.', 'parent')
       `);
       console.log("✅ Default FAQs seeded successfully");
     }
@@ -862,6 +877,21 @@ async function initializeDatabase() {
     `);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_help_requests_status ON help_requests(status);`);
     console.log("✅ Help requests table created successfully");
+
+    // User Deletion Logs table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS user_deletion_logs (
+        id SERIAL PRIMARY KEY,
+        deleted_user_id INT,
+        deleted_username VARCHAR(50),
+        deleted_role VARCHAR(20),
+        reason TEXT NOT NULL,
+        deleted_by INT REFERENCES users(id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_deletion_logs_deleted_by ON user_deletion_logs(deleted_by);`);
+    console.log("✅ User deletion logs table created successfully");
 
     // Admin Todos table
     await db.query(`

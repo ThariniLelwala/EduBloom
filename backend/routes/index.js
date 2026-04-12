@@ -12,7 +12,7 @@ const handleApiRoutes = (req, res) => {
   let handled = null;
 
   // Public routes (no auth required)
-  if (pathname.startsWith("/api/announcements")) {
+  if (pathname.startsWith("/api/announcements") || pathname.startsWith("/api/faqs")) {
     handled = handlePublicRoutes(req, res);
   }
 

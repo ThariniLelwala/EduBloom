@@ -9,8 +9,10 @@ class UserService {
    */
   async getAllUsers(filters = {}) {
     let query = `
-      SELECT id, username, email, role, firstname, lastname, student_type, created_at
-      FROM users
+      SELECT u.id, u.username, u.email, u.role, u.firstname, u.lastname, u.student_type, u.created_at, COALESCE(u.status, 'active') as status,
+      (SELECT reason FROM user_deletion_logs WHERE deleted_user_id = u.id ORDER BY created_at DESC LIMIT 1) as suspension_reason,
+      (SELECT u2.username FROM user_deletion_logs dl JOIN users u2 ON dl.deleted_by = u2.id WHERE dl.deleted_user_id = u.id ORDER BY dl.created_at DESC LIMIT 1) as suspended_by_admin
+      FROM users u
     `;
     const params = [];
     let paramIndex = 1;
@@ -18,16 +20,23 @@ class UserService {
     // Build WHERE clause for filters
     const conditions = [];
 
+    // Filter by status
+    if (filters.status) {
+      conditions.push(`COALESCE(u.status, 'active') = $${paramIndex}`);
+      params.push(filters.status);
+      paramIndex++;
+    }
+
     // Filter by role
     if (filters.role) {
-      conditions.push(`role = $${paramIndex}`);
+      conditions.push(`u.role = $${paramIndex}`);
       params.push(filters.role);
       paramIndex++;
     }
 
     // Filter by student type (for students)
     if (filters.student_type) {
-      conditions.push(`student_type = $${paramIndex}`);
+      conditions.push(`u.student_type = $${paramIndex}`);
       params.push(filters.student_type);
       paramIndex++;
     }
@@ -35,7 +44,7 @@ class UserService {
     // Search by username or email
     if (filters.search) {
       conditions.push(
-        `(username ILIKE $${paramIndex} OR email ILIKE $${paramIndex} OR firstname ILIKE $${paramIndex} OR lastname ILIKE $${paramIndex})`
+        `(u.username ILIKE $${paramIndex} OR u.email ILIKE $${paramIndex} OR u.firstname ILIKE $${paramIndex} OR u.lastname ILIKE $${paramIndex})`
       );
       params.push(`%${filters.search}%`);
       params.push(`%${filters.search}%`);
@@ -50,7 +59,7 @@ class UserService {
     }
 
     // Sort by created_at descending (newest first)
-    query += ` ORDER BY created_at DESC`;
+    query += ` ORDER BY u.created_at DESC`;
 
     const result = await db.query(query, params);
     return result.rows;
@@ -83,6 +92,11 @@ class UserService {
       "SELECT COUNT(*) as count FROM users WHERE DATE(created_at) = CURRENT_DATE"
     );
 
+    // Count suspended users from status column
+    const suspendedResult = await db.query(
+      "SELECT COUNT(*) as count FROM users WHERE status = 'suspended'"
+    );
+
     return {
       total: parseInt(totalResult.rows[0].count),
       students: parseInt(studentResult.rows[0].count),
@@ -90,6 +104,7 @@ class UserService {
       parents: parseInt(parentResult.rows[0].count),
       admins: parseInt(adminResult.rows[0].count),
       todayRegistrations: parseInt(todayResult.rows[0].count),
+      suspended: parseInt(suspendedResult.rows[0].count),
     };
   }
 
@@ -116,15 +131,15 @@ class UserService {
   }
 
   /**
-   * Delete a user and all related data with password verification
+   * Suspend a user with password verification
    */
-  async deleteUser(userId, adminUser, password) {
+  async deleteUser(userId, adminUser, password, reason = null) {
     if (!userId) {
       throw new Error("User ID is required");
     }
 
     if (!password) {
-      throw new Error("Password is required for deletion");
+      throw new Error("Password is required for suspension");
     }
 
     // Verify admin password
@@ -141,9 +156,9 @@ class UserService {
       throw new Error("Invalid password");
     }
 
-    // Prevent admin from deleting their own account
+    // Prevent admin from suspending their own account
     if (userId === adminUser.id) {
-      throw new Error("You cannot delete your own admin account");
+      throw new Error("You cannot suspend your own admin account");
     }
 
     // Check if user exists
@@ -157,29 +172,34 @@ class UserService {
 
     const user = userCheck.rows[0];
 
-    // Delete user (cascades delete related data due to ON DELETE CASCADE)
-    // This now allows deleting admins, just not the current admin
-    const result = await db.query(
-      "DELETE FROM users WHERE id = $1 RETURNING id",
+    // Log suspension with reason
+    await db.query(
+      "INSERT INTO user_deletion_logs (deleted_user_id, deleted_username, deleted_role, reason, deleted_by) VALUES ($1, $2, $3, $4, $5)",
+      [user.id, user.username, user.role, reason || "No reason provided", adminUser.id]
+    );
+
+    // Suspend user (update status)
+    await db.query(
+      "UPDATE users SET status = 'suspended' WHERE id = $1",
       [userId]
     );
 
     return {
-      message: `User ${user.username} deleted successfully`,
-      deletedUserId: result.rows[0].id,
+      message: `User ${user.username} suspended successfully`,
+      suspendedUserId: userId,
     };
   }
 
   /**
-   * Delete multiple users with password verification
+   * Suspend multiple users with password verification
    */
-  async deleteMultipleUsers(userIds, adminUser, password) {
+  async deleteMultipleUsers(userIds, adminUser, password, reason = null) {
     if (!Array.isArray(userIds) || userIds.length === 0) {
       throw new Error("User IDs array is required");
     }
 
     if (!password) {
-      throw new Error("Password is required for deletion");
+      throw new Error("Password is required for suspension");
     }
 
     // Verify admin password
@@ -196,21 +216,35 @@ class UserService {
       throw new Error("Invalid password");
     }
 
-    // Prevent admin from deleting their own account
+    // Prevent admin from suspending their own account
     if (userIds.includes(adminUser.id)) {
-      throw new Error("You cannot delete your own admin account");
+      throw new Error("You cannot suspend your own admin account");
     }
 
-    // Delete multiple users (now allows deleting admins, just not the current admin)
-    const result = await db.query(
-      "DELETE FROM users WHERE id = ANY($1) RETURNING id",
+    // Get users to be suspended for logging
+    const usersToSuspend = await db.query(
+      "SELECT id, username, role FROM users WHERE id = ANY($1)",
+      [userIds]
+    );
+
+    // Log suspensions
+    for (const user of usersToSuspend.rows) {
+      await db.query(
+        "INSERT INTO user_deletion_logs (deleted_user_id, deleted_username, deleted_role, reason, deleted_by) VALUES ($1, $2, $3, $4, $5)",
+        [user.id, user.username, user.role, reason || "No reason provided", adminUser.id]
+      );
+    }
+
+    // Suspend multiple users
+    await db.query(
+      "UPDATE users SET status = 'suspended' WHERE id = ANY($1)",
       [userIds]
     );
 
     return {
-      message: `${result.rows.length} users deleted successfully`,
-      deletedCount: result.rows.length,
-      deletedUserIds: result.rows.map((r) => r.id),
+      message: `${usersToSuspend.rows.length} users suspended successfully`,
+      suspendedCount: usersToSuspend.rows.length,
+      suspendedUserIds: userIds,
     };
   }
 

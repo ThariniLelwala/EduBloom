@@ -4,6 +4,7 @@ const notesController = require("../controllers/teacher/notesController");
 const quizController = require("../controllers/teacher/quizController");
 const todoController = require("../controllers/teacher/todoController");
 const forumController = require("../controllers/teacher/forumController");
+const helpController = require("../controllers/student/helpController");
 const {
   verifyToken,
   requireRole,
@@ -267,6 +268,14 @@ function handleTeacherRoutes(req, res) {
       const id = pathname.split("/").pop();
       req.params = { id };
       return applyMiddleware([verifyToken, requireRole("teacher")], todoController.deleteTodo)(req, res);
+    }
+
+    // Help requests
+    if (method === "POST" && pathname === "/api/teacher/help/request") {
+      return applyMiddleware([verifyToken, requireRole("teacher")], helpController.submitRequest)(req, res);
+    }
+    if (method === "GET" && pathname === "/api/teacher/help/my-requests") {
+      return applyMiddleware([verifyToken, requireRole("teacher")], helpController.getMyRequests)(req, res);
     }
 
     return null;

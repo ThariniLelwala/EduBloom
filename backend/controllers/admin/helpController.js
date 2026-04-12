@@ -16,9 +16,9 @@ class HelpController {
 
   async createFAQ(req, res) {
     try {
-      const { question, answer } = await parseRequestBody(req);
+      const { question, answer, target_role } = await parseRequestBody(req);
       if (!question || !answer) throw new Error("Question and answer required");
-      const faq = await helpService.createFAQ(question, answer);
+      const faq = await helpService.createFAQ(question, answer, target_role || null);
       res.writeHead(201, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ faq, message: "FAQ created" }));
     } catch (err) {
@@ -29,10 +29,11 @@ class HelpController {
 
   async updateFAQ(req, res) {
     try {
-      const id = parseInt(req.url.split("/")[4]);
-      const { question, answer } = await parseRequestBody(req);
+      const id = parseInt(req.url.split("/")[5]);
+      const { question, answer, target_role } = await parseRequestBody(req);
       if (!question || !answer) throw new Error("Question and answer required");
-      const faq = await helpService.updateFAQ(id, question, answer);
+      if (isNaN(id)) throw new Error("Invalid FAQ ID");
+      const faq = await helpService.updateFAQ(id, question, answer, target_role || null);
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ faq, message: "FAQ updated" }));
     } catch (err) {
@@ -43,7 +44,8 @@ class HelpController {
 
   async deleteFAQ(req, res) {
     try {
-      const id = parseInt(req.url.split("/")[4]);
+      const id = parseInt(req.url.split("/")[5]);
+      if (isNaN(id)) throw new Error("Invalid FAQ ID");
       await helpService.deleteFAQ(id);
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ message: "FAQ deleted" }));
@@ -68,12 +70,26 @@ class HelpController {
 
   async replyToRequest(req, res) {
     try {
-      const id = parseInt(req.url.split("/")[4]);
+      const id = parseInt(req.url.split("/")[5]);
       const { reply } = await parseRequestBody(req);
       if (!reply) throw new Error("Reply required");
+      if (isNaN(id)) throw new Error("Invalid request ID");
       const request = await helpService.replyToRequest(id, reply);
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ request, message: "Reply sent" }));
+    } catch (err) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  async resolveRequest(req, res) {
+    try {
+      const id = parseInt(req.url.split("/")[5]);
+      if (isNaN(id)) throw new Error("Invalid request ID");
+      const request = await helpService.resolveRequest(id);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ request, message: "Request resolved" }));
     } catch (err) {
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));

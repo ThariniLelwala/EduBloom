@@ -3,6 +3,7 @@ const authController = require("../controllers/authController");
 const parentController = require("../controllers/parentController");
 const todoController = require("../controllers/parent/todoController");
 const verificationController = require("../controllers/teacher/verificationController");
+const helpController = require("../controllers/student/helpController");
 const {
   verifyToken,
   requireRole,
@@ -119,6 +120,15 @@ function handleAuthRoutes(req, res) {
         [verifyToken, requireRole("parent")],
         parentController.removeStudentLink
       )(req, res);
+    }
+
+    // Help request routes (for all authenticated users)
+    if (method === "POST" && pathname === "/api/help/request") {
+      return applyMiddleware([verifyToken], helpController.submitRequest)(req, res);
+    }
+
+    if (method === "GET" && pathname === "/api/help/my-requests") {
+      return applyMiddleware([verifyToken], helpController.getMyRequests)(req, res);
     }
 
     // Teacher verification routes
