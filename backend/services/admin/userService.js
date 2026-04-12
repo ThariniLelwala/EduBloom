@@ -215,18 +215,65 @@ class UserService {
   }
 
   /**
-   * Suspend a user (for future feature - sets status)
+   * Update user information
+   */
+  async updateUser(userId, updateData) {
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+
+    const allowedFields = ["firstname", "lastname", "email", "username", "role", "student_type"];
+    const updates = [];
+    const params = [];
+    let paramIndex = 1;
+
+    for (const field of allowedFields) {
+      if (updateData[field] !== undefined) {
+        updates.push(`${field} = $${paramIndex}`);
+        params.push(updateData[field]);
+        paramIndex++;
+      }
+    }
+
+    if (updates.length === 0) {
+      throw new Error("No valid fields to update");
+    }
+
+    params.push(userId);
+    const result = await db.query(
+      `UPDATE users SET ${updates.join(", ")} WHERE id = $${paramIndex}
+       RETURNING id, username, email, role, firstname, lastname, student_type, created_at`,
+      params
+    );
+
+    if (result.rows.length === 0) {
+      throw new Error("User not found");
+    }
+
+    return result.rows[0];
+  }
+
+  /**
+   * Suspend a user
    */
   async suspendUser(userId, reason = null) {
     if (!userId) {
       throw new Error("User ID is required");
     }
 
-    // This could be implemented with a status column in the future
-    // For now, we'll just mark as a note
+    const result = await db.query(
+      "UPDATE users SET status = 'suspended' WHERE id = $1 RETURNING id, username",
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      throw new Error("User not found");
+    }
+
     return {
-      message: "User suspension feature to be implemented",
+      message: "User suspended successfully",
       userId,
+      reason,
     };
   }
 

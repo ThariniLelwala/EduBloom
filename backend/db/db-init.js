@@ -772,6 +772,54 @@ async function initializeDatabase() {
 
     console.log("✅ Database tables and indexes created successfully");
 
+    // Flagged Content table for content moderation
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS flagged_content (
+        id SERIAL PRIMARY KEY,
+        content_id INT NOT NULL,
+        content_type VARCHAR(20) NOT NULL CHECK (content_type IN ('forum', 'quiz', 'note')),
+        author_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        flagger_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        reason VARCHAR(50) NOT NULL CHECK (reason IN ('inappropriate', 'spam', 'harassment', 'misinformation')),
+        description TEXT,
+        status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'dismissed', 'deleted')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_flagged_content_status ON flagged_content(status);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_flagged_content_content_type ON flagged_content(content_type);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_flagged_content_reason ON flagged_content(reason);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_flagged_content_created_at ON flagged_content(created_at DESC);
+    `);
+
+    console.log("✅ Flagged content table created successfully");
+
+    // Announcements table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS announcements (
+        id SERIAL PRIMARY KEY,
+        author_id INT NOT NULL REFERENCES users(id),
+        title VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_announcements_created_at ON announcements(created_at DESC);`);
+    console.log("✅ Announcements table created successfully");
+
     // Check if admin user exists, if not create one
     const adminCheck = await db.query(
       "SELECT * FROM users WHERE role = 'admin' LIMIT 1"

@@ -5,6 +5,7 @@ let allUsers = [];
 let filteredUsers = [];
 let selectedUsers = new Set();
 let pendingDeleteUserIds = null; // Store user IDs pending deletion
+let pendingEditUserId = null; // Store user ID pending edit
 
 // Load all user statistics
 function loadUserStatistics() {
@@ -355,7 +356,7 @@ function bindActionEvents() {
       const userId = parseInt(
         e.target.closest(".edit-user-btn").dataset.userId
       );
-      alert(`Edit user functionality for user ${userId} - to be implemented`);
+      openEditUserModal(userId);
     }
   });
 }
@@ -394,6 +395,85 @@ function closeDeleteConfirmModal() {
     modal.style.display = "none";
   }
   pendingDeleteUserIds = null;
+}
+
+// Edit User Modal Functions
+function openEditUserModal(userId) {
+  const user = allUsers.find((u) => u.id === userId);
+  if (!user) return;
+
+  pendingEditUserId = userId;
+  const modal = document.getElementById("edit-user-modal");
+  
+  if (modal) {
+    modal.style.display = "flex";
+    document.getElementById("edit-user-id").value = userId;
+    document.getElementById("edit-firstname").value = user.firstname || "";
+    document.getElementById("edit-lastname").value = user.lastname || "";
+    document.getElementById("edit-username").value = user.username || "";
+    document.getElementById("edit-email").value = user.email || "";
+    document.getElementById("edit-role").value = user.role || "student";
+    
+    const studentTypeGroup = document.getElementById("edit-student-type-group");
+    const studentTypeSelect = document.getElementById("edit-student-type");
+    if (user.role === "student") {
+      studentTypeGroup.style.display = "block";
+      studentTypeSelect.value = user.student_type || "";
+    } else {
+      studentTypeGroup.style.display = "none";
+    }
+    
+    document.getElementById("edit-error-msg").style.display = "none";
+  }
+}
+
+function closeEditUserModal() {
+  const modal = document.getElementById("edit-user-modal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+  pendingEditUserId = null;
+}
+
+// Handle edit user form submission
+async function handleEditUserSubmit(e) {
+  e.preventDefault();
+
+  if (!pendingEditUserId) {
+    return;
+  }
+
+  const firstname = document.getElementById("edit-firstname").value.trim();
+  const lastname = document.getElementById("edit-lastname").value.trim();
+  const username = document.getElementById("edit-username").value.trim();
+  const email = document.getElementById("edit-email").value.trim();
+  const role = document.getElementById("edit-role").value;
+  const student_type = role === "student" ? document.getElementById("edit-student-type").value : null;
+  const errorMsg = document.getElementById("edit-error-msg");
+
+  if (!firstname && !lastname && !username && !email) {
+    errorMsg.textContent = "At least one field must be filled";
+    errorMsg.style.display = "block";
+    return;
+  }
+
+  const userData = {};
+  if (firstname) userData.firstname = firstname;
+  if (lastname) userData.lastname = lastname;
+  if (username) userData.username = username;
+  if (email) userData.email = email;
+  if (role) userData.role = role;
+  if (student_type) userData.student_type = student_type;
+
+  try {
+    await adminApi.updateUser(pendingEditUserId, userData);
+    closeEditUserModal();
+    await loadAllUsersFromAPI();
+    alert("User updated successfully!");
+  } catch (error) {
+    errorMsg.textContent = error.message || "Error updating user";
+    errorMsg.style.display = "block";
+  }
 }
 
 // Handle delete confirmation form submission
@@ -566,6 +646,44 @@ document.addEventListener("DOMContentLoaded", () => {
     deleteModal.addEventListener("click", (e) => {
       if (e.target === deleteModal) {
         closeDeleteConfirmModal();
+      }
+    });
+  }
+
+  // Edit User Modal event listeners
+  const closeEditBtn = document.getElementById("close-edit-modal");
+  const cancelEditBtn = document.getElementById("cancel-edit-btn");
+  const editForm = document.getElementById("edit-user-form");
+  const editModal = document.getElementById("edit-user-modal");
+  const editRoleSelect = document.getElementById("edit-role");
+
+  if (closeEditBtn) {
+    closeEditBtn.addEventListener("click", closeEditUserModal);
+  }
+
+  if (cancelEditBtn) {
+    cancelEditBtn.addEventListener("click", closeEditUserModal);
+  }
+
+  if (editForm) {
+    editForm.addEventListener("submit", handleEditUserSubmit);
+  }
+
+  if (editModal) {
+    editModal.addEventListener("click", (e) => {
+      if (e.target === editModal) {
+        closeEditUserModal();
+      }
+    });
+  }
+
+  if (editRoleSelect) {
+    editRoleSelect.addEventListener("change", (e) => {
+      const studentTypeGroup = document.getElementById("edit-student-type-group");
+      if (e.target.value === "student") {
+        studentTypeGroup.style.display = "block";
+      } else {
+        studentTypeGroup.style.display = "none";
       }
     });
   }
