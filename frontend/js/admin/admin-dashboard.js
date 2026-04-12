@@ -9,7 +9,8 @@ async function loadDashboardData() {
   await Promise.all([
     loadSystemOverview(),
     loadRecentActivity(),
-    loadHelpdeskCount()
+    loadHelpdeskCount(),
+    loadRecentAnnouncements()
   ]);
 }
 
@@ -93,4 +94,55 @@ function updateWelcomeMessage() {
   if (username && welcomeHeading) {
     welcomeHeading.textContent = `Welcome ${username}`;
   }
+}
+
+async function loadRecentAnnouncements() {
+  try {
+    const announcements = await adminApi.getAnnouncements();
+    renderRecentAnnouncements(announcements.slice(0, 5));
+  } catch (error) {
+    console.error("Error loading recent announcements:", error);
+    const container = document.getElementById("dashboard-announcements-container");
+    if (container) {
+      container.innerHTML = `<div style="padding: 16px; text-align: center; color: rgba(255, 255, 255, 0.5);">Failed to load announcements</div>`;
+    }
+  }
+}
+
+function renderRecentAnnouncements(announcements) {
+  const container = document.getElementById("dashboard-announcements-container");
+  if (!container) return;
+
+  if (announcements.length === 0) {
+    container.innerHTML = `<div style="padding: 16px; text-align: center; color: rgba(255, 255, 255, 0.5);">No announcements yet</div>`;
+    return;
+  }
+
+  container.innerHTML = "";
+  announcements.forEach(ann => {
+    const date = new Date(ann.created_at);
+    const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const timeStr = date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+
+    const authorName = ann.author_firstname && ann.author_lastname
+      ? `${ann.author_firstname} ${ann.author_lastname}`
+      : ann.author_username || "Unknown";
+
+    container.innerHTML += `
+      <div class="dashboard-announcement-item">
+        <div class="dashboard-announcement-title">${escapeHtml(ann.title)}</div>
+        <div class="dashboard-announcement-meta">
+          <i class="fas fa-user"></i> ${escapeHtml(authorName)}
+          <i class="fas fa-clock"></i> ${dateStr}, ${timeStr}
+        </div>
+      </div>
+    `;
+  });
+}
+
+function escapeHtml(text) {
+  if (!text) return "";
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
 }

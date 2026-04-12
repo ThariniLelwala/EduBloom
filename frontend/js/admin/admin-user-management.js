@@ -1,11 +1,11 @@
 // User Management Statistics Functions
 
-// Sample users data
 let allUsers = [];
 let filteredUsers = [];
+let suspendedUsers = [];
 let selectedUsers = new Set();
-let pendingDeleteUserIds = null; // Store user IDs pending deletion
-let pendingEditUserId = null; // Store user ID pending edit
+let pendingDeleteUserIds = null;
+let pendingEditUserId = null;
 
 // Load all user statistics
 function loadUserStatistics() {
@@ -24,13 +24,12 @@ async function loadStatisticsFromAPI() {
 
     const activeElement = document.getElementById("active-users-count");
     if (activeElement) {
-      activeElement.textContent =
-        stats.students + stats.teachers + stats.parents || 0;
+      activeElement.textContent = stats.total || 0;
     }
 
     const suspendedElement = document.getElementById("suspended-users-count");
     if (suspendedElement) {
-      suspendedElement.textContent = "0"; // Will be implemented with status column
+      suspendedElement.textContent = stats.suspended || 0;
     }
 
     const dailyElement = document.getElementById("daily-registration-count");
@@ -42,127 +41,27 @@ async function loadStatisticsFromAPI() {
   }
 }
 
-function loadTotalUsers() {
-  // Deprecated: Use loadStatisticsFromAPI instead
-}
-
-function getTotalUsersCount() {
-  // Deprecated: Use loadStatisticsFromAPI instead
-  return 0;
-}
-
-function loadActiveUsers() {
-  // Deprecated: Use loadStatisticsFromAPI instead
-}
-
-function getActiveUsersCount() {
-  // Deprecated: Use loadStatisticsFromAPI instead
-  return 0;
-}
-
-function loadSuspendedUsers() {
-  // Deprecated: Use loadStatisticsFromAPI instead
-}
-
-function getSuspendedUsersCount() {
-  // Get suspended users from localStorage or simulate
-  const suspendedUsers =
-    JSON.parse(localStorage.getItem("suspendedUsers")) || [];
-  return suspendedUsers.length || 3;
-}
-
-function loadDailyRegistration() {
-  const dailyRegistrationCount = getDailyRegistrationCount();
-  const element = document.getElementById("daily-registration-count");
-  if (element) {
-    element.textContent = dailyRegistrationCount;
+// Load all users from API
+async function loadAllUsersFromAPI() {
+  try {
+    allUsers = await adminApi.getAllUsers();
+    filteredUsers = [...allUsers];
+    renderUsersTable();
+  } catch (error) {
+    console.error("Error loading users:", error);
   }
 }
 
-function getDailyRegistrationCount() {
-  // Get today's registrations from localStorage or simulate
-  const todayRegistrations =
-    JSON.parse(localStorage.getItem("todayRegistrations")) || [];
-  return todayRegistrations.length || 5;
-}
-
-// ===== Users Table Functions =====
-
-// Initialize users data
-function initializeUsersData() {
-  allUsers = [
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john.doe@email.com",
-      role: "student",
-      status: "active",
-    },
-    {
-      id: 2,
-      name: "Sarah Smith",
-      email: "sarah.smith@email.com",
-      role: "teacher",
-      status: "active",
-    },
-    {
-      id: 3,
-      name: "Mike Johnson",
-      email: "mike.johnson@email.com",
-      role: "parent",
-      status: "active",
-    },
-    {
-      id: 4,
-      name: "Emily Brown",
-      email: "emily.brown@email.com",
-      role: "student",
-      status: "inactive",
-    },
-    {
-      id: 5,
-      name: "Alex Davis",
-      email: "alex.davis@email.com",
-      role: "teacher",
-      status: "active",
-    },
-    {
-      id: 6,
-      name: "Jessica Wilson",
-      email: "jessica.w@email.com",
-      role: "student",
-      status: "suspended",
-    },
-    {
-      id: 7,
-      name: "David Martinez",
-      email: "david.m@email.com",
-      role: "parent",
-      status: "active",
-    },
-    {
-      id: 8,
-      name: "Lisa Anderson",
-      email: "lisa.a@email.com",
-      role: "teacher",
-      status: "active",
-    },
-    {
-      id: 9,
-      name: "James Taylor",
-      email: "james.t@email.com",
-      role: "student",
-      status: "active",
-    },
-    {
-      id: 10,
-      name: "Rachel Green",
-      email: "rachel.g@email.com",
-      role: "parent",
-      status: "inactive",
-    },
-  ];
-  filteredUsers = [...allUsers];
+// Load suspended users from API
+async function loadSuspendedUsers() {
+  try {
+    suspendedUsers = await adminApi.getSuspendedUsers();
+    renderSuspendedUsersTable();
+  } catch (error) {
+    console.error("Error loading suspended users:", error);
+    suspendedUsers = [];
+    renderSuspendedUsersTable();
+  }
 }
 
 // Render users table
@@ -176,7 +75,7 @@ function renderUsersTable() {
     tbody.innerHTML = `
       <tr>
         <td colspan="6" class="admin-empty-state">
-          No users found
+          No active users found
         </td>
       </tr>
     `;
@@ -186,29 +85,26 @@ function renderUsersTable() {
   filteredUsers.forEach((user) => {
     const tr = document.createElement("tr");
     const isSelected = selectedUsers.has(user.id);
-    const fullName =
-      `${user.firstname || ""} ${user.lastname || ""}`.trim() || user.username;
+    const fullName = `${user.firstname || ""} ${user.lastname || ""}`.trim() || user.username;
+    const isAdmin = user.role === "admin";
+    const editButton = isAdmin
+      ? ``
+      : `<button class="edit-user-btn admin-table-action" data-user-id="${user.id}" title="Edit">
+          <i class="fas fa-edit"></i>
+        </button>`;
 
     tr.innerHTML = `
       <td>
-        <input type="checkbox" class="user-checkbox admin-table-checkbox" data-user-id="${
-          user.id
-        }" ${isSelected ? "checked" : ""} />
+        <input type="checkbox" class="user-checkbox admin-table-checkbox" data-user-id="${user.id}" ${isSelected ? "checked" : ""} />
       </td>
       <td class="text-white">${fullName}</td>
       <td class="text-muted">${user.username}</td>
       <td class="text-muted">${user.email}</td>
       <td class="text-muted text-capitalize">${user.role}</td>
       <td style="text-align: center;">
-        <button class="edit-user-btn admin-table-action" data-user-id="${
-          user.id
-        }" title="Edit">
-          <i class="fas fa-edit"></i>
-        </button>
-        <button class="delete-user-btn admin-table-action" data-user-id="${
-          user.id
-        }" title="Delete">
-          <i class="fas fa-trash"></i>
+        ${editButton}
+        <button class="delete-user-btn admin-table-action" data-user-id="${user.id}" title="Suspend">
+          <i class="fas fa-ban"></i>
         </button>
       </td>
     `;
@@ -216,8 +112,59 @@ function renderUsersTable() {
     tbody.appendChild(tr);
   });
 
-  // Bind checkbox events
   bindCheckboxEvents();
+}
+
+// Render suspended users table
+function renderSuspendedUsersTable() {
+  const tbody = document.getElementById("suspended-users-table-body");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  if (suspendedUsers.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="admin-empty-state">
+          No suspended users
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  suspendedUsers.forEach((user) => {
+    const fullName = `${user.firstname || ""} ${user.lastname || ""}`.trim() || user.username;
+    const suspendedDate = user.suspended_at ? new Date(user.suspended_at).toLocaleDateString() : "N/A";
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="text-white">${fullName}</td>
+      <td class="text-muted">${user.username}</td>
+      <td class="text-muted">${user.email}</td>
+      <td class="text-muted text-capitalize">${user.role}</td>
+      <td class="text-muted">${suspendedDate}</td>
+      <td style="text-align: center;">
+        <button class="view-suspended-btn admin-table-action" data-user-id="${user.id}" title="View Details">
+          <i class="fas fa-eye"></i>
+        </button>
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+
+  bindSuspendedEvents();
+}
+
+// Bind suspended user events
+function bindSuspendedEvents() {
+  document.querySelectorAll(".view-suspended-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const userId = parseInt(btn.dataset.userId);
+      openSuspendedUserModal(userId);
+    });
+  });
 }
 
 // Bind checkbox events
@@ -273,32 +220,20 @@ function updateSelectAllCheckbox() {
   if (checkboxes.length === 0) return;
 
   selectAllCheckbox.checked = selectedUsers.size === checkboxes.length;
-  selectAllCheckbox.indeterminate =
-    selectedUsers.size > 0 && selectedUsers.size < checkboxes.length;
+  selectAllCheckbox.indeterminate = selectedUsers.size > 0 && selectedUsers.size < checkboxes.length;
 }
 
 // Filter users
 function filterUsers() {
-  const searchQuery = document
-    .getElementById("search-users")
-    .value.toLowerCase();
+  const searchQuery = document.getElementById("search-users").value.toLowerCase();
   const roleFilter = document.getElementById("filter-role").value;
 
   filteredUsers = allUsers.filter((user) => {
-    // Create full name from firstname and lastname
-    const fullName = `${user.firstname || ""} ${
-      user.lastname || ""
-    }`.toLowerCase();
+    const fullName = `${user.firstname || ""} ${user.lastname || ""}`.toLowerCase();
     const username = (user.username || "").toLowerCase();
     const email = (user.email || "").toLowerCase();
 
-    // Search in fullname, username, or email
-    const matchesSearch =
-      fullName.includes(searchQuery) ||
-      username.includes(searchQuery) ||
-      email.includes(searchQuery);
-
-    // Filter by role (if selected)
+    const matchesSearch = fullName.includes(searchQuery) || username.includes(searchQuery) || email.includes(searchQuery);
     const matchesRole = !roleFilter || user.role === roleFilter;
 
     return matchesSearch && matchesRole;
@@ -335,27 +270,20 @@ function bindActionEvents() {
   if (bulkDeleteBtn) {
     bulkDeleteBtn.addEventListener("click", async () => {
       if (selectedUsers.size === 0) return;
-      // Show password confirmation modal
       pendingDeleteUserIds = Array.from(selectedUsers);
       openDeleteConfirmModal();
     });
   }
 
-  // Bind individual delete buttons
   document.addEventListener("click", async (e) => {
     if (e.target.closest(".delete-user-btn")) {
-      const userId = parseInt(
-        e.target.closest(".delete-user-btn").dataset.userId
-      );
-      // Show password confirmation modal
+      const userId = parseInt(e.target.closest(".delete-user-btn").dataset.userId);
       pendingDeleteUserIds = [userId];
       openDeleteConfirmModal();
     }
 
     if (e.target.closest(".edit-user-btn")) {
-      const userId = parseInt(
-        e.target.closest(".edit-user-btn").dataset.userId
-      );
+      const userId = parseInt(e.target.closest(".edit-user-btn").dataset.userId);
       openEditUserModal(userId);
     }
   });
@@ -366,7 +294,6 @@ function openAddAdminModal() {
   const modal = document.getElementById("add-admin-modal");
   if (modal) {
     modal.style.display = "flex";
-    // Reset form
     document.getElementById("add-admin-form").reset();
     document.getElementById("admin-error-msg").style.display = "none";
   }
@@ -383,7 +310,6 @@ function openDeleteConfirmModal() {
   const modal = document.getElementById("delete-confirm-modal");
   if (modal) {
     modal.style.display = "flex";
-    // Reset form
     document.getElementById("delete-confirm-form").reset();
     document.getElementById("delete-error-msg").style.display = "none";
   }
@@ -402,9 +328,14 @@ function openEditUserModal(userId) {
   const user = allUsers.find((u) => u.id === userId);
   if (!user) return;
 
+  if (user.role === "admin") {
+    showToast("Cannot edit admin accounts", "error");
+    return;
+  }
+
   pendingEditUserId = userId;
   const modal = document.getElementById("edit-user-modal");
-  
+
   if (modal) {
     modal.style.display = "flex";
     document.getElementById("edit-user-id").value = userId;
@@ -413,7 +344,7 @@ function openEditUserModal(userId) {
     document.getElementById("edit-username").value = user.username || "";
     document.getElementById("edit-email").value = user.email || "";
     document.getElementById("edit-role").value = user.role || "student";
-    
+
     const studentTypeGroup = document.getElementById("edit-student-type-group");
     const studentTypeSelect = document.getElementById("edit-student-type");
     if (user.role === "student") {
@@ -422,7 +353,7 @@ function openEditUserModal(userId) {
     } else {
       studentTypeGroup.style.display = "none";
     }
-    
+
     document.getElementById("edit-error-msg").style.display = "none";
   }
 }
@@ -469,7 +400,7 @@ async function handleEditUserSubmit(e) {
     await adminApi.updateUser(pendingEditUserId, userData);
     closeEditUserModal();
     await loadAllUsersFromAPI();
-    alert("User updated successfully!");
+    showToast("User updated successfully!", "success");
   } catch (error) {
     errorMsg.textContent = error.message || "Error updating user";
     errorMsg.style.display = "block";
@@ -485,6 +416,7 @@ async function handleDeleteConfirmSubmit(e) {
   }
 
   const password = document.getElementById("delete-password").value;
+  const reason = document.getElementById("delete-reason").value.trim();
   const errorMsg = document.getElementById("delete-error-msg");
 
   if (!password) {
@@ -493,25 +425,29 @@ async function handleDeleteConfirmSubmit(e) {
     return;
   }
 
+  if (!reason) {
+    errorMsg.textContent = "Reason is required";
+    errorMsg.style.display = "block";
+    return;
+  }
+
   try {
-    // Delete user(s) with password
     if (pendingDeleteUserIds.length === 1) {
-      await adminApi.deleteUser(pendingDeleteUserIds[0], password);
-      allUsers = allUsers.filter((user) => user.id !== pendingDeleteUserIds[0]);
+      await adminApi.deleteUser(pendingDeleteUserIds[0], password, reason);
     } else {
-      await adminApi.deleteMultipleUsers(pendingDeleteUserIds, password);
-      allUsers = allUsers.filter(
-        (user) => !pendingDeleteUserIds.includes(user.id)
-      );
+      await adminApi.deleteMultipleUsers(pendingDeleteUserIds, password, reason);
       selectedUsers.clear();
     }
 
     closeDeleteConfirmModal();
-    filterUsers();
-    alert("User(s) deleted successfully!");
+    await loadAllUsersFromAPI();
+    await loadSuspendedUsers();
+    await loadStatisticsFromAPI();
+    showToast("User(s) suspended successfully!", "success");
   } catch (error) {
-    errorMsg.textContent = error.message || "Error deleting user(s)";
+    errorMsg.textContent = error.message || "Error suspending user(s)";
     errorMsg.style.display = "block";
+    showToast(error.message || "Error suspending user(s)", "error");
   }
 }
 
@@ -527,26 +463,30 @@ async function handleAddAdminSubmit(e) {
   const password = document.getElementById("admin-password").value;
   const errorMsg = document.getElementById("admin-error-msg");
 
-  // Basic validation
-  if (
-    !firstname ||
-    !lastname ||
-    !birthday ||
-    !username ||
-    !email ||
-    !password
-  ) {
+  if (!firstname || !lastname || !birthday || !username || !email || !password) {
     errorMsg.textContent = "All fields are required";
     errorMsg.style.display = "block";
     return;
   }
 
   // Password validation
-  const passwordRegex =
-    /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-  if (!passwordRegex.test(password)) {
-    errorMsg.textContent =
-      "Password must be at least 8 chars with uppercase, number, and special character";
+  if (password.length < 8) {
+    errorMsg.textContent = "Password must be at least 8 characters";
+    errorMsg.style.display = "block";
+    return;
+  }
+  if (!/[A-Z]/.test(password)) {
+    errorMsg.textContent = "Password must contain at least one uppercase letter";
+    errorMsg.style.display = "block";
+    return;
+  }
+  if (!/[0-9]/.test(password)) {
+    errorMsg.textContent = "Password must contain at least one number";
+    errorMsg.style.display = "block";
+    return;
+  }
+  if (!/[@$!%*?&]/.test(password)) {
+    errorMsg.textContent = "Password must contain at least one special character (@$!%*?&)";
     errorMsg.style.display = "block";
     return;
   }
@@ -556,10 +496,7 @@ async function handleAddAdminSubmit(e) {
   const today = new Date();
   let age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
-  if (
-    monthDiff < 0 ||
-    (monthDiff === 0 && today.getDate() < birthDate.getDate())
-  ) {
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
     age--;
   }
 
@@ -569,7 +506,6 @@ async function handleAddAdminSubmit(e) {
     return;
   }
 
-  // Create admin data object
   const adminData = {
     firstname,
     lastname,
@@ -580,21 +516,97 @@ async function handleAddAdminSubmit(e) {
   };
 
   try {
-    const response = await adminApi.createAdmin(adminData);
-    // Success - close modal and refresh table
+    await adminApi.createAdmin(adminData);
     closeAddAdminModal();
     await loadAllUsersFromAPI();
-    alert("Admin created successfully!");
+    showToast("Admin created successfully!", "success");
   } catch (error) {
     errorMsg.textContent = error.message || "Error creating admin";
     errorMsg.style.display = "block";
   }
 }
 
+// Suspended User Modal
+function openSuspendedUserModal(userId) {
+  const user = suspendedUsers.find(u => Number(u.id) === Number(userId));
+  if (!user) return;
+
+  document.getElementById("suspended-username").textContent = user.username || "N/A";
+  document.getElementById("suspended-email").textContent = user.email || "N/A";
+  document.getElementById("suspended-role").textContent = (user.role || "").charAt(0).toUpperCase() + (user.role || "").slice(1);
+  document.getElementById("suspended-by").textContent = user.suspended_by_admin || "N/A";
+  document.getElementById("suspended-reason").textContent = user.reason || "No reason provided";
+
+  const modal = document.getElementById("suspended-user-modal");
+  if (modal) {
+    modal.style.display = "flex";
+  }
+}
+
+function closeSuspendedUserModal() {
+  const modal = document.getElementById("suspended-user-modal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
+// Toast notification
+function showToast(message, type = "success") {
+  let toast = document.getElementById("user-management-toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "user-management-toast";
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 16px 24px;
+      background: rgba(34, 197, 94, 0.95);
+      color: white;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 10000;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: opacity 0.3s ease;
+    `;
+    document.body.appendChild(toast);
+  }
+
+  toast.textContent = message;
+  toast.style.display = "block";
+  toast.style.opacity = "1";
+
+  if (type === "error") {
+    toast.style.background = "rgba(239, 68, 68, 0.95)";
+    toast.style.borderColor = "rgba(239, 68, 68, 0.4)";
+  } else {
+    toast.style.background = "rgba(34, 197, 94, 0.95)";
+    toast.style.borderColor = "rgba(34, 197, 94, 0.4)";
+  }
+
+  if (type === "error") {
+    toast.style.background = "rgba(239, 68, 68, 0.95)";
+    toast.style.borderColor = "rgba(239, 68, 68, 0.4)";
+  } else if (type === "success") {
+    toast.style.background = "rgba(34, 197, 94, 0.95)";
+    toast.style.borderColor = "rgba(34, 197, 94, 0.4)";
+  }
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    setTimeout(() => {
+      toast.style.display = "none";
+    }, 300);
+  }, 3000);
+}
+
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", () => {
   loadUserStatistics();
   loadAllUsersFromAPI();
+  loadSuspendedUsers();
   bindFilterEvents();
   bindActionEvents();
 
@@ -604,79 +616,45 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("add-admin-form");
   const modal = document.getElementById("add-admin-modal");
 
-  if (closeBtn) {
-    closeBtn.addEventListener("click", closeAddAdminModal);
-  }
-
-  if (cancelBtn) {
-    cancelBtn.addEventListener("click", closeAddAdminModal);
-  }
-
-  if (form) {
-    form.addEventListener("submit", handleAddAdminSubmit);
-  }
-
+  if (closeBtn) closeBtn.addEventListener("click", closeAddAdminModal);
+  if (cancelBtn) cancelBtn.addEventListener("click", closeAddAdminModal);
+  if (form) form.addEventListener("submit", handleAddAdminSubmit);
   if (modal) {
     modal.addEventListener("click", (e) => {
-      if (e.target === modal) {
-        closeAddAdminModal();
-      }
+      if (e.target === modal) closeAddAdminModal();
     });
   }
 
-  // Delete Confirmation Modal event listeners
+  // Delete Confirmation Modal
   const closeDeleteBtn = document.getElementById("close-delete-modal");
   const cancelDeleteBtn = document.getElementById("cancel-delete-btn");
   const deleteForm = document.getElementById("delete-confirm-form");
   const deleteModal = document.getElementById("delete-confirm-modal");
 
-  if (closeDeleteBtn) {
-    closeDeleteBtn.addEventListener("click", closeDeleteConfirmModal);
-  }
-
-  if (cancelDeleteBtn) {
-    cancelDeleteBtn.addEventListener("click", closeDeleteConfirmModal);
-  }
-
-  if (deleteForm) {
-    deleteForm.addEventListener("submit", handleDeleteConfirmSubmit);
-  }
-
+  if (closeDeleteBtn) closeDeleteBtn.addEventListener("click", closeDeleteConfirmModal);
+  if (cancelDeleteBtn) cancelDeleteBtn.addEventListener("click", closeDeleteConfirmModal);
+  if (deleteForm) deleteForm.addEventListener("submit", handleDeleteConfirmSubmit);
   if (deleteModal) {
     deleteModal.addEventListener("click", (e) => {
-      if (e.target === deleteModal) {
-        closeDeleteConfirmModal();
-      }
+      if (e.target === deleteModal) closeDeleteConfirmModal();
     });
   }
 
-  // Edit User Modal event listeners
+  // Edit User Modal
   const closeEditBtn = document.getElementById("close-edit-modal");
   const cancelEditBtn = document.getElementById("cancel-edit-btn");
   const editForm = document.getElementById("edit-user-form");
   const editModal = document.getElementById("edit-user-modal");
   const editRoleSelect = document.getElementById("edit-role");
 
-  if (closeEditBtn) {
-    closeEditBtn.addEventListener("click", closeEditUserModal);
-  }
-
-  if (cancelEditBtn) {
-    cancelEditBtn.addEventListener("click", closeEditUserModal);
-  }
-
-  if (editForm) {
-    editForm.addEventListener("submit", handleEditUserSubmit);
-  }
-
+  if (closeEditBtn) closeEditBtn.addEventListener("click", closeEditUserModal);
+  if (cancelEditBtn) cancelEditBtn.addEventListener("click", closeEditUserModal);
+  if (editForm) editForm.addEventListener("submit", handleEditUserSubmit);
   if (editModal) {
     editModal.addEventListener("click", (e) => {
-      if (e.target === editModal) {
-        closeEditUserModal();
-      }
+      if (e.target === editModal) closeEditUserModal();
     });
   }
-
   if (editRoleSelect) {
     editRoleSelect.addEventListener("change", (e) => {
       const studentTypeGroup = document.getElementById("edit-student-type-group");
@@ -687,18 +665,17 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-});
 
-// Load all users from API
-async function loadAllUsersFromAPI() {
-  try {
-    allUsers = await adminApi.getAllUsers();
-    filteredUsers = [...allUsers];
-    renderUsersTable();
-  } catch (error) {
-    console.error("Error loading users:", error);
-    // Fallback to initialize mock data
-    initializeUsersData();
-    renderUsersTable();
+  // Suspended User Modal
+  const closeSuspendedBtn = document.getElementById("close-suspended-btn");
+  const closeSuspendedIcon = document.getElementById("close-suspended-modal");
+  const suspendedModal = document.getElementById("suspended-user-modal");
+
+  if (closeSuspendedBtn) closeSuspendedBtn.addEventListener("click", closeSuspendedUserModal);
+  if (closeSuspendedIcon) closeSuspendedIcon.addEventListener("click", closeSuspendedUserModal);
+  if (suspendedModal) {
+    suspendedModal.addEventListener("click", (e) => {
+      if (e.target === suspendedModal) closeSuspendedUserModal();
+    });
   }
-}
+});

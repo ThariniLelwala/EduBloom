@@ -1,106 +1,6 @@
 // Help Common Handler - Shared functionality for all help pages
 (function () {
-  // Sample FAQs - Can be customized per role
-  const roleFAQs = {
-    teacher: [
-      {
-        id: 1,
-        question: "How do I create a new course?",
-        answer:
-          "Navigate to your dashboard and click 'Create Course'. Fill in the course details, select subject, and set the curriculum. You can then add modules and lessons to the course.",
-      },
-      {
-        id: 2,
-        question: "How do I create and manage quizzes?",
-        answer:
-          "Go to the 'Quizzes' section in your dashboard. Click 'Create Quiz', add questions with different types (multiple choice, true/false, short answer), set difficulty levels, and assign to classes.",
-      },
-      {
-        id: 3,
-        question: "How do I upload course materials?",
-        answer:
-          "In each course section, use the 'Upload Materials' option to add PDFs, documents, images, and videos. Organize materials into folders for better organization.",
-      },
-      {
-        id: 4,
-        question: "How do I grade assignments?",
-        answer:
-          "Open the 'Grading' panel, select the assignment, and review student submissions. Provide feedback and assign grades. Students will receive notifications when grades are posted.",
-      },
-      {
-        id: 5,
-        question: "How do I verify my teacher account?",
-        answer:
-          "Go to your profile settings and click 'Submit Verification'. Upload required documents (teaching credentials, ID). Admin will review and verify within 48 hours.",
-      },
-    ],
-    student: [
-      {
-        id: 1,
-        question: "How do I submit an assignment?",
-        answer:
-          "Navigate to the assignment in your course. Click 'Submit', upload your work or provide your answer, and click 'Submit Assignment'. You can resubmit before the deadline.",
-      },
-      {
-        id: 2,
-        question: "How do I take a quiz?",
-        answer:
-          "Go to the 'Quiz' section in your course. Click on the quiz to start. Answer all questions and review your responses before submitting. You cannot retake the quiz after submission unless allowed by your teacher.",
-      },
-      {
-        id: 3,
-        question: "How do I track my progress?",
-        answer:
-          "Visit your 'Progress' dashboard to see grades, completed assignments, quiz scores, and learning analytics. You can view detailed feedback on each submission.",
-      },
-      {
-        id: 4,
-        question: "How do I access course materials?",
-        answer:
-          "In each course, click 'Materials' to view all resources shared by your teacher. Download documents, view videos, and access additional learning resources organized by module.",
-      },
-      {
-        id: 5,
-        question: "How do I message my teacher?",
-        answer:
-          "Use the messaging feature in the course to send direct messages to your teacher. You can also post in discussion forums to ask questions visible to the entire class.",
-      },
-    ],
-    parent: [
-      {
-        id: 1,
-        question: "How do I monitor my child's progress?",
-        answer:
-          "Go to 'Child's Progress' on your dashboard. You'll see grades, assignment submissions, quiz scores, and attendance. Click on specific items for detailed feedback from teachers.",
-      },
-      {
-        id: 2,
-        question: "How do I link my child's account?",
-        answer:
-          "In your profile settings, click 'Link Child Account'. Enter your child's email or student ID. Your child must accept the link request for it to be completed.",
-      },
-      {
-        id: 3,
-        question: "How do I communicate with teachers?",
-        answer:
-          "Use the 'Communication' section to send messages to your child's teachers. You can also view any announcements they've posted about class progress or upcoming events.",
-      },
-      {
-        id: 4,
-        question: "How do I view the calendar?",
-        answer:
-          "Check the 'Calendar' page to see all upcoming assignments, tests, and events for your child. Sync with your personal calendar if desired.",
-      },
-      {
-        id: 5,
-        question: "How do I reset my password?",
-        answer:
-          "Click 'Forgot Password' on the login page. Enter your email, check for a reset link, and create a new password. If you don't receive an email, check your spam folder or contact support.",
-      },
-    ],
-  };
-
-  // Determine role from sidebar data or localStorage
+  // Determine role from localStorage
   function getUserRole() {
     const role = localStorage.getItem("userRole") || "student";
     return role.toLowerCase();
@@ -112,24 +12,53 @@
     attachFormListener();
   }
 
-  // Load FAQs based on user role
-  function loadFAQs() {
+  // Load FAQs based on user role from API
+  async function loadFAQs() {
     const role = getUserRole();
-    const faqs = roleFAQs[role] || roleFAQs.student;
     const container = document.getElementById("faqs-container");
-
     if (!container) return;
+
+    try {
+      const response = await fetch(`/api/faqs?role=${role}`);
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.error || "Failed to fetch FAQs");
+      
+      const faqs = data.faqs || [];
+      renderFAQs(faqs);
+    } catch (error) {
+      console.error("Error loading FAQs:", error);
+      container.innerHTML = `
+        <div class="faq-error">
+          <p>Unable to load FAQs. Please try again later.</p>
+        </div>
+      `;
+    }
+  }
+
+  function renderFAQs(faqs) {
+    const container = document.getElementById("faqs-container");
+    if (!container) return;
+
+    if (faqs.length === 0) {
+      container.innerHTML = `
+        <div class="faq-empty">
+          <p>No FAQs available for your role yet.</p>
+        </div>
+      `;
+      return;
+    }
 
     container.innerHTML = faqs
       .map(
-        (faq) => `
+        (faq, index) => `
       <div class="faq-item">
-        <button class="faq-question" data-faq-id="${faq.id}">
+        <button class="faq-question" data-faq-id="${index}">
           <i class="fas fa-chevron-right"></i>
-          <span>${faq.question}</span>
+          <span>${escapeHtml(faq.question)}</span>
         </button>
         <div class="faq-answer" style="display: none;">
-          <p>${faq.answer}</p>
+          <p>${escapeHtml(faq.answer)}</p>
         </div>
       </div>
     `
@@ -159,12 +88,19 @@
     });
   }
 
+  function escapeHtml(text) {
+    if (!text) return "";
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
   // Handle support form submission
   function attachFormListener() {
     const form = document.getElementById("support-form");
     if (!form) return;
 
-    form.addEventListener("submit", function (e) {
+    form.addEventListener("submit", async function (e) {
       e.preventDefault();
 
       const topic = document.getElementById("support-topic").value.trim();
@@ -175,25 +111,40 @@
         return;
       }
 
-      // Simulate saving support request
-      const request = {
-        id: Date.now(),
-        topic,
-        message,
-        status: "pending",
-        date: new Date().toLocaleDateString(),
-      };
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Sending...";
 
-      // Store in localStorage (would be sent to backend in production)
-      let requests = JSON.parse(localStorage.getItem("supportRequests")) || [];
-      requests.push(request);
-      localStorage.setItem("supportRequests", JSON.stringify(requests));
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await fetch("/api/help/request", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ topic, message })
+        });
 
-      showToast(
-        "Support request sent successfully! We'll get back to you soon.",
-        "success"
-      );
-      form.reset();
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to submit request");
+        }
+
+        showToast(
+          "Support request sent successfully! We'll get back to you soon.",
+          "success"
+        );
+        form.reset();
+      } catch (error) {
+        console.error("Error submitting request:", error);
+        showToast(error.message || "Failed to submit request", "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
     });
   }
 
@@ -213,7 +164,10 @@
 
   // Add CSS for FAQs and toast
   function injectStyles() {
+    if (document.getElementById("help-common-styles")) return;
+    
     const style = document.createElement("style");
+    style.id = "help-common-styles";
     style.textContent = `
       .faqs-list {
         display: flex;
@@ -263,6 +217,12 @@
         font-size: 13px;
         line-height: 1.6;
         margin: 0;
+      }
+
+      .faq-empty, .faq-error {
+        padding: 24px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.6);
       }
 
       .toast {

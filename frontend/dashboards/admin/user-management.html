@@ -67,7 +67,7 @@
           <!-- Users Table Card -->
           <div class="card full">
             <div class="card-header">
-              <h3>All Users</h3>
+              <h3>Active Users</h3>
             </div>
 
             <!-- Controls Section -->
@@ -99,9 +99,9 @@
                   <i class="fas fa-user-shield"></i> Add Admin
                 </button>
 
-                <!-- Bulk Delete Button -->
+                <!-- Bulk Suspend Button -->
                 <button class="btn-secondary" id="bulk-delete-btn" disabled>
-                  <i class="fas fa-trash"></i> Delete Selected
+                  <i class="fas fa-ban"></i> Suspend Selected
                 </button>
               </div>
             </div>
@@ -127,6 +127,32 @@
                 </thead>
                 <tbody id="users-table-body">
                   <!-- Users will be populated here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Suspended Users Table Card -->
+          <div class="card full">
+            <div class="card-header">
+              <h3>Suspended Users</h3>
+            </div>
+
+            <!-- Suspended Users Table -->
+            <div class="admin-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Suspended Date</th>
+                    <th class="text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="suspended-users-table-body">
+                  <!-- Suspended users will be populated here -->
                 </tbody>
               </table>
             </div>
@@ -228,10 +254,13 @@
               type="password"
               id="admin-password"
               name="password"
-              placeholder="Password (min 8 chars, uppercase, number, special char)"
+              placeholder="Min 8 chars, uppercase, number, special char (@$!%*?&)"
               autocomplete="new-password"
               required
             />
+            <div id="password-requirements" style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px;">
+              Requirements: 8+ chars, uppercase, number, special char
+            </div>
           </div>
 
           <div
@@ -258,15 +287,25 @@
     <div id="delete-confirm-modal" class="modal" style="display: none">
       <div class="modal-content delete-modal-content">
         <div class="modal-header">
-          <h2><i class="fas fa-exclamation-circle"></i> Confirm Deletion</h2>
+          <h2><i class="fas fa-exclamation-circle"></i> Confirm Suspension</h2>
           <button class="modal-close" id="close-delete-modal">&times;</button>
         </div>
 
         <form id="delete-confirm-form">
           <p class="delete-confirm-text">
-            This action cannot be undone. Please enter your password to confirm
-            deletion.
+            This will suspend the user account. The user will not be able to log in. Please enter your password and reason to confirm.
           </p>
+
+          <div class="form-group">
+            <label for="delete-reason">Reason for Suspension *</label>
+            <textarea
+              id="delete-reason"
+              name="reason"
+              placeholder="Enter reason for suspension..."
+              rows="3"
+              required
+            ></textarea>
+          </div>
 
           <div class="form-group">
             <label for="delete-password">Your Password *</label>
@@ -293,10 +332,56 @@
               type="submit"
               class="btn-primary btn-danger"
             >
-              <i class="fas fa-trash"></i> Delete
+              <i class="fas fa-ban"></i> Suspend
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Verification Details Modal -->
+    <div id="verification-details-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2><i class="fas fa-user-graduate"></i> Teacher Verification Details</h2>
+          <button class="modal-close" id="close-verification-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div style="display: flex; flex-direction: column; gap: 16px">
+            <div class="form-group">
+              <label style="color: rgba(255, 255, 255, 0.6); font-size: 12px; display: block; margin-bottom: 4px;">Teacher Name</label>
+              <p id="verif-teacher-name" style="color: var(--color-white); margin: 0; font-size: 14px;"></p>
+            </div>
+            <div class="form-group">
+              <label style="color: rgba(255, 255, 255, 0.6); font-size: 12px; display: block; margin-bottom: 4px;">Email</label>
+              <p id="verif-email" style="color: var(--color-white); margin: 0; font-size: 14px;"></p>
+            </div>
+            <div class="form-group">
+              <label style="color: rgba(255, 255, 255, 0.6); font-size: 12px; display: block; margin-bottom: 4px;">Submitted Date</label>
+              <p id="verif-submitted-date" style="color: var(--color-white); margin: 0; font-size: 14px;"></p>
+            </div>
+            <div class="form-group">
+              <label style="color: rgba(255, 255, 255, 0.6); font-size: 12px; display: block; margin-bottom: 4px;">Document</label>
+              <a id="verif-document-link" href="#" target="_blank" class="file-link" style="color: #4fc3f7; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                <i class="fas fa-file-pdf" style="color: #ef5350;"></i>
+                <span id="verif-document-name"></span>
+              </a>
+            </div>
+            <div class="form-group">
+              <label style="color: rgba(255, 255, 255, 0.6); font-size: 12px; display: block; margin-bottom: 4px;">Message</label>
+              <p id="verif-message" style="color: var(--color-white); margin: 0; font-size: 14px; white-space: pre-wrap; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;"></p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="close-verification-btn">Close</button>
+          <button class="btn btn-danger" id="reject-verif-btn" style="background-color: #ef5350;">
+            <i class="fas fa-times"></i> Reject
+          </button>
+          <button class="btn btn-primary" id="approve-verif-btn" style="background-color: #4caf50;">
+            <i class="fas fa-check"></i> Approve
+          </button>
+        </div>
       </div>
     </div>
 
@@ -337,7 +422,6 @@
               <option value="student">Student</option>
               <option value="teacher">Teacher</option>
               <option value="parent">Parent</option>
-              <option value="admin">Admin</option>
             </select>
           </div>
 
@@ -361,6 +445,47 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Suspended User Details Modal -->
+    <div id="suspended-user-modal" class="modal" style="display: none">
+      <div class="modal-content admin-modal-content">
+        <div class="modal-header">
+          <h2><i class="fas fa-user-slash"></i> Suspended User Details</h2>
+          <button class="modal-close" id="close-suspended-modal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="suspended-details">
+            <div class="detail-row">
+              <span class="detail-label">Username:</span>
+              <span class="detail-value" id="suspended-username">N/A</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Email:</span>
+              <span class="detail-value" id="suspended-email">N/A</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Role:</span>
+              <span class="detail-value" id="suspended-role">N/A</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Suspended By:</span>
+              <span class="detail-value" id="suspended-by">N/A</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Reason:</span>
+              <span class="detail-value" id="suspended-reason">No reason provided</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="close-suspended-btn">
+            Close
+          </button>
+        </div>
       </div>
     </div>
 

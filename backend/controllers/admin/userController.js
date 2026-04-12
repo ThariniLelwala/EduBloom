@@ -47,6 +47,21 @@ class UserController {
   }
 
   /**
+   * Get all suspended users
+   * GET /api/admin/users/suspended
+   */
+  async getSuspendedUsers(req, res) {
+    try {
+      const suspendedUsers = await userService.getSuspendedUsers();
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ suspendedUsers }));
+    } catch (err) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  /**
    * Get specific user by ID
    * GET /api/admin/users/:userId
    */

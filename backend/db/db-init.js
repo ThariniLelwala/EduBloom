@@ -42,11 +42,34 @@ async function initializeDatabase() {
       // Column already exists, ignore error
     }
 
+    // Drop status column (not needed with separate table)
     try {
-      await db.query(`ALTER TABLE users ADD COLUMN status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'suspended') OR status IS NULL);`);
+      await db.query(`ALTER TABLE users DROP COLUMN IF EXISTS status;`);
     } catch (err) {
-      // Column already exists, ignore error
+      // Column may not exist, ignore
     }
+
+    // Suspended Users table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS suspended_users (
+        id SERIAL PRIMARY KEY,
+        original_user_id INT,
+        username VARCHAR(50) NOT NULL,
+        email VARCHAR(100) NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        salt VARCHAR(255) NOT NULL,
+        role VARCHAR(20) NOT NULL,
+        student_type VARCHAR(20),
+        firstname VARCHAR(100),
+        lastname VARCHAR(100),
+        birthday DATE,
+        created_at TIMESTAMP,
+        suspended_at TIMESTAMP DEFAULT NOW(),
+        suspended_by INT,
+        reason TEXT
+      );
+    `);
+    console.log("✅ Suspended users table created");
 
     // Parent-Student Links table
     await db.query(`

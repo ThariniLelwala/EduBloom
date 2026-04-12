@@ -37,6 +37,14 @@ function handleAdminRoutes(req, res) {
       )(req, res);
     }
 
+    // Get suspended users: GET /api/admin/users/suspended
+    if (method === "GET" && pathname === "/api/admin/users/suspended") {
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
+        userController.getSuspendedUsers
+      )(req, res);
+    }
+
     // Get role distribution: GET /api/admin/users/analytics/role-distribution
     if (
       method === "GET" &&

@@ -85,7 +85,7 @@
         </div>
         <div class="modal-body">
           <div style="display: flex; flex-direction: column; gap: 16px">
-            <div>
+            <div class="form-group">
               <label
                 style="
                   color: rgba(255, 255, 255, 0.8);
@@ -102,8 +102,9 @@
                 placeholder="Enter announcement title..."
                 style="width: 100%"
               />
+              <span class="validation-error" id="title-error"></span>
             </div>
-            <div>
+            <div class="form-group">
               <label
                 style="
                   color: rgba(255, 255, 255, 0.8);
@@ -119,6 +120,7 @@
                 placeholder="Enter announcement message..."
                 style="width: 100%; resize: vertical; min-height: 120px"
               ></textarea>
+              <span class="validation-error" id="message-error"></span>
             </div>
           </div>
         </div>

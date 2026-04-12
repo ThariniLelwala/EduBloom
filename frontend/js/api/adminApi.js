@@ -65,6 +65,31 @@ const adminApi = {
   },
 
   /**
+   * Get all suspended users
+   * @returns {Promise<Array>} Array of suspended users
+   */
+  async getSuspendedUsers() {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/admin/users/suspended", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to fetch suspended users");
+
+      return data.suspendedUsers || [];
+    } catch (error) {
+      console.error("Error fetching suspended users:", error);
+      throw error;
+    }
+  },
+
+  /**
    * Get user by ID
    * @param {number} userId
    * @returns {Promise<Object>} User object
@@ -94,9 +119,10 @@ const adminApi = {
    * Delete a user with password confirmation
    * @param {number} userId
    * @param {string} password - Admin's password for confirmation
+   * @param {string} reason - Reason for deletion
    * @returns {Promise<Object>} Success message
    */
-  async deleteUser(userId, password) {
+  async deleteUser(userId, password, reason) {
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch(`/api/admin/users/${userId}`, {
@@ -105,7 +131,7 @@ const adminApi = {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password, reason }),
       });
 
       const data = await response.json();
@@ -122,9 +148,10 @@ const adminApi = {
    * Delete multiple users with password confirmation
    * @param {Array<number>} userIds
    * @param {string} password - Admin's password for confirmation
+   * @param {string} reason - Reason for deletion
    * @returns {Promise<Object>} Success message with delete count
    */
-  async deleteMultipleUsers(userIds, password) {
+  async deleteMultipleUsers(userIds, password, reason) {
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch("/api/admin/users", {
@@ -133,7 +160,7 @@ const adminApi = {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ user_ids: userIds, password }),
+        body: JSON.stringify({ user_ids: userIds, password, reason }),
       });
 
       const data = await response.json();
@@ -801,13 +828,13 @@ const adminApi = {
     }
   },
 
-  async createFAQ(question, answer) {
+  async createFAQ(question, answer, targetRole = null) {
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch("/api/admin/help/faqs", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ question, answer })
+        body: JSON.stringify({ question, answer, target_role: targetRole })
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Failed to create FAQ");
@@ -818,13 +845,13 @@ const adminApi = {
     }
   },
 
-  async updateFAQ(id, question, answer) {
+  async updateFAQ(id, question, answer, targetRole = null) {
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch(`/api/admin/help/faqs/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ question, answer })
+        body: JSON.stringify({ question, answer, target_role: targetRole })
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Failed to update FAQ");
@@ -881,6 +908,22 @@ const adminApi = {
       return data.request;
     } catch (error) {
       console.error("Error sending reply:", error);
+      throw error;
+    }
+  },
+
+  async resolveRequest(id) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/admin/help/requests/${id}/resolve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to resolve request");
+      return data.request;
+    } catch (error) {
+      console.error("Error resolving request:", error);
       throw error;
     }
   },

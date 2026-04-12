@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="../../css/cards.css" />
     <link rel="stylesheet" href="../../css/dashboard/progress.css" />
     <link rel="stylesheet" href="../../css/dashboard/task.css" />
+    <link rel="stylesheet" href="../../css/admin/dashboard.css" />
     <link rel="stylesheet" href="../../css/admin/themes.css" />
     <link
       rel="stylesheet"
@@ -179,6 +180,19 @@
             <h3>Pending Verifications</h3>
             <ul id="verifications-list"></ul>
             <button class="btn-secondary">View All</button>
+          </div>
+
+          <!-- Recent Announcements Card -->
+          <div class="card w2" id="recent-announcements">
+            <div class="card-header">
+              <h3><i class="fas fa-bullhorn"></i> Recent Announcements</h3>
+            </div>
+            <div id="dashboard-announcements-container" class="dashboard-announcements-list">
+              <!-- Populated by JavaScript -->
+            </div>
+            <a href="announcements.html" class="see-more-link">
+              <i class="fas fa-arrow-right"></i> See More Announcements
+            </a>
           </div>
         </div>
       </main>

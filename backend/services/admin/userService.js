@@ -9,10 +9,8 @@ class UserService {
    */
   async getAllUsers(filters = {}) {
     let query = `
-      SELECT u.id, u.username, u.email, u.role, u.firstname, u.lastname, u.student_type, u.created_at, COALESCE(u.status, 'active') as status,
-      (SELECT reason FROM user_deletion_logs WHERE deleted_user_id = u.id ORDER BY created_at DESC LIMIT 1) as suspension_reason,
-      (SELECT u2.username FROM user_deletion_logs dl JOIN users u2 ON dl.deleted_by = u2.id WHERE dl.deleted_user_id = u.id ORDER BY dl.created_at DESC LIMIT 1) as suspended_by_admin
-      FROM users u
+      SELECT id, username, email, role, firstname, lastname, student_type, created_at
+      FROM users
     `;
     const params = [];
     let paramIndex = 1;
@@ -20,23 +18,16 @@ class UserService {
     // Build WHERE clause for filters
     const conditions = [];
 
-    // Filter by status
-    if (filters.status) {
-      conditions.push(`COALESCE(u.status, 'active') = $${paramIndex}`);
-      params.push(filters.status);
-      paramIndex++;
-    }
-
     // Filter by role
     if (filters.role) {
-      conditions.push(`u.role = $${paramIndex}`);
+      conditions.push(`role = $${paramIndex}`);
       params.push(filters.role);
       paramIndex++;
     }
 
     // Filter by student type (for students)
     if (filters.student_type) {
-      conditions.push(`u.student_type = $${paramIndex}`);
+      conditions.push(`student_type = $${paramIndex}`);
       params.push(filters.student_type);
       paramIndex++;
     }
@@ -44,7 +35,7 @@ class UserService {
     // Search by username or email
     if (filters.search) {
       conditions.push(
-        `(u.username ILIKE $${paramIndex} OR u.email ILIKE $${paramIndex} OR u.firstname ILIKE $${paramIndex} OR u.lastname ILIKE $${paramIndex})`
+        `(username ILIKE $${paramIndex} OR email ILIKE $${paramIndex} OR firstname ILIKE $${paramIndex} OR lastname ILIKE $${paramIndex})`
       );
       params.push(`%${filters.search}%`);
       params.push(`%${filters.search}%`);
@@ -59,7 +50,7 @@ class UserService {
     }
 
     // Sort by created_at descending (newest first)
-    query += ` ORDER BY u.created_at DESC`;
+    query += ` ORDER BY created_at DESC`;
 
     const result = await db.query(query, params);
     return result.rows;
@@ -92,9 +83,9 @@ class UserService {
       "SELECT COUNT(*) as count FROM users WHERE DATE(created_at) = CURRENT_DATE"
     );
 
-    // Count suspended users from status column
+    // Count suspended users from suspended_users table
     const suspendedResult = await db.query(
-      "SELECT COUNT(*) as count FROM users WHERE status = 'suspended'"
+      "SELECT COUNT(*) as count FROM suspended_users"
     );
 
     return {
@@ -131,7 +122,7 @@ class UserService {
   }
 
   /**
-   * Suspend a user with password verification
+   * Suspend a user - move to suspended_users table
    */
   async deleteUser(userId, adminUser, password, reason = null) {
     if (!userId) {
@@ -172,26 +163,24 @@ class UserService {
 
     const user = userCheck.rows[0];
 
-    // Log suspension with reason
+    // Move user to suspended_users table
     await db.query(
-      "INSERT INTO user_deletion_logs (deleted_user_id, deleted_username, deleted_role, reason, deleted_by) VALUES ($1, $2, $3, $4, $5)",
-      [user.id, user.username, user.role, reason || "No reason provided", adminUser.id]
+      `INSERT INTO suspended_users (original_user_id, username, email, password, salt, role, student_type, firstname, lastname, birthday, created_at, suspended_by, reason)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+      [user.id, user.username, user.email, user.password, user.salt, user.role, user.student_type, user.firstname, user.lastname, user.birthday, user.created_at, adminUser.id, reason || "No reason provided"]
     );
 
-    // Suspend user (update status)
-    await db.query(
-      "UPDATE users SET status = 'suspended' WHERE id = $1",
-      [userId]
-    );
+    // Delete user from users table
+    await db.query("DELETE FROM users WHERE id = $1", [userId]);
 
     return {
-      message: `User ${user.username} suspended successfully`,
+      message: `User ${user.username} suspended and removed from system`,
       suspendedUserId: userId,
     };
   }
 
   /**
-   * Suspend multiple users with password verification
+   * Suspend multiple users
    */
   async deleteMultipleUsers(userIds, adminUser, password, reason = null) {
     if (!Array.isArray(userIds) || userIds.length === 0) {
@@ -221,31 +210,42 @@ class UserService {
       throw new Error("You cannot suspend your own admin account");
     }
 
-    // Get users to be suspended for logging
+    // Get users to be suspended
     const usersToSuspend = await db.query(
-      "SELECT id, username, role FROM users WHERE id = ANY($1)",
+      "SELECT * FROM users WHERE id = ANY($1)",
       [userIds]
     );
 
-    // Log suspensions
+    // Move each user to suspended_users table
     for (const user of usersToSuspend.rows) {
       await db.query(
-        "INSERT INTO user_deletion_logs (deleted_user_id, deleted_username, deleted_role, reason, deleted_by) VALUES ($1, $2, $3, $4, $5)",
-        [user.id, user.username, user.role, reason || "No reason provided", adminUser.id]
+        `INSERT INTO suspended_users (original_user_id, username, email, password, salt, role, student_type, firstname, lastname, birthday, created_at, suspended_by, reason)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+        [user.id, user.username, user.email, user.password, user.salt, user.role, user.student_type, user.firstname, user.lastname, user.birthday, user.created_at, adminUser.id, reason || "No reason provided"]
       );
     }
 
-    // Suspend multiple users
-    await db.query(
-      "UPDATE users SET status = 'suspended' WHERE id = ANY($1)",
-      [userIds]
-    );
+    // Delete users from users table
+    await db.query("DELETE FROM users WHERE id = ANY($1)", [userIds]);
 
     return {
-      message: `${usersToSuspend.rows.length} users suspended successfully`,
+      message: `${usersToSuspend.rows.length} users suspended and removed from system`,
       suspendedCount: usersToSuspend.rows.length,
       suspendedUserIds: userIds,
     };
+  }
+
+  /**
+   * Get all suspended users
+   */
+  async getSuspendedUsers() {
+    const result = await db.query(`
+      SELECT su.*, u.username as suspended_by_admin
+      FROM suspended_users su
+      LEFT JOIN users u ON su.suspended_by = u.id
+      ORDER BY su.suspended_at DESC
+    `);
+    return result.rows;
   }
 
   /**
@@ -288,31 +288,49 @@ class UserService {
   }
 
   /**
-   * Suspend a user
+   * Create a new admin user
    */
-  async suspendUser(userId, reason = null) {
-    if (!userId) {
-      throw new Error("User ID is required");
+  async createAdmin(adminData) {
+    const { firstname, lastname, birthday, username, email, password } = adminData;
+
+    if (!firstname || !lastname || !birthday || !username || !email || !password) {
+      throw new Error("All fields are required");
     }
+
+    // Check if username already exists
+    const usernameCheck = await db.query(
+      "SELECT id FROM users WHERE username = $1",
+      [username]
+    );
+    if (usernameCheck.rows.length > 0) {
+      throw new Error("Username already exists");
+    }
+
+    // Check if email already exists
+    const emailCheck = await db.query(
+      "SELECT id FROM users WHERE email = $1",
+      [email]
+    );
+    if (emailCheck.rows.length > 0) {
+      throw new Error("Email already exists");
+    }
+
+    // Hash password
+    const { hashPassword } = require("../../utils/hash");
+    const { hashed, salt } = hashPassword(password);
 
     const result = await db.query(
-      "UPDATE users SET status = 'suspended' WHERE id = $1 RETURNING id, username",
-      [userId]
+      `INSERT INTO users (username, email, password, salt, role, firstname, lastname, birthday)
+       VALUES ($1, $2, $3, $4, 'admin', $5, $6, $7)
+       RETURNING id, username, email, role, firstname, lastname, created_at`,
+      [username, email, hashed, salt, firstname, lastname, birthday]
     );
 
-    if (result.rows.length === 0) {
-      throw new Error("User not found");
-    }
-
-    return {
-      message: "User suspended successfully",
-      userId,
-      reason,
-    };
+    return result.rows[0];
   }
 
   /**
-   * Get user role distribution (includes admins)
+   * Get role distribution
    */
   async getRoleDistribution() {
     const result = await db.query(`
@@ -321,12 +339,11 @@ class UserService {
       GROUP BY role
       ORDER BY count DESC
     `);
-
     return result.rows;
   }
 
   /**
-   * Get recent registrations (includes admins)
+   * Get recent registrations
    */
   async getRecentRegistrations(limit = 10) {
     const result = await db.query(
@@ -336,88 +353,53 @@ class UserService {
        LIMIT $1`,
       [limit]
     );
-
     return result.rows;
   }
 
   /**
-   * Create a new admin user
+   * Get user login information by username
    */
-  async createAdmin(adminData) {
-    const { firstname, lastname, birthday, username, email, password } =
-      adminData;
-
-    // Validate required fields
-    if (
-      !firstname ||
-      !lastname ||
-      !birthday ||
-      !username ||
-      !email ||
-      !password
-    ) {
-      throw new Error("All fields are required");
-    }
-
-    // Check if email or username already exists
-    const existing = await db.query(
-      "SELECT * FROM users WHERE email = $1 OR username = $2",
-      [email, username]
-    );
-    if (existing.rows.length > 0) {
-      throw new Error("Email or username already registered");
-    }
-
-    // Validate password format (8+ chars, uppercase, number, special char)
-    const passwordRegex =
-      /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      throw new Error(
-        "Password must be at least 8 chars with uppercase, number, and special character"
-      );
-    }
-
-    // Validate age (18+)
-    const birthDate = new Date(birthday);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
-    ) {
-      age--;
-    }
-
-    if (age < 18) {
-      throw new Error("Admin must be at least 18 years old");
-    }
-
-    // Hash password
-    const { hashed, salt } = hashPassword(password);
-
-    // Generate token for the new admin
-    const token = generateToken({ username, email, role: "admin" });
-
-    // Create admin user
+  async getUserLoginInfo(username) {
     const result = await db.query(
-      `INSERT INTO users (username, email, password, salt, token, role, firstname, lastname, birthday, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
-       RETURNING id, username, email, role, firstname, lastname, birthday, created_at`,
-      [
-        username,
-        email,
-        hashed,
-        salt,
-        token,
-        "admin",
-        firstname,
-        lastname,
-        birthday,
-      ]
+      `SELECT id, username, email, password, salt, role, firstname, lastname, status
+       FROM users
+       WHERE username = $1`,
+      [username]
     );
-
     return result.rows[0];
+  }
+
+  /**
+   * Update user token
+   */
+  async updateUserToken(userId, token) {
+    await db.query(
+      "UPDATE users SET token = $2 WHERE id = $1",
+      [userId, token]
+    );
+  }
+
+  /**
+   * Get user by token
+   */
+  async getUserByToken(token) {
+    const result = await db.query(
+      `SELECT id, username, email, role, firstname, lastname, student_type
+       FROM users
+       WHERE token = $1`,
+      [token]
+    );
+    return result.rows[0];
+  }
+
+  /**
+   * Clear user token (logout)
+   */
+  async clearUserToken(userId) {
+    await db.query(
+      "UPDATE users SET token = NULL WHERE id = $1",
+      [userId]
+    );
   }
 }
 
