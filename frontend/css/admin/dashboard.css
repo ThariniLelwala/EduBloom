@@ -415,6 +415,58 @@
   flex-shrink: 0;
 }
 
+.announcement-card {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.announcement-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.announcement-card .announcement-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.announcement-card .announcement-header h4 {
+  color: var(--color-white);
+  margin: 0;
+  font-size: 18px;
+}
+
+.announcement-card .announcement-date {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.announcement-card .announcement-message {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 16px 0;
+  line-height: 1.6;
+}
+
+.announcement-card .announcement-footer {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.loading-state {
+  padding: 40px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
 /* ===== Teacher Verification Styles ===== */
 .verification-badge {
   display: inline-block;

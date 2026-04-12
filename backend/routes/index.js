@@ -3,6 +3,7 @@ const handleAuthRoutes = require("./authRoutes");
 const handleStudentRoutes = require("./studentRoutes");
 const handleTeacherRoutes = require("./teacherRoutes");
 const handleAdminRoutes = require("./adminRoutes");
+const handlePublicRoutes = require("./publicRoutes");
 
 const handleApiRoutes = (req, res) => {
   const parsedUrl = url.parse(req.url, true);
@@ -10,12 +11,17 @@ const handleApiRoutes = (req, res) => {
 
   let handled = null;
 
-  // Delegate to specific route handlers based on path prefix
-  if (pathname.startsWith("/api/student/")) {
+  // Public routes (no auth required)
+  if (pathname.startsWith("/api/announcements")) {
+    handled = handlePublicRoutes(req, res);
+  }
+
+  // Delegated routes (auth required)
+  if (handled === null && pathname.startsWith("/api/student/")) {
     handled = handleStudentRoutes(req, res);
-  } else if (pathname.startsWith("/api/teacher/")) {
+  } else if (handled === null && pathname.startsWith("/api/teacher/")) {
     handled = handleTeacherRoutes(req, res);
-  } else if (pathname.startsWith("/api/admin/")) {
+  } else if (handled === null && pathname.startsWith("/api/admin/")) {
     handled = handleAdminRoutes(req, res);
   }
 

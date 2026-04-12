@@ -820,6 +820,49 @@ async function initializeDatabase() {
     await db.query(`CREATE INDEX IF NOT EXISTS idx_announcements_created_at ON announcements(created_at DESC);`);
     console.log("✅ Announcements table created successfully");
 
+    // FAQs table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS faqs (
+        id SERIAL PRIMARY KEY,
+        question VARCHAR(500) NOT NULL,
+        answer TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    console.log("✅ FAQs table created successfully");
+
+    // Seed default FAQs
+    const faqsCheck = await db.query("SELECT COUNT(*) as count FROM faqs");
+    if (parseInt(faqsCheck.rows[0].count) === 0) {
+      await db.query(`
+        INSERT INTO faqs (question, answer) VALUES
+        ('How do I reset my password?', 'Click on "Forgot Password" on the login page and follow the instructions sent to your email.'),
+        ('How do I create a forum?', 'Navigate to the forums section and click "Create Forum". Fill in the details and submit for approval.'),
+        ('Can I edit my posts after publishing?', 'Yes, you can edit your posts within 24 hours of publishing. After that, contact support.'),
+        ('How do I report inappropriate content?', 'Click the flag icon on any post to report it. Our moderation team will review it within 48 hours.'),
+        ('How do I become a verified teacher?', 'Go to your profile settings and submit your teaching credentials. We will review your documents within 2-3 business days.'),
+        ('Is this platform free to use?', 'Yes, EduBloom is completely free for all users. You can access quizzes, forums, study notes, and more without any payment.')
+      `);
+      console.log("✅ Default FAQs seeded successfully");
+    }
+
+    // Help Requests table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS help_requests (
+        id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL REFERENCES users(id),
+        topic VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        reply TEXT,
+        status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'replied', 'resolved')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_help_requests_status ON help_requests(status);`);
+    console.log("✅ Help requests table created successfully");
+
     // Check if admin user exists, if not create one
     const adminCheck = await db.query(
       "SELECT * FROM users WHERE role = 'admin' LIMIT 1"

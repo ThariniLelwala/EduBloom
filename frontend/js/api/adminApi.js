@@ -782,4 +782,206 @@ const adminApi = {
       throw error;
     }
   },
+
+  // ===== Help API =====
+
+  async getFAQs() {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/admin/help/faqs", {
+        method: "GET",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to fetch FAQs");
+      return data.faqs;
+    } catch (error) {
+      console.error("Error fetching FAQs:", error);
+      throw error;
+    }
+  },
+
+  async createFAQ(question, answer) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/admin/help/faqs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ question, answer })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to create FAQ");
+      return data.faq;
+    } catch (error) {
+      console.error("Error creating FAQ:", error);
+      throw error;
+    }
+  },
+
+  async updateFAQ(id, question, answer) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/admin/help/faqs/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ question, answer })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to update FAQ");
+      return data.faq;
+    } catch (error) {
+      console.error("Error updating FAQ:", error);
+      throw error;
+    }
+  },
+
+  async deleteFAQ(id) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/admin/help/faqs/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to delete FAQ");
+      return data;
+    } catch (error) {
+      console.error("Error deleting FAQ:", error);
+      throw error;
+    }
+  },
+
+  async getHelpRequests(status) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const url = status ? `/api/admin/help/requests?status=${status}` : "/api/admin/help/requests";
+      const response = await fetch(url, {
+        method: "GET",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to fetch requests");
+      return data.requests;
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+      throw error;
+    }
+  },
+
+  async replyToRequest(id, reply) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/admin/help/requests/${id}/reply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reply })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to send reply");
+      return data.request;
+    } catch (error) {
+      console.error("Error sending reply:", error);
+      throw error;
+    }
+  },
+
+  // ===== Verification API =====
+
+  async getVerifications(status) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const url = status ? `/api/admin/verifications?status=${status}` : "/api/admin/verifications";
+      const response = await fetch(url, {
+        method: "GET",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to fetch verifications");
+      return data.verifications;
+    } catch (error) {
+      console.error("Error fetching verifications:", error);
+      throw error;
+    }
+  },
+
+  async getPendingVerifications() {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/admin/verifications/pending", {
+        method: "GET",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to fetch pending verifications");
+      return data.verifications;
+    } catch (error) {
+      console.error("Error fetching pending verifications:", error);
+      throw error;
+    }
+  },
+
+  async getVerificationStats() {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/admin/verifications/stats", {
+        method: "GET",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to fetch stats");
+      return data;
+    } catch (error) {
+      console.error("Error fetching verification stats:", error);
+      throw error;
+    }
+  },
+
+  async getVerificationById(id) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/admin/verifications/${id}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to fetch verification");
+      return data.verification;
+    } catch (error) {
+      console.error("Error fetching verification:", error);
+      throw error;
+    }
+  },
+
+  async approveVerification(id) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/admin/verifications/${id}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to approve verification");
+      return data;
+    } catch (error) {
+      console.error("Error approving verification:", error);
+      throw error;
+    }
+  },
+
+  async rejectVerification(id, reason) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/admin/verifications/${id}/reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reason })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to reject verification");
+      return data;
+    } catch (error) {
+      console.error("Error rejecting verification:", error);
+      throw error;
+    }
+  },
 };

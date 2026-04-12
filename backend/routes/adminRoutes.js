@@ -6,6 +6,8 @@ const announcementController = require("../controllers/admin/announcementControl
 const dashboardController = require("../controllers/admin/dashboardController");
 const profileController = require("../controllers/admin/profileController");
 const analyticsController = require("../controllers/admin/analyticsController");
+const helpController = require("../controllers/admin/helpController");
+const verificationController = require("../controllers/admin/verificationController");
 const {
   verifyToken,
   requireRole,
@@ -274,6 +276,52 @@ function handleAdminRoutes(req, res) {
       // Delete: DELETE /api/admin/announcements/:id
       if (method === "DELETE" && pathname.match(/^\/api\/admin\/announcements\/\d+$/)) {
         return applyMiddleware([verifyToken, requireRole("admin")], announcementController.delete)(req, res);
+      }
+    }
+
+    // Help routes
+    if (pathname.startsWith("/api/admin/help")) {
+      // FAQs
+      if (method === "GET" && pathname === "/api/admin/help/faqs") {
+        return applyMiddleware([verifyToken, requireRole("admin")], helpController.getFAQs)(req, res);
+      }
+      if (method === "POST" && pathname === "/api/admin/help/faqs") {
+        return applyMiddleware([verifyToken, requireRole("admin")], helpController.createFAQ)(req, res);
+      }
+      if (method === "PUT" && pathname.match(/^\/api\/admin\/help\/faqs\/\d+$/)) {
+        return applyMiddleware([verifyToken, requireRole("admin")], helpController.updateFAQ)(req, res);
+      }
+      if (method === "DELETE" && pathname.match(/^\/api\/admin\/help\/faqs\/\d+$/)) {
+        return applyMiddleware([verifyToken, requireRole("admin")], helpController.deleteFAQ)(req, res);
+      }
+      // Requests
+      if (method === "GET" && pathname === "/api/admin/help/requests") {
+        return applyMiddleware([verifyToken, requireRole("admin")], helpController.getRequests)(req, res);
+      }
+      if (method === "POST" && pathname.match(/^\/api\/admin\/help\/requests\/\d+\/reply$/)) {
+        return applyMiddleware([verifyToken, requireRole("admin")], helpController.replyToRequest)(req, res);
+      }
+    }
+
+    // Verification routes
+    if (pathname.startsWith("/api/admin/verifications")) {
+      if (method === "GET" && pathname === "/api/admin/verifications") {
+        return applyMiddleware([verifyToken, requireRole("admin")], verificationController.getAll)(req, res);
+      }
+      if (method === "GET" && pathname === "/api/admin/verifications/pending") {
+        return applyMiddleware([verifyToken, requireRole("admin")], verificationController.getPending)(req, res);
+      }
+      if (method === "GET" && pathname === "/api/admin/verifications/stats") {
+        return applyMiddleware([verifyToken, requireRole("admin")], verificationController.getStats)(req, res);
+      }
+      if (method === "GET" && pathname.match(/^\/api\/admin\/verifications\/\d+$/)) {
+        return applyMiddleware([verifyToken, requireRole("admin")], verificationController.getById)(req, res);
+      }
+      if (method === "POST" && pathname.match(/^\/api\/admin\/verifications\/\d+\/approve$/)) {
+        return applyMiddleware([verifyToken, requireRole("admin")], verificationController.approve)(req, res);
+      }
+      if (method === "POST" && pathname.match(/^\/api\/admin\/verifications\/\d+\/reject$/)) {
+        return applyMiddleware([verifyToken, requireRole("admin")], verificationController.reject)(req, res);
       }
     }
 

@@ -1,239 +1,151 @@
-// Teacher Verifications Management
+// Teacher Verifications - Connected to Backend API
 
-let allVerifications = [];
-let filteredVerifications = [];
+let verifications = [];
 
-// Initialize verifications data
-function initializeVerificationsData() {
-  allVerifications = [
-    {
-      id: 1,
-      userId: 2,
-      teacherName: "Sarah Smith",
-      email: "sarah.smith@email.com",
-      status: "pending",
-      submittedAt: "2025-10-23",
-      fileName: "appointment_letter.pdf",
-      message: "Here is my appointment letter from the school.",
-    },
-    {
-      id: 2,
-      userId: 5,
-      teacherName: "Alex Davis",
-      email: "alex.davis@email.com",
-      status: "pending",
-      submittedAt: "2025-10-22",
-      fileName: "teacher_certificate.pdf",
-      message: "Attaching my teaching certificate and ID.",
-    },
-    {
-      id: 3,
-      userId: 8,
-      teacherName: "Lisa Anderson",
-      email: "lisa.a@email.com",
-      status: "pending",
-      submittedAt: "2025-10-21",
-      fileName: "school_id_badge.jpg",
-      message: "My school identification badge.",
-    },
-  ];
-  filteredVerifications = [...allVerifications];
-}
+document.addEventListener("DOMContentLoaded", () => {
+  loadVerifications();
+});
 
-// Load pending verifications count
-function loadPendingVerificationsCount() {
-  const countElement = document.getElementById("pending-verifications-count");
-  if (countElement) {
-    countElement.textContent = allVerifications.length;
+async function loadVerifications() {
+  try {
+    verifications = await adminApi.getPendingVerifications();
+  } catch (error) {
+    console.error("Error loading verifications:", error);
+    verifications = [];
   }
+  renderVerifications();
+  updateCount();
 }
 
-// Render verifications table
-function renderVerificationsTable() {
+function renderVerifications() {
   const tbody = document.getElementById("verifications-table-body");
   if (!tbody) return;
-
+  
   tbody.innerHTML = "";
-
-  if (filteredVerifications.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="6" class="admin-empty-state">
-          No pending verifications
-        </td>
-      </tr>
-    `;
+  
+  if (verifications.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="admin-empty-state">No pending verifications</td></tr>';
     return;
   }
 
-  filteredVerifications.forEach((verification) => {
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td class="text-white">${verification.teacherName}</td>
-      <td class="text-muted">${verification.email}</td>
-      <td class="text-muted">${verification.submittedAt}</td>
-      <td>
-        <a href="#" class="file-link" title="View document" data-verification-id="${verification.id}">
-          <i class="fas fa-file-pdf"></i> ${verification.fileName}
-        </a>
-      </td>
-      <td class="text-muted" title="${verification.message}">
-        ${verification.message.substring(0, 40)}...
-      </td>
-      <td style="text-align: center;">
-        <button class="approve-verification-btn admin-table-action" data-verification-id="${verification.id}" title="Approve">
-          <i class="fas fa-check"></i>
-        </button>
-        <button class="reject-verification-btn admin-table-action" data-verification-id="${verification.id}" title="Reject">
-          <i class="fas fa-times"></i>
-        </button>
-        <button class="view-details-btn admin-table-action" data-verification-id="${verification.id}" title="View Details">
-          <i class="fas fa-eye"></i>
-        </button>
-      </td>
+  verifications.forEach(v => {
+    const name = `${v.firstname || ""} ${v.lastname || ""}`.trim() || v.username;
+    const date = v.submitted_at ? new Date(v.submitted_at).toLocaleDateString() : "N/A";
+    
+    tbody.innerHTML += `
+      <tr>
+        <td class="text-white">${name}</td>
+        <td class="text-muted">${v.email}</td>
+        <td class="text-muted">${date}</td>
+        <td>
+          <a href="#" class="file-link" data-verification-id="${v.id}">
+            <i class="fas fa-file-pdf"></i> ${v.file_name || "Document"}
+          </a>
+        </td>
+        <td class="text-muted" title="${v.message || ""}">${(v.message || "").substring(0, 40)}${(v.message || "").length > 40 ? "..." : ""}</td>
+        <td style="text-align: center;">
+          <button class="approve-verification-btn admin-table-action" data-verification-id="${v.id}" title="Approve">
+            <i class="fas fa-check"></i>
+          </button>
+          <button class="reject-verification-btn admin-table-action" data-verification-id="${v.id}" title="Reject">
+            <i class="fas fa-times"></i>
+          </button>
+          <button class="view-details-btn admin-table-action" data-verification-id="${v.id}" title="View Details">
+            <i class="fas fa-eye"></i>
+          </button>
+        </td>
+      </tr>
     `;
-
-    tbody.appendChild(tr);
   });
 
-  bindVerificationEvents();
+  bindEvents();
 }
 
-// Bind verification action events
-function bindVerificationEvents() {
-  document.addEventListener("click", (e) => {
-    // Approve verification
+function bindEvents() {
+  document.addEventListener("click", e => {
     if (e.target.closest(".approve-verification-btn")) {
-      const verificationId = parseInt(
-        e.target.closest(".approve-verification-btn").dataset.verificationId
-      );
-      approveVerification(verificationId);
+      const id = parseInt(e.target.closest(".approve-verification-btn").dataset.verificationId);
+      approveVerification(id);
     }
-
-    // Reject verification
     if (e.target.closest(".reject-verification-btn")) {
-      const verificationId = parseInt(
-        e.target.closest(".reject-verification-btn").dataset.verificationId
-      );
-      rejectVerification(verificationId);
+      const id = parseInt(e.target.closest(".reject-verification-btn").dataset.verificationId);
+      rejectVerification(id);
     }
-
-    // View details
     if (e.target.closest(".view-details-btn")) {
-      const verificationId = parseInt(
-        e.target.closest(".view-details-btn").dataset.verificationId
-      );
-      viewVerificationDetails(verificationId);
+      const id = parseInt(e.target.closest(".view-details-btn").dataset.verificationId);
+      viewVerificationDetails(id);
     }
-
-    // View file
     if (e.target.closest(".file-link")) {
       e.preventDefault();
-      const verificationId = parseInt(
-        e.target.closest(".file-link").dataset.verificationId
-      );
-      viewVerificationFile(verificationId);
+      const id = parseInt(e.target.closest(".file-link").dataset.verificationId);
+      viewVerificationFile(id);
     }
   });
 }
 
-// Approve verification
-function approveVerification(verificationId) {
-  const verification = allVerifications.find((v) => v.id === verificationId);
-  if (!verification) return;
-
-  if (
-    confirm(
-      `Approve verification for ${verification.teacherName}? This will mark them as verified.`
-    )
-  ) {
-    // Update backend (placeholder)
-    console.log(`Approving verification ${verificationId}`);
-
-    // Remove from pending list
-    allVerifications = allVerifications.filter((v) => v.id !== verificationId);
-    filterVerifications();
-    loadPendingVerificationsCount();
-
-    showNotification(`${verification.teacherName} has been verified!`);
+async function approveVerification(id) {
+  const v = verifications.find(x => x.id === id);
+  const name = v ? `${v.firstname || ""} ${v.lastname || ""}`.trim() || v.username : "User";
+  
+  if (!confirm(`Approve verification for ${name}?`)) return;
+  
+  try {
+    await adminApi.approveVerification(id);
+    verifications = verifications.filter(x => x.id !== id);
+    renderVerifications();
+    updateCount();
+    showNotification(`${name} has been verified!`);
+  } catch (error) {
+    alert(error.message);
   }
 }
 
-// Reject verification
-function rejectVerification(verificationId) {
-  const verification = allVerifications.find((v) => v.id === verificationId);
-  if (!verification) return;
-
-  const reason = prompt(
-    "Please provide a reason for rejection:",
-    "Document quality issues"
-  );
+async function rejectVerification(id) {
+  const v = verifications.find(x => x.id === id);
+  const name = v ? `${v.firstname || ""} ${v.lastname || ""}`.trim() || v.username : "User";
+  
+  const reason = prompt("Please provide a reason for rejection:", "Document quality issues");
   if (reason === null) return;
-
-  // Update backend (placeholder)
-  console.log(`Rejecting verification ${verificationId} with reason: ${reason}`);
-
-  // Remove from pending list
-  allVerifications = allVerifications.filter((v) => v.id !== verificationId);
-  filterVerifications();
-  loadPendingVerificationsCount();
-
-  showNotification(`Verification rejected for ${verification.teacherName}.`);
+  
+  try {
+    await adminApi.rejectVerification(id, reason);
+    verifications = verifications.filter(x => x.id !== id);
+    renderVerifications();
+    updateCount();
+    showNotification(`Verification rejected for ${name}`);
+  } catch (error) {
+    alert(error.message);
+  }
 }
 
-// View verification details
-function viewVerificationDetails(verificationId) {
-  const verification = allVerifications.find((v) => v.id === verificationId);
-  if (!verification) return;
-
-  const detailsText = `
-Teacher Name: ${verification.teacherName}
-Email: ${verification.email}
-Submitted: ${verification.submittedAt}
-Document: ${verification.fileName}
-Message: ${verification.message}
-Status: ${verification.status}
-  `;
-
-  alert(detailsText);
+function viewVerificationDetails(id) {
+  const v = verifications.find(x => x.id === id);
+  if (!v) return;
+  
+  const name = `${v.firstname || ""} ${v.lastname || ""}`.trim() || v.username;
+  const date = v.submitted_at ? new Date(v.submitted_at).toLocaleString() : "N/A";
+  
+  alert(`Teacher: ${name}\nEmail: ${v.email}\nSubmitted: ${date}\nDocument: ${v.file_name || "N/A"}\nMessage: ${v.message || "None"}\nStatus: ${v.status}`);
 }
 
-// View verification file (placeholder)
-function viewVerificationFile(verificationId) {
-  const verification = allVerifications.find((v) => v.id === verificationId);
-  if (!verification) return;
-
-  alert(
-    `Opening document: ${verification.fileName}\n\nNote: In a real implementation, this would open the document viewer.`
-  );
+function viewVerificationFile(id) {
+  const v = verifications.find(x => x.id === id);
+  if (!v) return;
+  alert(`Opening document: ${v.file_name || "Document"}\n\nNote: File viewer would open here.`);
 }
 
-// Filter verifications
-function filterVerifications() {
-  // Can be extended with search and filter functionality
-  filteredVerifications = [...allVerifications];
-  renderVerificationsTable();
+function updateCount() {
+  const countElement = document.getElementById("pending-verifications-count");
+  if (countElement) countElement.textContent = verifications.length;
 }
 
-// Show notification
 function showNotification(message) {
-  // Use existing toast or notification system if available
   const toast = document.getElementById("toast");
   if (toast) {
     toast.textContent = message;
     toast.classList.add("show");
-    setTimeout(() => {
-      toast.classList.remove("show");
-    }, 3000);
+    setTimeout(() => toast.classList.remove("show"), 3000);
   } else {
     alert(message);
   }
 }
-
-// Initialize verifications on page load
-document.addEventListener("DOMContentLoaded", () => {
-  initializeVerificationsData();
-  loadPendingVerificationsCount();
-  renderVerificationsTable();
-});
