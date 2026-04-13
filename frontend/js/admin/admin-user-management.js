@@ -17,19 +17,23 @@ async function loadStatisticsFromAPI() {
   try {
     const stats = await adminApi.getStatistics();
 
+    const activeUsers = stats.total || 0;
+    const suspendedUsers = stats.suspended || 0;
+    const totalUsers = activeUsers + suspendedUsers;
+
     const totalElement = document.getElementById("total-users-count");
     if (totalElement) {
-      totalElement.textContent = stats.total || 0;
+      totalElement.textContent = totalUsers;
     }
 
     const activeElement = document.getElementById("active-users-count");
     if (activeElement) {
-      activeElement.textContent = stats.total || 0;
+      activeElement.textContent = activeUsers;
     }
 
     const suspendedElement = document.getElementById("suspended-users-count");
     if (suspendedElement) {
-      suspendedElement.textContent = stats.suspended || 0;
+      suspendedElement.textContent = suspendedUsers;
     }
 
     const dailyElement = document.getElementById("daily-registration-count");
