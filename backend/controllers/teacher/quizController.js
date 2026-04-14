@@ -318,6 +318,88 @@ class QuizController {
       res.end(JSON.stringify({ error: err.message }));
     }
   }
+
+  /**
+   * Get all published quizzes (for students/parents)
+   * GET /api/public/quizzes
+   */
+  async getAllPublishedQuizzes(req, res) {
+    try {
+      const quizzes = await quizService.getAllPublishedQuizzes();
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          message: "Published quizzes retrieved successfully",
+          quizzes,
+        })
+      );
+    } catch (err) {
+      console.error("[QuizController] getAllPublishedQuizzes error:", err.message);
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  /**
+   * Get published quizzes by subject (for students/parents)
+   * GET /api/public/subjects/:subjectId/quizzes
+   */
+  async getPublishedQuizzesBySubject(req, res) {
+    try {
+      const subjectId = parseInt(req.url.split("/")[4]);
+
+      if (!subjectId || isNaN(subjectId)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid subject ID" }));
+        return;
+      }
+
+      const quizzes = await quizService.getPublishedQuizzesBySubject(subjectId);
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          message: "Published quizzes retrieved successfully",
+          quizzes,
+        })
+      );
+    } catch (err) {
+      console.error("[QuizController] getPublishedQuizzesBySubject error:", err.message);
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  /**
+   * Get a published quiz set (for students to take)
+   * GET /api/public/quizzes/:quizSetId
+   */
+  async getPublishedQuizSet(req, res) {
+    try {
+      const quizSetId = parseInt(req.url.split("/")[4]);
+
+      if (!quizSetId || isNaN(quizSetId)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid quiz ID" }));
+        return;
+      }
+
+      const quiz = await quizService.getPublishedQuizSet(quizSetId);
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          message: "Quiz retrieved successfully",
+          quiz,
+        })
+      );
+    } catch (err) {
+      console.error("[QuizController] getPublishedQuizSet error:", err.message);
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
 }
 
 module.exports = new QuizController();

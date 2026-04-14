@@ -204,6 +204,45 @@ class NotesService {
 
     return result.rows;
   }
+
+  /**
+   * Get all public notes (for students/parents to access)
+   */
+  async getAllPublicNotes() {
+    const result = await db.query(
+      `SELECT tmn.id, tmn.title, tmn.file_name, tmn.file_url, tmn.google_drive_file_id, tmn.description, tmn.grade,
+              tmt.name as topic_name, tms.name as subject_name, tms.id as subject_id,
+              u.id as teacher_id, u.username as teacher_name
+       FROM teacher_module_notes tmn
+       INNER JOIN teacher_module_topics tmt ON tmn.topic_id = tmt.id
+       INNER JOIN teacher_module_subjects tms ON tmt.subject_id = tms.id
+       INNER JOIN users u ON tms.teacher_id = u.id
+       WHERE tmn.is_public = TRUE
+       ORDER BY tmn.created_at DESC`
+    );
+
+    return result.rows;
+  }
+
+  /**
+   * Get public notes by subject
+   */
+  async getPublicNotesBySubject(subjectId) {
+    const result = await db.query(
+      `SELECT tmn.id, tmn.title, tmn.file_name, tmn.file_url, tmn.google_drive_file_id, tmn.description, tmn.grade,
+              tmt.name as topic_name, tms.name as subject_name, tms.id as subject_id,
+              u.id as teacher_id, u.username as teacher_name
+       FROM teacher_module_notes tmn
+       INNER JOIN teacher_module_topics tmt ON tmn.topic_id = tmt.id
+       INNER JOIN teacher_module_subjects tms ON tmt.subject_id = tms.id
+       INNER JOIN users u ON tms.teacher_id = u.id
+       WHERE tmn.is_public = TRUE AND tms.id = $1
+       ORDER BY tmn.created_at DESC`,
+      [subjectId]
+    );
+
+    return result.rows;
+  }
 }
 
 module.exports = new NotesService();

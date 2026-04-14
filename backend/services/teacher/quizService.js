@@ -550,6 +550,94 @@ class QuizService {
 
     return { message: "Questions reordered successfully" };
   }
+
+  /**
+   * Get all published quiz sets (for students/parents to access)
+   */
+  async getAllPublishedQuizzes() {
+    const result = await db.query(
+      `SELECT qs.id, qs.name, qs.description, qs.subject_id, qs.is_published, qs.created_at,
+              qs.updated_at, qs2.name as subject_name, qs2.teacher_id,
+              u.username as teacher_name,
+              (SELECT COUNT(*) FROM quiz_questions WHERE quiz_set_id = qs.id) as question_count
+       FROM quiz_sets qs
+       INNER JOIN quiz_subjects qs2 ON qs.subject_id = qs2.id
+       INNER JOIN users u ON qs2.teacher_id = u.id
+       WHERE qs.is_published = TRUE
+       ORDER BY qs.created_at DESC`
+    );
+
+    return result.rows.map(row => ({
+      ...row,
+      question_count: parseInt(row.question_count)
+    }));
+  }
+
+  /**
+   * Get published quizzes by subject
+   */
+  async getPublishedQuizzesBySubject(subjectId) {
+    const result = await db.query(
+      `SELECT qs.id, qs.name, qs.description, qs.subject_id, qs.is_published, qs.created_at,
+              qs.updated_at, qs2.name as subject_name, qs2.teacher_id,
+              u.username as teacher_name,
+              (SELECT COUNT(*) FROM quiz_questions WHERE quiz_set_id = qs.id) as question_count
+       FROM quiz_sets qs
+       INNER JOIN quiz_subjects qs2 ON qs.subject_id = qs2.id
+       INNER JOIN users u ON qs2.teacher_id = u.id
+       WHERE qs.is_published = TRUE AND qs.subject_id = $1
+       ORDER BY qs.created_at DESC`,
+      [subjectId]
+    );
+
+    return result.rows.map(row => ({
+      ...row,
+      question_count: parseInt(row.question_count)
+    }));
+  }
+
+  /**
+   * Get a published quiz set (without answers - for students to take)
+   */
+  async getPublishedQuizSet(quizSetId) {
+    const quizResult = await db.query(
+      `SELECT qs.id, qs.name, qs.description, qs.subject_id, qs.is_published, qs.created_at, qs.updated_at,
+              qs2.name as subject_name, qs2.teacher_id, u.username as teacher_name
+       FROM quiz_sets qs
+       INNER JOIN quiz_subjects qs2 ON qs.subject_id = qs2.id
+       INNER JOIN users u ON qs2.teacher_id = u.id
+       WHERE qs.id = $1 AND qs.is_published = TRUE`,
+      [quizSetId]
+    );
+
+    if (quizResult.rows.length === 0) {
+      throw new Error("Quiz not found or not published");
+    }
+
+    const quiz = quizResult.rows[0];
+
+    const questionsResult = await db.query(
+      `SELECT id, quiz_set_id, question_text, question_order, created_at, updated_at
+       FROM quiz_questions
+       WHERE quiz_set_id = $1
+       ORDER BY question_order ASC, created_at ASC`,
+      [quizSetId]
+    );
+
+    for (let question of questionsResult.rows) {
+      const answersResult = await db.query(
+        `SELECT id, question_id, answer_text, is_correct, answer_order
+         FROM quiz_answers
+         WHERE question_id = $1
+         ORDER BY answer_order ASC, created_at ASC`,
+        [question.id]
+      );
+      question.answers = answersResult.rows;
+    }
+
+    quiz.questions = questionsResult.rows;
+    return quiz;
+  }
 }
 
 module.exports = new QuizService();
