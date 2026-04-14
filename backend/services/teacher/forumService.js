@@ -261,6 +261,47 @@ class ForumService {
     );
     return result.rows.map(row => row.tag_name);
   }
+
+  /**
+   * Get all published forums (for students/parents to access)
+   */
+  async getAllPublishedForums() {
+    const result = await db.query(
+      `SELECT fp.*, u.username as author, u.id as author_id,
+              (SELECT COALESCE(json_agg(tag_name), '[]') FROM forum_tags WHERE post_id = fp.id) as tags,
+              (SELECT COUNT(*) FROM forum_replies WHERE post_id = fp.id) as reply_count
+       FROM forum_posts fp
+       JOIN users u ON fp.author_id = u.id
+       WHERE fp.published = TRUE AND fp.archived = FALSE
+       ORDER BY fp.created_at DESC`
+    );
+    return result.rows.map(row => ({
+      ...row,
+      reply_count: parseInt(row.reply_count),
+      target_grade: row.target_grade ? parseInt(row.target_grade) : null
+    }));
+  }
+
+  /**
+   * Get published forums by grade
+   */
+  async getPublishedForumsByGrade(grade) {
+    const result = await db.query(
+      `SELECT fp.*, u.username as author, u.id as author_id,
+              (SELECT COALESCE(json_agg(tag_name), '[]') FROM forum_tags WHERE post_id = fp.id) as tags,
+              (SELECT COUNT(*) FROM forum_replies WHERE post_id = fp.id) as reply_count
+       FROM forum_posts fp
+       JOIN users u ON fp.author_id = u.id
+       WHERE fp.published = TRUE AND fp.archived = FALSE AND fp.target_grade = $1
+       ORDER BY fp.created_at DESC`,
+      [grade]
+    );
+    return result.rows.map(row => ({
+      ...row,
+      reply_count: parseInt(row.reply_count),
+      target_grade: row.target_grade ? parseInt(row.target_grade) : null
+    }));
+  }
 }
 
 module.exports = new ForumService();

@@ -173,6 +173,16 @@ function handleTeacherRoutes(req, res) {
       return applyMiddleware([verifyToken], notesController.getPublicNotes)(req, res);
     }
 
+    // Public notes routes (for students/parents)
+    if (method === "GET" && (pathname === "/api/public/notes" || pathname === "/api/public/notes/")) {
+      return applyMiddleware([verifyToken], notesController.getAllPublicNotes)(req, res);
+    }
+    if (method === "GET" && pathname.match(/^\/api\/public\/subjects\/\d+\/notes$/)) {
+      const subjectId = pathname.split("/")[4];
+      req.params = { subjectId };
+      return applyMiddleware([verifyToken], notesController.getPublicNotesBySubject)(req, res);
+    }
+
     // Quiz routes
     if (method === "POST" && pathname === "/api/teacher/quiz/subjects") {
       return applyMiddleware([verifyToken, requireRole("teacher")], quizController.createSubject)(req, res);
@@ -249,6 +259,31 @@ function handleTeacherRoutes(req, res) {
       const quizSetId = pathname.split("/")[5];
       req.params = { quizSetId };
       return applyMiddleware([verifyToken, requireRole("teacher")], quizController.reorderQuestions)(req, res);
+    }
+
+    // Public quiz routes (for students/parents)
+    if (method === "GET" && (pathname === "/api/public/quizzes" || pathname === "/api/public/quizzes/")) {
+      return applyMiddleware([verifyToken], quizController.getAllPublishedQuizzes)(req, res);
+    }
+    if (method === "GET" && pathname.match(/^\/api\/public\/subjects\/\d+\/quizzes$/)) {
+      const subjectId = pathname.split("/")[4];
+      req.params = { subjectId };
+      return applyMiddleware([verifyToken], quizController.getPublishedQuizzesBySubject)(req, res);
+    }
+    if (method === "GET" && pathname.match(/^\/api\/public\/quizzes\/\d+$/)) {
+      const quizSetId = pathname.split("/")[4];
+      req.params = { quizSetId };
+      return applyMiddleware([verifyToken], quizController.getPublishedQuizSet)(req, res);
+    }
+
+    // Public forum routes (for students/parents)
+    if (method === "GET" && (pathname === "/api/public/forums" || pathname === "/api/public/forums/")) {
+      return applyMiddleware([verifyToken], forumController.getAllPublishedForums)(req, res);
+    }
+    if (method === "GET" && pathname.match(/^\/api\/public\/forums\/grade\/\d+$/)) {
+      const grade = pathname.split("/")[5];
+      req.params = { grade };
+      return applyMiddleware([verifyToken], forumController.getPublishedForumsByGrade)(req, res);
     }
 
     // Todo routes

@@ -228,6 +228,51 @@ class ForumController {
       res.end(JSON.stringify({ error: err.message }));
     }
   }
+
+  /**
+   * Get all published forums (for students/parents)
+   * GET /api/public/forums
+   */
+  async getAllPublishedForums(req, res) {
+    try {
+      const forums = await forumService.getAllPublishedForums();
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({
+        message: "Published forums retrieved successfully",
+        forums
+      }));
+    } catch (err) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  /**
+   * Get published forums by grade (for students/parents)
+   * GET /api/public/forums/grade/:grade
+   */
+  async getPublishedForumsByGrade(req, res) {
+    try {
+      const pathname = req.url.split("?")[0];
+      const grade = parseInt(pathname.split("/")[5]);
+
+      if (isNaN(grade)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid grade" }));
+        return;
+      }
+
+      const forums = await forumService.getPublishedForumsByGrade(grade);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({
+        message: "Published forums retrieved successfully",
+        forums
+      }));
+    } catch (err) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
 }
 
 module.exports = new ForumController();

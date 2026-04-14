@@ -207,6 +207,57 @@ class NotesController {
       res.end(JSON.stringify({ error: err.message }));
     }
   }
+
+  /**
+   * Get all public notes (for students/parents)
+   * GET /api/public/notes
+   */
+  async getAllPublicNotes(req, res) {
+    try {
+      const notes = await notesService.getAllPublicNotes();
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          message: "Public notes retrieved successfully",
+          notes,
+        })
+      );
+    } catch (err) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  /**
+   * Get public notes by subject (for students/parents)
+   * GET /api/public/subjects/:subjectId/notes
+   */
+  async getPublicNotesBySubject(req, res) {
+    try {
+      const pathname = req.url.split("?")[0];
+      const subjectId = parseInt(pathname.split("/")[4]);
+
+      if (!subjectId || isNaN(subjectId)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid subject ID" }));
+        return;
+      }
+
+      const notes = await notesService.getPublicNotesBySubject(subjectId);
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          message: "Public notes retrieved successfully",
+          notes,
+        })
+      );
+    } catch (err) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
 }
 
 module.exports = new NotesController();
