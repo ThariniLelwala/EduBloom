@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Teacher Forums</title>
+    <script src="../../js/sidebar.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/custom-select.css" />
+    <link rel="stylesheet" href="../../css/student/forums.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+    <div id="topbar-container"></div>
+
+    <div class="container">
+      <div id="sidebar-container"></div>
+
+      <main id="content">
+        <div class="card-grid">
+          <!-- Welcome Card -->
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">Teacher Forums</h1>
+              <div>
+                View and participate in discussions created by your teachers.
+                Ask questions and engage with learning materials.
+              </div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+
+          <!-- Available Forums Card -->
+          <div class="card w2 h2">
+            <div class="card-title">
+              <i class="fas fa-comments"></i>
+              <h3>Teacher Forums</h3>
+            </div>
+            <div class="forum-filter-row">
+              <input type="text" id="forum-search" class="forum-search-input" placeholder="Search by title, description, or tags..." />
+              <select id="forum-grade-filter" class="forum-grade-filter">
+                <option value="">All Grades</option>
+                <option value="5">Grade 5</option>
+                <option value="6">Grade 6</option>
+                <option value="7">Grade 7</option>
+                <option value="8">Grade 8</option>
+                <option value="9">Grade 9</option>
+                <option value="10">Grade 10</option>
+                <option value="11">Grade 11</option>
+                <option value="12">Grade 12</option>
+                <option value="13">Grade 13</option>
+              </select>
+            </div>
+            <div class="topics-list" id="available-forums">
+              <!-- Forums will be loaded here -->
+            </div>
+          </div>
+
+          <!-- Quick Stats Card -->
+          <div class="card w2">
+            <div class="card-title">
+              <i class="fas fa-chart-bar"></i>
+              <h3>Forum Overview</h3>
+            </div>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-number" id="total-topics">0</div>
+                <div class="stat-label">Total Forums</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-number" id="active-users">0</div>
+                <div class="stat-label">Active Discussions</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Forum Detail Modal -->
+    <div id="forum-detail-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="forum-detail-title">Forum Title</h2>
+          <button class="modal-close" onclick="closeForumModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="forum-meta">
+            <span id="forum-author">by Teacher</span>
+            <span id="forum-date">Date</span>
+            <div id="forum-tags" class="tags-display"></div>
+          </div>
+          <div class="forum-description" id="forum-description">
+            Forum description here...
+          </div>
+          <div class="replies-section">
+            <h3>Replies</h3>
+            <div id="replies-list">
+              <!-- Replies will be loaded here -->
+            </div>
+            <div class="add-reply">
+              <textarea
+                id="reply-content"
+                placeholder="Ask a question or add to the discussion..."
+                rows="3"
+                maxlength="500"
+              ></textarea>
+              <button class="btn-primary" onclick="addReply()">
+                Post Reply
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+    <script src="../../js/custom-select.js"></script>
+    <script src="../../js/confirmation-modal.js"></script>
+    <script src="../../js/api/teacherResourcesApi.js"></script>
+    <script src="../../js/student/resource-forums.js"></script>
+  </body>
+</html>

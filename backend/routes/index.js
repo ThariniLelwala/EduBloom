@@ -17,6 +17,8 @@ const handleApiRoutes = (req, res) => {
     handled = handleTeacherRoutes(req, res);
   } else if (pathname.startsWith("/api/admin/")) {
     handled = handleAdminRoutes(req, res);
+  } else if (pathname.startsWith("/api/public/")) {
+    handled = handleTeacherRoutes(req, res);
   }
 
   // If a specific handler processed the request, return

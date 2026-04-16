@@ -90,6 +90,130 @@
               <input type="file" id="custom-bg" accept="image/*" />
             </div>
           </div>
+
+          <!-- Professional Profile Card -->
+          <div class="card full" id="professional-profile-card">
+            <h2><i class="fas fa-graduation-cap"></i> Professional Profile <span style="font-size: 0.7em; color: rgba(255,255,255,0.6);">(Visible to Students)</span></h2>
+            
+            <div class="settings-section">
+              <div class="form-group-profile">
+                <label for="profile-description">
+                  <i class="fas fa-align-left"></i> Bio / Description
+                </label>
+                <textarea
+                  id="profile-description"
+                  placeholder="Tell students about yourself, your teaching philosophy, and what makes your classes unique..."
+                  maxlength="1000"
+                  rows="4"
+                ></textarea>
+                <div class="char-count">
+                  <span id="description-char-count">0</span>/1000 characters
+                </div>
+              </div>
+
+              <div class="form-group-profile">
+                <label for="experience-years">
+                  <i class="fas fa-calendar-alt"></i> Years of Teaching Experience
+                </label>
+                <input
+                  type="number"
+                  id="experience-years"
+                  placeholder="e.g., 8"
+                  min="0"
+                  max="50"
+                />
+              </div>
+
+              <div class="form-group-profile">
+                <label>
+                  <i class="fas fa-certificate"></i> Certifications <span style="color: var(--color-primary);">*</span> <small>(at least 1 required)</small>
+                </label>
+                <div class="tag-input-container" id="certifications-container">
+                  <div class="tag-input-wrapper">
+                    <input
+                      type="text"
+                      id="certification-input"
+                      placeholder="Type certification and press Enter"
+                      maxlength="250"
+                    />
+                    <button type="button" class="btn-add-tag" id="add-certification-btn">+ Add</button>
+                  </div>
+                  <div class="tags-list" id="certifications-tags"></div>
+                </div>
+              </div>
+
+              <div class="form-group-profile">
+                <label>
+                  <i class="fas fa-graduation-cap"></i> Degrees / Education <small>(optional)</small>
+                </label>
+                <div class="tag-input-container" id="degrees-container">
+                  <div class="tag-input-wrapper">
+                    <input
+                      type="text"
+                      id="degree-input"
+                      placeholder="Type degree and press Enter"
+                      maxlength="250"
+                    />
+                    <button type="button" class="btn-add-tag" id="add-degree-btn">+ Add</button>
+                  </div>
+                  <div class="tags-list" id="degrees-tags"></div>
+                </div>
+              </div>
+
+              <div class="form-group-profile">
+                <label>
+                  <i class="fas fa-book"></i> Subjects Taught <small>(optional)</small>
+                </label>
+                <div class="tag-input-container" id="subjects-container">
+                  <div class="tag-input-wrapper">
+                    <input
+                      type="text"
+                      id="subject-input"
+                      placeholder="Type subject and press Enter"
+                      maxlength="250"
+                    />
+                    <button type="button" class="btn-add-tag" id="add-subject-btn">+ Add</button>
+                  </div>
+                  <div class="tags-list" id="subjects-tags"></div>
+                </div>
+              </div>
+
+              <div class="form-group-profile">
+                <label>
+                  <i class="fas fa-school"></i> Schools / Institutions <small>(optional)</small>
+                </label>
+                <div class="tag-input-container" id="schools-container">
+                  <div class="tag-input-wrapper">
+                    <input
+                      type="text"
+                      id="school-input"
+                      placeholder="Type school/institution and press Enter"
+                      maxlength="250"
+                    />
+                    <button type="button" class="btn-add-tag" id="add-school-btn">+ Add</button>
+                  </div>
+                  <div class="tags-list" id="schools-tags"></div>
+                </div>
+              </div>
+
+              <div class="form-group-profile">
+                <label for="linkedin-input">
+                  <i class="fab fa-linkedin"></i> LinkedIn Profile <small>(optional)</small>
+                </label>
+                <input
+                  type="url"
+                  id="linkedin-input"
+                  placeholder="https://linkedin.com/in/yourprofile"
+                />
+              </div>
+
+              <div class="profile-actions">
+                <button type="button" class="btn-primary" id="save-profile-btn">
+                  <i class="fas fa-save"></i> Save Profile
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>

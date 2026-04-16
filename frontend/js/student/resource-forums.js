@@ -1,18 +1,22 @@
-// Forums Page JavaScript - University Students Only
+// Resource Forums Page - For School Students to view Teacher Forums
 
 let currentForumId = null;
 let forumsData = [];
 
-document.addEventListener("DOMContentLoaded", async () => {
-  if (!isUniversityStudent()) {
-    window.location.href = "resource-forums.html";
-    return;
-  }
-
+document.addEventListener("DOMContentLoaded", () => {
   checkAuth();
+  handleURLParams();
   loadForums();
-  loadStats();
+  setupSearch();
 });
+
+function handleURLParams() {
+  const params = new URLSearchParams(window.location.search);
+  const forumId = params.get("forumId");
+  if (forumId) {
+    setTimeout(() => openForumDetail(forumId), 100);
+  }
+}
 
 function checkAuth() {
   const token = localStorage.getItem("authToken");
@@ -24,10 +28,10 @@ function checkAuth() {
 async function loadForums() {
   const container = document.getElementById("available-forums");
   container.innerHTML = '<p style="text-align: center; padding: 20px; color: rgba(255,255,255,0.6);">Loading forums...</p>';
-
+  
   try {
     const token = localStorage.getItem("authToken");
-    const response = await fetch("/api/student/forums", {
+    const response = await fetch("/api/public/forums", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -36,22 +40,39 @@ async function loadForums() {
     });
 
     if (!response.ok) throw new Error("Failed to fetch forums");
-    forumsData = await response.json();
+    const data = await response.json();
+    forumsData = Array.isArray(data) ? data : (data.forums || []);
   } catch (error) {
     console.error("Error loading forums:", error);
     forumsData = [];
   }
 
-  const forums = forumsData.filter(f => f.published);
+  loadStatsFromForums(forumsData.filter(f => f.published));
+  renderForums(forumsData.filter(f => f.published));
+}
 
+function renderForums(forums) {
+  const container = document.getElementById("available-forums");
+  const searchTerm = document.getElementById("forum-search").value;
+  const gradeFilter = document.getElementById("forum-grade-filter").value;
+  
   if (forums.length === 0) {
-    container.innerHTML = `
-      <div style="text-align: center; padding: 24px; color: rgba(255, 255, 255, 0.6);">
-        <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
-        <p>No forums yet</p>
-        <small>Create your first forum discussion!</small>
-      </div>
-    `;
+    if (searchTerm || gradeFilter) {
+      container.innerHTML = `
+        <div class="no-results-message">
+          <i class="fas fa-search"></i>
+          <p>No forums match your filters</p>
+        </div>
+      `;
+    } else {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 24px; color: rgba(255, 255, 255, 0.6);">
+          <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+          <p>No forums available</p>
+          <small>Check back later for new discussions</small>
+        </div>
+      `;
+    }
     return;
   }
 
@@ -80,20 +101,62 @@ async function loadForums() {
   });
 }
 
-function loadStats() {
-  const forums = forumsData.filter(f => f.published);
-  document.getElementById("total-topics").textContent = forums.length;
-  document.getElementById("active-users").textContent = Math.min(forums.length * 2 + 5, 30);
+function setupSearch() {
+  const searchInput = document.getElementById("forum-search");
+  const gradeFilter = document.getElementById("forum-grade-filter");
+  
+  searchInput.addEventListener("input", (e) => {
+    applyFilters();
+  });
+  
+  gradeFilter.addEventListener("change", () => {
+    applyFilters();
+  });
 }
 
-function openForumDetail(forumId) {
-  const forum = forumsData.find(f => f.id === forumId);
+function applyFilters() {
+  const searchTerm = document.getElementById("forum-search").value;
+  const gradeFilter = document.getElementById("forum-grade-filter").value;
+  const term = searchTerm.toLowerCase().trim();
+  const grade = gradeFilter ? parseInt(gradeFilter) : null;
+  
+  let forums = forumsData.filter(f => f.published);
+  
+  if (grade) {
+    forums = forums.filter(f => f.target_grade === grade);
+  }
+  
+  if (!term) {
+    renderForums(forums);
+    loadStatsFromForums(forums);
+    return;
+  }
+  
+  const filtered = forums.filter(forum => {
+    const titleMatch = (forum.title || "").toLowerCase().includes(term);
+    const descMatch = (forum.description || "").toLowerCase().includes(term);
+    const tagMatch = (forum.tags || []).some(tag => tag.toLowerCase().includes(term));
+    return titleMatch || descMatch || tagMatch;
+  });
+  
+  renderForums(filtered);
+  loadStatsFromForums(filtered);
+}
+
+function loadStatsFromForums(forums) {
+  const activeDiscussions = forums.filter(f => (f.reply_count || 0) > 0).length;
+  document.getElementById("total-topics").textContent = forums.length;
+  document.getElementById("active-users").textContent = activeDiscussions;
+}
+
+async function openForumDetail(forumId) {
+  const forum = forumsData.find(f => f.id == forumId);
   if (!forum) return;
 
   // Increment view count
   try {
     const token = localStorage.getItem("authToken");
-    fetch(`/api/student/forums/${forumId}/view`, {
+    await fetch(`/api/public/forums/${forumId}/view`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -119,10 +182,10 @@ function openForumDetail(forumId) {
 async function fetchReplies(forumId) {
   const container = document.getElementById("replies-list");
   container.innerHTML = '<p style="text-align: center; padding: 20px;">Loading replies...</p>';
-
+  
   try {
     const token = localStorage.getItem("authToken");
-    const response = await fetch(`/api/student/forums/${forumId}`, {
+    const response = await fetch(`/api/teacher/forums/${forumId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -162,7 +225,7 @@ async function addReply() {
 
   try {
     const token = localStorage.getItem("authToken");
-    const response = await fetch(`/api/student/forums/${currentForumId}/replies`, {
+    const response = await fetch(`/api/teacher/forums/${currentForumId}/replies`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -180,49 +243,6 @@ async function addReply() {
   } catch (error) {
     console.error("Error posting reply:", error);
     showNotification("Failed to post reply", "error");
-  }
-}
-
-function createNewTopic() {
-  const modal = document.getElementById("create-topic-modal");
-  modal.classList.add("show");
-}
-
-function closeModal() {
-  const modal = document.getElementById("create-topic-modal");
-  modal.classList.remove("show");
-}
-
-async function submitTopic() {
-  const title = document.getElementById("topic-title").value.trim();
-  const content = document.getElementById("topic-content").value.trim();
-
-  if (!title || !content) {
-    showNotification("Please fill in all fields", "error");
-    return;
-  }
-
-  try {
-    const token = localStorage.getItem("authToken");
-    const response = await fetch("/api/student/forums/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ title, description: content }),
-    });
-
-    if (!response.ok) throw new Error("Failed to create forum");
-
-    document.getElementById("topic-title").value = "";
-    document.getElementById("topic-content").value = "";
-    closeModal();
-    loadForums();
-    showNotification("Forum created successfully!", "success");
-  } catch (error) {
-    console.error("Error creating forum:", error);
-    showNotification("Failed to create forum", "error");
   }
 }
 
@@ -250,18 +270,13 @@ function showNotification(message, type = "info") {
   setTimeout(() => notification.remove(), 3000);
 }
 
-// Close modals on outside click
+// Close modal on outside click
 document.addEventListener("click", (e) => {
-  const createModal = document.getElementById("create-topic-modal");
-  const forumModal = document.getElementById("forum-detail-modal");
-  if (e.target === createModal) closeModal();
-  if (e.target === forumModal) closeForumModal();
+  const modal = document.getElementById("forum-detail-modal");
+  if (e.target === modal) closeForumModal();
 });
 
 // Close modal on Escape
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    closeModal();
-    closeForumModal();
-  }
+  if (e.key === "Escape") closeForumModal();
 });
