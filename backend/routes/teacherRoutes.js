@@ -334,6 +334,22 @@ function handleTeacherRoutes(req, res) {
       return applyMiddleware([verifyToken, requireRole("teacher")], todoController.deleteTodo)(req, res);
     }
 
+    // ========== PROFILE ROUTES ==========
+    // Get own profile: GET /api/teacher/profile
+    if (method === "GET" && (pathname === "/api/teacher/profile" || pathname === "/api/teacher/profile/")) {
+      return applyMiddleware([verifyToken, requireRole("teacher")], profileController.getProfile)(req, res);
+    }
+    // Update own profile: PUT /api/teacher/profile
+    if (method === "PUT" && (pathname === "/api/teacher/profile" || pathname === "/api/teacher/profile/")) {
+      return applyMiddleware([verifyToken, requireRole("teacher")], profileController.updateProfile)(req, res);
+    }
+    // Get public profile: GET /api/teacher/:teacherId/profile
+    if (method === "GET" && pathname.match(/^\/api\/teacher\/\d+\/profile$/)) {
+      const teacherId = pathname.split("/")[4];
+      req.params = { teacherId };
+      return applyMiddleware([verifyToken], profileController.getPublicProfile)(req, res);
+    }
+
     return null;
   } catch (err) {
     console.error(`[TeacherRoutes Error] ${err.message}`);

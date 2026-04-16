@@ -3,6 +3,7 @@ const handleAuthRoutes = require("./authRoutes");
 const handleStudentRoutes = require("./studentRoutes");
 const handleTeacherRoutes = require("./teacherRoutes");
 const handleAdminRoutes = require("./adminRoutes");
+const handlePublicRoutes = require("./publicRoutes");
 
 const handleApiRoutes = (req, res) => {
   const parsedUrl = url.parse(req.url, true);

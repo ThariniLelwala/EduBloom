@@ -636,25 +636,37 @@ document.addEventListener("DOMContentLoaded", function () {
       const oldPassword = document.getElementById("oldPassword").value;
       const newPassword = document.getElementById("newPassword").value;
 
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Changing...";
+
       try {
-        // Here you would typically make an API call to change the password
-        // For now, we'll simulate it
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const token = localStorage.getItem("authToken");
+        const res = await fetch("/api/auth/change-password", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            oldPassword,
+            newPassword,
+          }),
+        });
 
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const result = await res.json();
 
-        // Update localStorage (in real app, this would be handled by the API)
-        user.passwordChanged = true;
-        localStorage.setItem("user", JSON.stringify(user));
-
-        showToast("Password changed successfully!");
-        closeModal();
+        if (res.ok) {
+          showToast("Password changed successfully!");
+          closeModal();
+        } else {
+          showError("oldPassword", result.error || "Failed to change password");
+        }
       } catch (error) {
-        showError(
-          "oldPassword",
-          "Failed to change password. Please try again."
-        );
+        console.error("Error changing password:", error);
+        showError("oldPassword", "Failed to change password. Please try again.");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Change Password";
       }
     });
   }

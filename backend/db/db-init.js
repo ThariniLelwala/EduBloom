@@ -465,6 +465,49 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_teacher_todos_type ON teacher_todos(type);
     `);
 
+    // Teacher Profiles table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS teacher_profiles (
+        teacher_id INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(100),
+        qualifications TEXT,
+        specialization TEXT,
+        experience VARCHAR(100),
+        certifications TEXT,
+        contact_email VARCHAR(100),
+        office_hours VARCHAR(100),
+        rating DECIMAL(3,2) DEFAULT 0,
+        review_count INT DEFAULT 0,
+        total_students INT DEFAULT 0,
+        resources_created INT DEFAULT 0,
+        resource_views INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Add missing columns if they don't exist (for existing tables)
+    try {
+      await db.query(`ALTER TABLE teacher_profiles ADD COLUMN IF NOT EXISTS rating DECIMAL(3,2) DEFAULT 0;`);
+    } catch (err) { /* column may already exist */ }
+    try {
+      await db.query(`ALTER TABLE teacher_profiles ADD COLUMN IF NOT EXISTS review_count INT DEFAULT 0;`);
+    } catch (err) { /* column may already exist */ }
+    try {
+      await db.query(`ALTER TABLE teacher_profiles ADD COLUMN IF NOT EXISTS total_students INT DEFAULT 0;`);
+    } catch (err) { /* column may already exist */ }
+    try {
+      await db.query(`ALTER TABLE teacher_profiles ADD COLUMN IF NOT EXISTS resources_created INT DEFAULT 0;`);
+    } catch (err) { /* column may already exist */ }
+    try {
+      await db.query(`ALTER TABLE teacher_profiles ADD COLUMN IF NOT EXISTS resource_views INT DEFAULT 0;`);
+    } catch (err) { /* column may already exist */ }
+
+    // Create indexes for teacher_profiles
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_teacher_profiles_rating ON teacher_profiles(rating);
+    `);
+
     // Student Quiz Subjects table (student creates subjects for organizing quizzes)
     await db.query(`
       CREATE TABLE IF NOT EXISTS student_quiz_subjects (
