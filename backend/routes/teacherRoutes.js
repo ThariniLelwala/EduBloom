@@ -4,7 +4,9 @@ const notesController = require("../controllers/teacher/notesController");
 const quizController = require("../controllers/teacher/quizController");
 const todoController = require("../controllers/teacher/todoController");
 const forumController = require("../controllers/teacher/forumController");
-const profileController = require("../controllers/teacher/profileController");
+const publicController = require("../controllers/teacher/publicController");
+const viewController = require("../controllers/teacher/viewController");
+const teacherController = require("../controllers/teacher/teacherController");
 const {
   verifyToken,
   requireRole,
@@ -89,6 +91,14 @@ function handleTeacherRoutes(req, res) {
     }
 
     // ========== OTHER TEACHER ROUTES ==========
+
+    // Teacher Profile routes
+    if (method === "GET" && pathname === "/api/teacher/profile") {
+      return applyMiddleware([verifyToken, requireRole("teacher")], teacherController.getTeacherProfile)(req, res);
+    }
+    if (method === "PUT" && pathname === "/api/teacher/profile") {
+      return applyMiddleware([verifyToken, requireRole("teacher")], teacherController.updateTeacherProfile)(req, res);
+    }
 
     // Subject management routes
     if (method === "POST" && pathname === "/api/teacher/subjects/create") {
@@ -176,12 +186,12 @@ function handleTeacherRoutes(req, res) {
 
     // Public notes routes (for students/parents)
     if (method === "GET" && (pathname === "/api/public/notes" || pathname === "/api/public/notes/")) {
-      return applyMiddleware([verifyToken], notesController.getAllPublicNotes)(req, res);
+      return applyMiddleware([verifyToken], publicController.getAllPublicNotes)(req, res);
     }
     if (method === "GET" && pathname.match(/^\/api\/public\/subjects\/\d+\/notes$/)) {
       const subjectId = pathname.split("/")[4];
       req.params = { subjectId };
-      return applyMiddleware([verifyToken], notesController.getPublicNotesBySubject)(req, res);
+      return applyMiddleware([verifyToken], publicController.getPublicNotesBySubject)(req, res);
     }
 
     // Quiz routes
@@ -264,27 +274,46 @@ function handleTeacherRoutes(req, res) {
 
     // Public quiz routes (for students/parents)
     if (method === "GET" && (pathname === "/api/public/quizzes" || pathname === "/api/public/quizzes/")) {
-      return applyMiddleware([verifyToken], quizController.getAllPublishedQuizzes)(req, res);
+      return applyMiddleware([verifyToken], publicController.getAllPublishedQuizzes)(req, res);
     }
     if (method === "GET" && pathname.match(/^\/api\/public\/subjects\/\d+\/quizzes$/)) {
       const subjectId = pathname.split("/")[4];
       req.params = { subjectId };
-      return applyMiddleware([verifyToken], quizController.getPublishedQuizzesBySubject)(req, res);
+      return applyMiddleware([verifyToken], publicController.getPublishedQuizzesBySubject)(req, res);
     }
     if (method === "GET" && pathname.match(/^\/api\/public\/quizzes\/\d+$/)) {
       const quizSetId = pathname.split("/")[4];
       req.params = { quizSetId };
-      return applyMiddleware([verifyToken], quizController.getPublishedQuizSet)(req, res);
+      return applyMiddleware([verifyToken], publicController.getPublishedQuizSet)(req, res);
     }
 
     // Public forum routes (for students/parents)
     if (method === "GET" && (pathname === "/api/public/forums" || pathname === "/api/public/forums/")) {
-      return applyMiddleware([verifyToken], forumController.getAllPublishedForums)(req, res);
+      return applyMiddleware([verifyToken], publicController.getAllPublishedForums)(req, res);
     }
     if (method === "GET" && pathname.match(/^\/api\/public\/forums\/grade\/\d+$/)) {
       const grade = pathname.split("/")[5];
       req.params = { grade };
-      return applyMiddleware([verifyToken], forumController.getPublishedForumsByGrade)(req, res);
+      return applyMiddleware([verifyToken], publicController.getPublishedForumsByGrade)(req, res);
+    }
+
+    // Public teachers list (for students/parents)
+    if (method === "GET" && (pathname === "/api/public/teachers" || pathname === "/api/public/teachers/")) {
+      return applyMiddleware([verifyToken], publicController.getAllTeachers)(req, res);
+    }
+
+    // Public view count routes (for students/parents)
+    // POST /api/public/notes/:id/view
+    if (method === "POST" && pathname.match(/^\/api\/public\/notes\/\d+\/view$/)) {
+      return applyMiddleware([verifyToken], viewController.incrementView)(req, res);
+    }
+    // POST /api/public/quizzes/:id/view
+    if (method === "POST" && pathname.match(/^\/api\/public\/quizzes\/\d+\/view$/)) {
+      return applyMiddleware([verifyToken], viewController.incrementView)(req, res);
+    }
+    // POST /api/public/forums/:id/view
+    if (method === "POST" && pathname.match(/^\/api\/public\/forums\/\d+\/view$/)) {
+      return applyMiddleware([verifyToken], viewController.incrementView)(req, res);
     }
 
     // Todo routes

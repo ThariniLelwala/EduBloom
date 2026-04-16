@@ -875,4 +875,200 @@ document.addEventListener("DOMContentLoaded", function () {
       }, 3000);
     }
   }
+
+  // ========== Professional Profile Functions ==========
+
+  const certifications = [];
+  const degrees = [];
+  const subjectsTaught = [];
+  const schoolsTaught = [];
+
+  function initializeProfessionalProfile() {
+    loadProfessionalProfile();
+    initializeTagInput("certification", certifications, "certifications-tags", "certification-input");
+    initializeTagInput("degree", degrees, "degrees-tags", "degree-input");
+    initializeTagInput("subject", subjectsTaught, "subjects-tags", "subject-input");
+    initializeTagInput("school", schoolsTaught, "schools-tags", "school-input");
+
+    document.getElementById("description-char-count").textContent = 
+      document.getElementById("profile-description").value.length;
+
+    document.getElementById("profile-description").addEventListener("input", function() {
+      document.getElementById("description-char-count").textContent = this.value.length;
+    });
+
+    document.getElementById("save-profile-btn").addEventListener("click", saveProfessionalProfile);
+  }
+
+  function initializeTagInput(type, array, tagsContainerId, inputId) {
+    const input = document.getElementById(inputId);
+    const addBtn = document.getElementById("add-" + inputId.replace("-input", "") + "-btn");
+
+    if (addBtn) {
+      addBtn.addEventListener("click", () => addTag(type, array, input, tagsContainerId));
+    }
+
+    input.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addTag(type, array, input, tagsContainerId);
+      }
+    });
+  }
+
+  function addTag(type, array, input, tagsContainerId) {
+    const value = input.value.trim();
+    if (value && value.length <= 250 && !array.includes(value)) {
+      array.push(value);
+      renderTags(array, tagsContainerId);
+      input.value = "";
+    }
+  }
+
+  function removeTag(array, index, tagsContainerId) {
+    array.splice(index, 1);
+    renderTags(array, tagsContainerId);
+  }
+
+  function renderTags(array, tagsContainerId) {
+    const container = document.getElementById(tagsContainerId);
+    container.innerHTML = array.map((tag, index) => `
+      <span class="tag">
+        ${escapeHtml(tag)}
+        <button type="button" class="tag-remove" onclick="window.removeTag_${tagsContainerId}(${index})">&times;</button>
+      </span>
+    `).join("");
+
+    window["removeTag_" + tagsContainerId] = (index) => {
+      const tagArrays = {
+        "certifications-tags": certifications,
+        "degrees-tags": degrees,
+        "subjects-tags": subjectsTaught,
+        "schools-tags": schoolsTaught
+      };
+      const arr = tagArrays[tagsContainerId];
+      if (arr) {
+        arr.splice(index, 1);
+        renderTags(arr, tagsContainerId);
+      }
+    };
+  }
+
+  async function loadProfessionalProfile() {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/teacher/profile", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        document.getElementById("profile-description").value = data.description || "";
+        document.getElementById("description-char-count").textContent = 
+          (data.description || "").length;
+        document.getElementById("experience-years").value = 
+          data.qualifications?.experience_years || 0;
+        document.getElementById("linkedin-input").value = 
+          data.qualifications?.linkedin || "";
+
+        certifications.length = 0;
+        degrees.length = 0;
+        subjectsTaught.length = 0;
+        schoolsTaught.length = 0;
+
+        if (data.qualifications?.certifications) {
+          certifications.push(...data.qualifications.certifications);
+        }
+        if (data.qualifications?.degree) {
+          degrees.push(...data.qualifications.degree);
+        }
+        if (data.qualifications?.subjects_taught) {
+          subjectsTaught.push(...data.qualifications.subjects_taught);
+        }
+        if (data.qualifications?.schools_taught) {
+          schoolsTaught.push(...data.qualifications.schools_taught);
+        }
+
+        renderTags(certifications, "certifications-tags");
+        renderTags(degrees, "degrees-tags");
+        renderTags(subjectsTaught, "subjects-tags");
+        renderTags(schoolsTaught, "schools-tags");
+      }
+    } catch (error) {
+      console.error("Error loading professional profile:", error);
+    }
+  }
+
+  async function saveProfessionalProfile() {
+    const description = document.getElementById("profile-description").value.trim();
+    const experienceYears = parseInt(document.getElementById("experience-years").value) || 0;
+    const linkedin = document.getElementById("linkedin-input").value.trim();
+
+    if (certifications.length === 0) {
+      showToast("At least one certification is required");
+      return;
+    }
+
+    if (linkedin && linkedin.length > 0) {
+      try {
+        new URL(linkedin);
+      } catch {
+        showToast("Please enter a valid LinkedIn URL");
+        return;
+      }
+    }
+
+    const qualifications = {
+      experience_years: experienceYears,
+      degree: degrees,
+      certifications: certifications,
+      subjects_taught: subjectsTaught,
+      schools_taught: schoolsTaught,
+      linkedin: linkedin || null
+    };
+
+    try {
+      const token = localStorage.getItem("authToken");
+      const saveBtn = document.getElementById("save-profile-btn");
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+      const response = await fetch("/api/teacher/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ description, qualifications }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        showToast("Profile saved successfully!");
+      } else {
+        showToast(result.error || "Failed to save profile");
+      }
+    } catch (error) {
+      console.error("Error saving professional profile:", error);
+      showToast("Failed to save profile. Please try again.");
+    } finally {
+      const saveBtn = document.getElementById("save-profile-btn");
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Profile';
+    }
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Initialize professional profile
+  initializeProfessionalProfile();
 });

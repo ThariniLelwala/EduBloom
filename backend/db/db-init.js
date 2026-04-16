@@ -183,6 +183,12 @@ async function initializeDatabase() {
       // Column already exists, ignore error
     }
 
+    try {
+      await db.query(`ALTER TABLE teacher_module_notes ADD COLUMN views INT DEFAULT 0;`);
+    } catch (err) {
+      // Column already exists, ignore error
+    }
+
     // Create indexes for better performance
     await db.query(`
       CREATE INDEX IF NOT EXISTS idx_teacher_module_subjects_teacher_id ON teacher_module_subjects(teacher_id);
@@ -230,6 +236,28 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_teacher_verifications_submitted_at ON teacher_verifications(submitted_at DESC);
     `);
 
+    // Teacher Profiles table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS teacher_profiles (
+        id SERIAL PRIMARY KEY,
+        teacher_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+        description TEXT,
+        qualifications JSONB DEFAULT '{}',
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    try {
+      await db.query(`ALTER TABLE teacher_profiles ADD COLUMN qualifications JSONB DEFAULT '{}';`);
+    } catch (err) {
+      // Column may already exist
+    }
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_teacher_profiles_teacher_id ON teacher_profiles(teacher_id);
+    `);
+
     // Quiz Subjects table (created by teachers)
     await db.query(`
       CREATE TABLE IF NOT EXISTS quiz_subjects (
@@ -250,6 +278,7 @@ async function initializeDatabase() {
         name VARCHAR(150) NOT NULL,
         description TEXT,
         is_published BOOLEAN DEFAULT FALSE,
+        views INT DEFAULT 0,
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
       );
@@ -770,6 +799,12 @@ async function initializeDatabase() {
 
     try {
       await db.query(`ALTER TABLE forum_posts ADD COLUMN target_grade INT CHECK (target_grade >= 5 AND target_grade <= 13);`);
+    } catch (err) {
+      // Column already exists, ignore error
+    }
+
+    try {
+      await db.query(`ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS views INT DEFAULT 0;`);
     } catch (err) {
       // Column already exists, ignore error
     }

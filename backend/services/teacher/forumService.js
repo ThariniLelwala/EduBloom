@@ -267,7 +267,9 @@ class ForumService {
    */
   async getAllPublishedForums() {
     const result = await db.query(
-      `SELECT fp.*, u.username as author, u.id as author_id,
+      `SELECT fp.id, fp.title, fp.description, fp.published, fp.archived, fp.views, fp.created_at, fp.updated_at,
+              u.username as author, u.id as author_id,
+              fp.target_grade,
               (SELECT COALESCE(json_agg(tag_name), '[]') FROM forum_tags WHERE post_id = fp.id) as tags,
               (SELECT COUNT(*) FROM forum_replies WHERE post_id = fp.id) as reply_count
        FROM forum_posts fp
@@ -278,6 +280,7 @@ class ForumService {
     return result.rows.map(row => ({
       ...row,
       reply_count: parseInt(row.reply_count),
+      views: parseInt(row.views) || 0,
       target_grade: row.target_grade ? parseInt(row.target_grade) : null
     }));
   }

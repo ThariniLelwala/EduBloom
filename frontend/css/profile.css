@@ -567,3 +567,227 @@
   font-size: 14px;
   font-weight: 500;
 }
+
+/* Professional Profile Styles */
+.form-group-profile {
+  margin-bottom: 24px;
+}
+
+.form-group-profile > label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-white);
+  margin-bottom: 10px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.form-group-profile > label i {
+  color: var(--color-primary);
+  width: 16px;
+}
+
+.form-group-profile > label span {
+  color: var(--color-primary);
+}
+
+.form-group-profile > label small {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+}
+
+.form-group-profile input[type="text"],
+.form-group-profile input[type="number"],
+.form-group-profile input[type="url"],
+.form-group-profile textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: var(--color-white);
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.form-group-profile input[type="number"] {
+  max-width: 150px;
+}
+
+.form-group-profile input:focus,
+.form-group-profile textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.form-group-profile input::placeholder,
+.form-group-profile textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.form-group-profile textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Tag Input Styles */
+.tag-input-container {
+  margin-top: 8px;
+}
+
+.tag-input-wrapper {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tag-input-wrapper input {
+  flex: 1;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: var(--color-white);
+  font-size: 14px;
+}
+
+.tag-input-wrapper input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.tag-input-wrapper input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.btn-add-tag {
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: var(--color-white);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-add-tag:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--color-primary);
+}
+
+.tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  color: var(--color-white);
+  font-size: 13px;
+  animation: tagAppear 0.2s ease;
+}
+
+@keyframes tagAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.tag-remove {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.tag-remove:hover {
+  color: #ff6b6b;
+}
+
+/* Profile Actions */
+.profile-actions {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-actions button {
+  min-width: 150px;
+}
+
+.profile-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Verified Badge */
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(46, 213, 115, 0.2);
+  border: 1px solid #2ed573;
+  border-radius: 20px;
+  color: #2ed573;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.verified-badge i {
+  font-size: 11px;
+}
+
+/* Teacher Card in Student View */
+.teacher-card-expanded {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.teacher-qualifications {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.qualification-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 11px;
+}
+
+.qualification-tag i {
+  color: var(--color-primary);
+  font-size: 10px;
+}

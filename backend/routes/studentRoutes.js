@@ -9,6 +9,7 @@ const examController = require("../controllers/student/examController");
 const todoController = require("../controllers/student/todoController");
 const pomodoroController = require("../controllers/student/pomodoroController");
 const diaryController = require("../controllers/student/diaryController");
+const studentForumController = require("../controllers/student/forumController");
 const {
   verifyToken,
   requireRole,
@@ -876,6 +877,63 @@ function handleStudentRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
         diaryController.deleteEntry
+      )(req, res);
+    }
+
+    // ========== STUDENT FORUM ROUTES (University Students Only) ==========
+
+    // Get all forums created by student: GET /api/student/forums
+    if (method === "GET" && (pathname === "/api/student/forums" || pathname === "/api/student/forums/")) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        studentForumController.getStudentForums
+      )(req, res);
+    }
+
+    // Create new forum: POST /api/student/forums/create
+    if (method === "POST" && (pathname === "/api/student/forums/create" || pathname === "/api/student/forums/create/")) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        studentForumController.createForum
+      )(req, res);
+    }
+
+    // Get specific forum: GET /api/student/forums/:id
+    if (method === "GET" && pathname.match(/^\/api\/student\/forums\/\d+$/)) {
+      const forumId = parseInt(pathname.split("/")[4]);
+      req.params = { forumId };
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        studentForumController.getStudentForum
+      )(req, res);
+    }
+
+    // Add reply to forum: POST /api/student/forums/:id/replies
+    if (method === "POST" && pathname.match(/^\/api\/student\/forums\/\d+\/replies$/)) {
+      const forumId = parseInt(pathname.split("/")[4]);
+      req.params = { forumId };
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        studentForumController.addReply
+      )(req, res);
+    }
+
+    // Delete forum: DELETE /api/student/forums/:id
+    if (method === "DELETE" && pathname.match(/^\/api\/student\/forums\/\d+$/)) {
+      const forumId = parseInt(pathname.split("/")[4]);
+      req.params = { forumId };
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        studentForumController.deleteForum
+      )(req, res);
+    }
+
+    // View count routes for student forums
+    // POST /api/student/forums/:id/view
+    if (method === "POST" && pathname.match(/^\/api\/student\/forums\/\d+\/view$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        require("../controllers/teacher/viewController").incrementView
       )(req, res);
     }
 

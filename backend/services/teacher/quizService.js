@@ -569,7 +569,8 @@ class QuizService {
 
     return result.rows.map(row => ({
       ...row,
-      question_count: parseInt(row.question_count)
+      question_count: parseInt(row.question_count),
+      views: 0
     }));
   }
 
