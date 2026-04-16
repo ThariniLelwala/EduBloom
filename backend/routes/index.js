@@ -3,31 +3,26 @@ const handleAuthRoutes = require("./authRoutes");
 const handleStudentRoutes = require("./studentRoutes");
 const handleTeacherRoutes = require("./teacherRoutes");
 const handleAdminRoutes = require("./adminRoutes");
-const handlePublicRoutes = require("./publicRoutes");
 
 const handleApiRoutes = (req, res) => {
+  console.log("\n========== NEW REQUEST ==========");
   const parsedUrl = url.parse(req.url, true);
   const pathname = parsedUrl.pathname;
 
-  let handled = null;
+  console.log("[INDEX] Full URL:", req.url);
+  console.log("[INDEX] Pathname:", pathname);
 
   // Delegate to specific route handlers based on path prefix
   if (pathname.startsWith("/api/student/")) {
-    handled = handleStudentRoutes(req, res);
-  } else if (pathname.startsWith("/api/teacher/")) {
-    handled = handleTeacherRoutes(req, res);
+    return handleStudentRoutes(req, res);
+  } else if (pathname.startsWith("/api/teacher/") || pathname.startsWith("/api/public/")) {
+    console.log("[INDEX] -> teacherRoutes");
+    return handleTeacherRoutes(req, res);
   } else if (pathname.startsWith("/api/admin/")) {
-    handled = handleAdminRoutes(req, res);
-  } else if (pathname.startsWith("/api/public/")) {
-    handled = handleTeacherRoutes(req, res);
+    return handleAdminRoutes(req, res);
   }
 
-  // If a specific handler processed the request, return
-  if (handled !== null) {
-    return;
-  }
-
-  // Fallback to auth routes for unhandled paths or specific auth-related endpoints
+  console.log("[INDEX] -> authRoutes (fallback)");
   return handleAuthRoutes(req, res);
 };
 
