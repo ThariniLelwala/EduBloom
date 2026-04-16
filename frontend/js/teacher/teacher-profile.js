@@ -1,78 +1,171 @@
 // Teacher Profile Management
 document.addEventListener("DOMContentLoaded", function () {
   // Initialize profile
+  loadUserData();
   loadTeacherProfile();
   initializeEditMode();
   checkUserRole();
 
-  // Load teacher profile data
-  function loadTeacherProfile() {
-    // For now, using mock data - will be replaced with API calls later
-    const mockProfile = {
-      name: "Dr. Sarah Johnson",
-      title: "Senior Mathematics Teacher",
-      rating: 4.5,
-      reviewCount: 127,
-      stats: {
-        totalStudents: 2847,
-        yearsExperience: 12,
-        resourcesCreated: 156,
-        resourceViews: 45200,
-      },
-      details: {
-        qualifications: "Ph.D. Mathematics, M.Ed. Education",
-        specialization: "Advanced Calculus, Statistics, Algebra",
-        experience: "12 years in secondary education",
-        certifications: "CBSE Certified, STEM Educator",
-        contactEmail: "sarah.johnson@edubloom.edu",
-        officeHours: "Mon-Fri: 2:00 PM - 4:00 PM",
-      },
-    };
-
-    displayProfileData(mockProfile);
+  // First load user data from auth profile
+  async function loadUserData() {
+    const token = localStorage.getItem("authToken");
+    const firstname = localStorage.getItem("firstname");
+    const lastname = localStorage.getItem("lastname");
+    
+    // If we have stored name, use it
+    if (firstname || lastname) {
+      const fullName = [firstname, lastname].filter(Boolean).join(" ");
+      const teacherNameEl = document.getElementById("teacher-name");
+      if (teacherNameEl) teacherNameEl.textContent = fullName || "Teacher";
+    }
+    
+    // Try to get fresh data from auth profile API
+    if (token) {
+      try {
+        const res = await fetch("/api/auth/profile", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (res.ok) {
+          const result = await res.json();
+          if (result.user) {
+            const fullName = [result.user.firstname, result.user.lastname].filter(Boolean).join(" ");
+            const teacherNameEl = document.getElementById("teacher-name");
+            if (teacherNameEl && fullName) {
+              teacherNameEl.textContent = fullName;
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+      }
+    }
   }
 
-  // Display profile data
+  // Load teacher profile data from backend
+  async function loadTeacherProfile() {
+    const token = localStorage.getItem("authToken");
+    
+    if (!token) {
+      showSetupPrompt("Please log in to view your profile");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/teacher/profile", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        if (result.profile) {
+          displayProfileData(result.profile);
+        } else {
+          showSetupPrompt("Set up your profile");
+        }
+      } else if (res.status === 404) {
+        showSetupPrompt("Set up your profile");
+      } else {
+        showSetupPrompt("Failed to load profile");
+      }
+    } catch (error) {
+      console.error("Error loading teacher profile:", error);
+      showSetupPrompt("Failed to load profile");
+    }
+  }
+
+  function showSetupPrompt(message) {
+    const teacherTitleEl = document.getElementById("teacher-title");
+    const ratingStarsEl = document.getElementById("rating-stars");
+    const ratingTextEl = document.getElementById("rating-text");
+    
+    if (teacherTitleEl) teacherTitleEl.textContent = message;
+    if (ratingStarsEl) ratingStarsEl.innerHTML = "";
+    if (ratingTextEl) ratingTextEl.textContent = "No ratings yet";
+
+    // Show edit button immediately for setup
+    const editBtn = document.getElementById("edit-profile-btn");
+    if (editBtn) editBtn.style.display = "block";
+  }
+
+  // Display profile data from backend
   function displayProfileData(profile) {
-    // Update header information
-    document.getElementById("teacher-name").textContent = profile.name;
-    document.getElementById("teacher-title").textContent = profile.title;
+    const title = profile.title || "Teacher";
+    const rating = parseFloat(profile.rating) || 0;
+    const reviewCount = parseInt(profile.review_count) || 0;
+
+    // Update title only (name is loaded from auth profile)
+    const teacherTitleEl = document.getElementById("teacher-title");
+    if (teacherTitleEl) teacherTitleEl.textContent = title;
 
     // Update rating stars
-    updateRatingStars(profile.rating);
-    document.getElementById(
-      "rating-text"
-    ).textContent = `${profile.rating} (${profile.reviewCount} reviews)`;
+    updateRatingStars(rating);
+    const ratingTextEl = document.getElementById("rating-text");
+    if (ratingTextEl) {
+      if (rating > 0) {
+        ratingTextEl.textContent = `${rating.toFixed(1)} (${reviewCount} reviews)`;
+      } else {
+        ratingTextEl.textContent = "No ratings yet";
+      }
+    }
 
     // Update statistics
-    document.getElementById("total-students").textContent =
-      profile.stats.totalStudents.toLocaleString();
-    document.getElementById("years-experience").textContent =
-      profile.stats.yearsExperience;
-    document.getElementById("resources-created").textContent =
-      profile.stats.resourcesCreated;
-    document.getElementById("resource-views").textContent =
-      (profile.stats.resourceViews / 1000).toFixed(1) + "K";
+    const totalStudentsEl = document.getElementById("total-students");
+    if (totalStudentsEl) totalStudentsEl.textContent = (profile.total_students || 0).toLocaleString();
+    
+    const yearsExperienceEl = document.getElementById("years-experience");
+    if (yearsExperienceEl) {
+      const expYears = profile.experience?.match(/\d+/)?.[0] || profile.total_students || 0;
+      yearsExperienceEl.textContent = expYears;
+    }
+    
+    const resourcesCreatedEl = document.getElementById("resources-created");
+    if (resourcesCreatedEl) resourcesCreatedEl.textContent = profile.resources_created || 0;
+    
+    const resourceViewsEl = document.getElementById("resource-views");
+    if (resourceViewsEl) {
+      const views = profile.resource_views || 0;
+      resourceViewsEl.textContent = views >= 1000 ? (views / 1000).toFixed(1) + "K" : views;
+    }
 
     // Update professional details
-    document.getElementById("qualifications").textContent =
-      profile.details.qualifications;
-    document.getElementById("specialization").textContent =
-      profile.details.specialization;
-    document.getElementById("experience").textContent =
-      profile.details.experience;
-    document.getElementById("certifications").textContent =
-      profile.details.certifications;
-    document.getElementById("contact-email").textContent =
-      profile.details.contactEmail;
-    document.getElementById("office-hours").textContent =
-      profile.details.officeHours;
+    const setDetailText = (id, value, defaultText) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value || defaultText;
+    };
+
+    setDetailText("qualifications", profile.qualifications, "Click edit to add");
+    setDetailText("specialization", profile.specialization, "Click edit to add");
+    setDetailText("experience", profile.experience, "Click edit to add");
+    setDetailText("certifications", profile.certifications, "Click edit to add");
+    setDetailText("contact-email", profile.contact_email, "Click edit to add");
+    setDetailText("office-hours", profile.office_hours, "Click edit to add");
   }
 
   // Update rating stars display
   function updateRatingStars(rating) {
     const starsContainer = document.getElementById("rating-stars");
+    if (!starsContainer) return;
+    
     starsContainer.innerHTML = "";
+    
+    if (!rating || rating === 0) {
+      // No rating - show empty stars
+      for (let i = 0; i < 5; i++) {
+        const emptyStar = document.createElement("i");
+        emptyStar.className = "far fa-star star";
+        starsContainer.appendChild(emptyStar);
+      }
+      return;
+    }
 
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
@@ -166,7 +259,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Save changes
-    function saveChanges() {
+    async function saveChanges() {
       const editableInputs = document.querySelectorAll(".detail-value");
 
       // Collect new values
@@ -175,14 +268,43 @@ document.addEventListener("DOMContentLoaded", function () {
         updatedData[input.id] = input.value;
       });
 
-      // Here you would send the data to the backend
-      console.log("Saving profile changes:", updatedData);
+      const token = localStorage.getItem("authToken");
+      
+      try {
+        const res = await fetch("/api/teacher/profile", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            title: document.getElementById("teacher-title").textContent,
+            qualifications: updatedData.qualifications,
+            specialization: updatedData.specialization,
+            experience: updatedData.experience,
+            certifications: updatedData.certifications,
+            contact_email: updatedData["contact-email"],
+            office_hours: updatedData["office-hours"],
+          }),
+        });
 
-      // For now, just update the display
-      exitEditMode();
-
-      // Show success message (you can implement this)
-      alert("Profile updated successfully!");
+        if (res.ok) {
+          const result = await res.json();
+          if (result.profile) {
+            displayProfileData(result.profile);
+          }
+          exitEditMode();
+          showNotification("Profile updated successfully!", "success");
+        } else {
+          const error = await res.json();
+          exitEditMode();
+          showNotification(error.error || "Failed to update profile", "error");
+        }
+      } catch (error) {
+        console.error("Error saving profile:", error);
+        exitEditMode();
+        showNotification("Failed to update profile", "error");
+      }
     }
 
     // Exit edit mode
@@ -204,6 +326,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Remove edit mode class
       document.body.classList.remove("edit-mode");
+    }
+
+    function showNotification(message, type = "success") {
+      const notification = document.createElement("div");
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === "success" ? "rgba(74, 222, 128, 0.9)" : "rgba(220, 53, 69, 0.9)"};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+      `;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.animation = "slideOut 0.3s ease";
+        setTimeout(() => {
+          document.body.removeChild(notification);
+        }, 300);
+      }, 3000);
     }
   }
 });

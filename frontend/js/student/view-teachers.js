@@ -16,145 +16,188 @@ let currentFilters = {
   rating: "all",
 };
 
-// Sample teacher data
-const sampleTeachers = [
-  {
-    id: 1,
-    name: "Dr. Sarah Johnson",
-    subject: "mathematics",
-    subjectDisplay: "Mathematics",
-    rating: 4.5,
-    reviewCount: 127,
-    students: 2847,
-    experience: 12,
-    description: "Specializes in Advanced Calculus and Statistics",
-  },
-  {
-    id: 2,
-    name: "Prof. Michael Chen",
-    subject: "science",
-    subjectDisplay: "Science",
-    rating: 4.7,
-    reviewCount: 89,
-    students: 1923,
-    experience: 15,
-    description: "Expert in Physics and Chemistry",
-  },
-  {
-    id: 3,
-    name: "Ms. Emily Davis",
-    subject: "english",
-    subjectDisplay: "English",
-    rating: 4.3,
-    reviewCount: 156,
-    students: 3421,
-    experience: 8,
-    description: "Literature and Writing specialist",
-  },
-  {
-    id: 4,
-    name: "Dr. Robert Wilson",
-    subject: "history",
-    subjectDisplay: "History",
-    rating: 4.6,
-    reviewCount: 94,
-    students: 2156,
-    experience: 18,
-    description: "World History and Social Studies",
-  },
-  {
-    id: 5,
-    name: "Prof. Lisa Anderson",
-    subject: "computer-science",
-    subjectDisplay: "Computer Science",
-    rating: 4.8,
-    reviewCount: 203,
-    students: 3876,
-    experience: 10,
-    description: "Programming and Algorithms expert",
-  },
-  {
-    id: 6,
-    name: "Mr. David Brown",
-    subject: "mathematics",
-    subjectDisplay: "Mathematics",
-    rating: 4.2,
-    reviewCount: 78,
-    students: 1654,
-    experience: 6,
-    description: "Algebra and Geometry specialist",
-  },
-  {
-    id: 7,
-    name: "Dr. Jennifer Lee",
-    subject: "science",
-    subjectDisplay: "Science",
-    rating: 4.4,
-    reviewCount: 112,
-    students: 2234,
-    experience: 11,
-    description: "Biology and Environmental Science",
-  },
-  {
-    id: 8,
-    name: "Ms. Maria Rodriguez",
-    subject: "english",
-    subjectDisplay: "English",
-    rating: 4.1,
-    reviewCount: 67,
-    students: 1432,
-    experience: 7,
-    description: "Creative Writing and Literature",
-  },
-  {
-    id: 9,
-    name: "Prof. James Taylor",
-    subject: "history",
-    subjectDisplay: "History",
-    rating: 4.5,
-    reviewCount: 134,
-    students: 2987,
-    experience: 14,
-    description: "Ancient Civilizations and Archaeology",
-  },
-  {
-    id: 10,
-    name: "Dr. Amanda White",
-    subject: "computer-science",
-    subjectDisplay: "Computer Science",
-    rating: 4.9,
-    reviewCount: 245,
-    students: 4123,
-    experience: 13,
-    description: "AI and Machine Learning specialist",
-  },
-  {
-    id: 11,
-    name: "Mr. Thomas Garcia",
-    subject: "mathematics",
-    subjectDisplay: "Mathematics",
-    rating: 4.0,
-    reviewCount: 45,
-    students: 987,
-    experience: 4,
-    description: "Basic Math and Pre-Algebra",
-  },
-  {
-    id: 12,
-    name: "Prof. Rachel Martinez",
-    subject: "science",
-    subjectDisplay: "Science",
-    rating: 4.6,
-    reviewCount: 178,
-    students: 3456,
-    experience: 16,
-    description: "Chemistry and Lab Sciences",
-  },
-];
+// Load teachers from API
+async function loadTeachers() {
+  const token = localStorage.getItem("authToken");
 
-function loadTeachers() {
-  allTeachers = sampleTeachers;
+  try {
+    const url = new URL("/api/public/teachers", window.location.origin);
+    if (currentFilters.rating !== "all") {
+      url.searchParams.set("rating", currentFilters.rating);
+    }
+
+    const res = await fetch(url.toString(), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.ok) {
+      const result = await res.json();
+      if (result.teachers && result.teachers.length > 0) {
+        allTeachers = result.teachers.map(t => ({
+          id: t.teacher_id,
+          name: t.firstname && t.lastname ? `${t.firstname} ${t.lastname}` : t.username,
+          username: t.username,
+          subject: t.specialization || "general",
+          subjectDisplay: t.specialization || "General",
+          rating: parseFloat(t.rating) || 0,
+          reviewCount: t.review_count || 0,
+          students: t.total_students || 0,
+          experience: t.experience?.match(/\d+/)?.[0] || 0,
+          description: t.specialization || "Experienced educator",
+        }));
+      } else {
+        allTeachers = getSampleTeachers();
+      }
+    } else {
+      allTeachers = getSampleTeachers();
+    }
+  } catch (error) {
+    console.error("Error loading teachers:", error);
+    allTeachers = getSampleTeachers();
+  }
+
   displayTeachers(allTeachers);
+}
+
+function getSampleTeachers() {
+  return [
+    {
+      id: 1,
+      name: "Dr. Sarah Johnson",
+      subject: "mathematics",
+      subjectDisplay: "Mathematics",
+      rating: 4.5,
+      reviewCount: 127,
+      students: 2847,
+      experience: 12,
+      description: "Specializes in Advanced Calculus and Statistics",
+    },
+    {
+      id: 2,
+      name: "Prof. Michael Chen",
+      subject: "science",
+      subjectDisplay: "Science",
+      rating: 4.7,
+      reviewCount: 89,
+      students: 1923,
+      experience: 15,
+      description: "Expert in Physics and Chemistry",
+    },
+    {
+      id: 3,
+      name: "Ms. Emily Davis",
+      subject: "english",
+      subjectDisplay: "English",
+      rating: 4.3,
+      reviewCount: 156,
+      students: 3421,
+      experience: 8,
+      description: "Literature and Writing specialist",
+    },
+    {
+      id: 4,
+      name: "Dr. Robert Wilson",
+      subject: "history",
+      subjectDisplay: "History",
+      rating: 4.6,
+      reviewCount: 94,
+      students: 2156,
+      experience: 18,
+      description: "World History and Social Studies",
+    },
+    {
+      id: 5,
+      name: "Prof. Lisa Anderson",
+      subject: "computer-science",
+      subjectDisplay: "Computer Science",
+      rating: 4.8,
+      reviewCount: 203,
+      students: 3876,
+      experience: 10,
+      description: "Programming and Algorithms expert",
+    },
+    {
+      id: 6,
+      name: "Mr. David Brown",
+      subject: "mathematics",
+      subjectDisplay: "Mathematics",
+      rating: 4.2,
+      reviewCount: 78,
+      students: 1654,
+      experience: 6,
+      description: "Algebra and Geometry specialist",
+    },
+    {
+      id: 7,
+      name: "Dr. Jennifer Lee",
+      subject: "science",
+      subjectDisplay: "Science",
+      rating: 4.4,
+      reviewCount: 112,
+      students: 2234,
+      experience: 11,
+      description: "Biology and Environmental Science",
+    },
+    {
+      id: 8,
+      name: "Ms. Maria Rodriguez",
+      subject: "english",
+      subjectDisplay: "English",
+      rating: 4.1,
+      reviewCount: 67,
+      students: 1432,
+      experience: 7,
+      description: "Creative Writing and Literature",
+    },
+    {
+      id: 9,
+      name: "Prof. James Taylor",
+      subject: "history",
+      subjectDisplay: "History",
+      rating: 4.5,
+      reviewCount: 134,
+      students: 2987,
+      experience: 14,
+      description: "Ancient Civilizations and Archaeology",
+    },
+    {
+      id: 10,
+      name: "Dr. Amanda White",
+      subject: "computer-science",
+      subjectDisplay: "Computer Science",
+      rating: 4.9,
+      reviewCount: 245,
+      students: 4123,
+      experience: 13,
+      description: "AI and Machine Learning specialist",
+    },
+    {
+      id: 11,
+      name: "Mr. Thomas Garcia",
+      subject: "mathematics",
+      subjectDisplay: "Mathematics",
+      rating: 4.0,
+      reviewCount: 45,
+      students: 987,
+      experience: 4,
+      description: "Basic Math and Pre-Algebra",
+    },
+    {
+      id: 12,
+      name: "Prof. Rachel Martinez",
+      subject: "science",
+      subjectDisplay: "Science",
+      rating: 4.6,
+      reviewCount: 178,
+      students: 3456,
+      experience: 16,
+      description: "Chemistry and Lab Sciences",
+    },
+  ];
 }
 
 function displayTeachers(teachers) {
