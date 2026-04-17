@@ -898,6 +898,46 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_forum_replies_post_id ON forum_replies(post_id);
     `);
 
+    // Parent Calendar Deadlines table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS parent_calendar_deadlines (
+        id SERIAL PRIMARY KEY,
+        parent_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        event_date DATE NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_calendar_deadlines_parent_id ON parent_calendar_deadlines(parent_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_calendar_deadlines_student_id ON parent_calendar_deadlines(student_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_calendar_deadlines_event_date ON parent_calendar_deadlines(event_date);
+    `);
+
+    // Parent Only Tasks table (tasks visible only to parent, not synced to child)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS parent_only_tasks (
+        id SERIAL PRIMARY KEY,
+        parent_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        text VARCHAR(500) NOT NULL,
+        completed BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_parent_only_tasks_parent_id ON parent_only_tasks(parent_id);
+    `);
+
     console.log("✅ Database tables and indexes created successfully");
 
     // Check if admin user exists, if not create one

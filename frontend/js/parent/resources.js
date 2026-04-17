@@ -1,7 +1,14 @@
 // Parent Resource Recommendation System
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
+  await ChildSelector.init();
   initializeParentResources();
+
+  ChildSelector.onChildChanged(() => {
+    loadRecommendations();
+    renderAllResources();
+    updateStatistics();
+  });
 });
 
 // Sample resource data from teachers
@@ -190,16 +197,24 @@ function initializeParentResources() {
 
 // Load recommendations from localStorage
 function loadRecommendations() {
-  const saved = localStorage.getItem("parentResourceRecommendations");
+  const selectedChild = ChildSelector.getSelectedChild();
+  const childId = selectedChild ? selectedChild.id : "default";
+  
+  const saved = localStorage.getItem(`parentResourceRecommendations_${childId}`);
   if (saved) {
     parentRecommendations = JSON.parse(saved);
+  } else {
+    parentRecommendations = {};
   }
 }
 
 // Save recommendations to localStorage
 function saveRecommendations() {
+  const selectedChild = ChildSelector.getSelectedChild();
+  const childId = selectedChild ? selectedChild.id : "default";
+  
   localStorage.setItem(
-    "parentResourceRecommendations",
+    `parentResourceRecommendations_${childId}`,
     JSON.stringify(parentRecommendations)
   );
 }

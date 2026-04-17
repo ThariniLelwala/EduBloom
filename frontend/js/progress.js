@@ -116,7 +116,9 @@ function getEnergyEmoji(energy) {
 }
 
 // Initialize page
-function initializeProgress() {
+async function initializeProgress() {
+  await ChildSelector.init();
+  
   updateWeeklyStats();
   generateWeeklyBreakdown();
   initializeMonthlyChart();
@@ -124,6 +126,10 @@ function initializeProgress() {
   loadTasks();
   checkAndInitializeGPA();
   setupEventListeners();
+  
+  ChildSelector.onChildChanged((child) => {
+    checkAndInitializeGPA();
+  });
 }
 
 // Load and display mental logs data for current week
@@ -596,7 +602,8 @@ function initializeScoresChart() {
 
 // Check if university student and initialize GPA card
 function checkAndInitializeGPA() {
-  const studentType = localStorage.getItem("studentType");
+  const selectedChild = ChildSelector.getSelectedChild();
+  const studentType = selectedChild ? selectedChild.student_type : localStorage.getItem("studentType");
   const gpaCard = document.getElementById("gpa-card");
   const avgGpaCard = document.getElementById("avg-gpa-card");
   const tasksCard = document.getElementById("tasks-card");

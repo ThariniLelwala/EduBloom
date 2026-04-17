@@ -1,9 +1,97 @@
-document.addEventListener("DOMContentLoaded", () => {
+const ChildSelector = {
+  children: [],
+  selectedChild: null,
+  listeners: [],
+
+  async init() {
+    const userRole = localStorage.getItem("userRole");
+    if (userRole !== "parent") {
+      return;
+    }
+    await this.fetchChildren();
+    this.autoSelectFirstChild();
+  },
+
+  async fetchChildren() {
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+
+    try {
+      const res = await fetch("/api/parent/children", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        this.children = result.children || [];
+        localStorage.setItem("linkedChildren", JSON.stringify(this.children));
+      }
+    } catch (err) {
+      console.error("Error fetching children:", err);
+    }
+  },
+
+  autoSelectFirstChild() {
+    const savedChildId = localStorage.getItem("selectedChildId");
+
+    if (savedChildId) {
+      const saved = this.children.find((c) => c.id === parseInt(savedChildId));
+      if (saved) {
+        this.selectedChild = saved;
+        return;
+      }
+    }
+
+    if (this.children.length > 0) {
+      this.selectedChild = this.children[0];
+      localStorage.setItem("selectedChildId", this.selectedChild.id);
+    } else {
+      this.selectedChild = null;
+      localStorage.removeItem("selectedChildId");
+    }
+  },
+
+  setSelectedChild(childId) {
+    const child = this.children.find((c) => c.id === childId);
+    if (child) {
+      this.selectedChild = child;
+      localStorage.setItem("selectedChildId", childId);
+      this.notifyListeners();
+    }
+  },
+
+  getSelectedChild() {
+    return this.selectedChild;
+  },
+
+  getSelectedChildId() {
+    return this.selectedChild ? this.selectedChild.id : null;
+  },
+
+  getChildren() {
+    return this.children;
+  },
+
+  onChildChanged(callback) {
+    this.listeners.push(callback);
+  },
+
+  notifyListeners() {
+    this.listeners.forEach((cb) => cb(this.selectedChild));
+  }
+};
+
+document.addEventListener("DOMContentLoaded", async () => {
   const userRole = localStorage.getItem("userRole") || "student";
-  const studentType = localStorage.getItem("studentType"); // Get student type for students
+  const studentType = localStorage.getItem("studentType");
   const container = document.getElementById("sidebar-container");
 
-  // Inject sidebar HTML
+  if (!container) return;
+
   container.innerHTML = `
     <aside id="sidebar">
       <ul id="sidebar-list"></ul>
@@ -12,17 +100,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const sidebarList = document.getElementById("sidebar-list");
 
-  // Get current page info
   const currentPath = window.location.pathname;
-  const currentPage = currentPath.split("/").pop(); // e.g., "quiz.html"
+  const currentPage = currentPath.split("/").pop();
 
-  // Calculate current folder depth - check for any role folder (student, parent, teacher, admin)
   const pathParts = currentPath.split("/");
   const roleFolders = ["student", "parent", "teacher", "admin"];
   let roleIndex = -1;
   let detectedRole = null;
 
-  // Find which role folder we're in
   for (let folder of roleFolders) {
     roleIndex = pathParts.indexOf(folder);
     if (roleIndex !== -1) {
@@ -31,29 +116,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Calculate depth - how many "../" we need to go back to reach the role folder
   let depth = 0;
   if (roleIndex !== -1) {
-    // Count how many folders deep we are from the role folder
-    // pathParts: ["", "dashboards", "student", "quiz", "quiz.html"]
-    // roleIndex: 2 (index of "student")
-    // depth = 5 - 2 - 2 = 1 (we need 1 "../" to get back to /dashboards/student/)
     depth = pathParts.length - roleIndex - 2;
   } else if (currentPage === "profile.html") {
-    // Profile is in root, sidebar will be loaded from root too
-    // Use userRole to determine which folder to go back to
     detectedRole = userRole;
-    depth = -1; // Special marker for root level
+    depth = -1;
   }
 
-  // Load sidebar items from JSON
   fetch("/data/sidebar.json")
     .then((res) => res.json())
     .then((data) => {
-      // Determine which menu to use
       let menuKey = userRole;
 
-      // For students, use student_type specific menu if available
       if (userRole === "student" && studentType) {
         const specificKey = `student_${studentType}`;
         if (data[specificKey]) {
@@ -61,34 +136,28 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      console.log("Loading sidebar for:", menuKey);
       const items = data[menuKey];
 
       if (!items) {
-        console.error("Sidebar items not found for:", menuKey);
         return;
       }
 
       items.forEach((item) => {
         const li = document.createElement("li");
 
-        // Active page highlight
-        // Check both direct filename match and parent folder match
         const sidebarFileName = item.link.split("/").pop();
-        const sidebarFolder = item.link.split("/")[0]; // e.g., "quiz", "modulespace"
-        const currentFolder = pathParts[pathParts.length - 2]; // e.g., "quiz", "modulespace"
+        const sidebarFolder = item.link.split("/")[0];
+        const currentFolder = pathParts[pathParts.length - 2];
 
         const isActive =
-          currentPage === sidebarFileName || // Direct match
-          (currentFolder && sidebarFolder && currentFolder === sidebarFolder); // Folder match
+          currentPage === sidebarFileName ||
+          (currentFolder && sidebarFolder && currentFolder === sidebarFolder);
 
         if (isActive) li.classList.add("active");
 
-        // Calculate relative link
         let linkPath = item.link;
         if (!linkPath.startsWith("/")) {
           if (depth === -1) {
-            // Profile is at root level, so we need to go into dashboards/role/
             linkPath = "dashboards/" + detectedRole + "/" + item.link;
           } else {
             linkPath = "../".repeat(depth) + item.link;
@@ -99,10 +168,14 @@ document.addEventListener("DOMContentLoaded", () => {
         li.addEventListener("click", () => (window.location.href = linkPath));
         sidebarList.appendChild(li);
       });
-    })
-    .catch((err) => console.error("Sidebar load error:", err));
 
-  // Toggle sidebar via topbar button
+      if (userRole === "parent") {
+        ChildSelector.init().then(() => {
+          renderSidebarChildSelector(sidebarList);
+        });
+      }
+    });
+
   const topbarToggle = document.getElementById("sidebar-toggle-topbar");
   if (topbarToggle) {
     topbarToggle.addEventListener("click", () => {
@@ -111,3 +184,64 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+function renderSidebarChildSelector(sidebarList) {
+  const children = ChildSelector.getChildren();
+  const selectedChild = ChildSelector.getSelectedChild();
+
+  const existingLi = document.getElementById("sidebar-child-selector");
+  if (existingLi) {
+    existingLi.remove();
+  }
+
+  const li = document.createElement("li");
+  li.id = "sidebar-child-selector";
+  li.className = "sidebar-child-item";
+  li.style.display = "none";
+
+  const select = document.createElement("select");
+  select.className = "custom-select child-selector-select flex-layout";
+  select.id = "child-selector";
+
+  if (children.length === 0) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.text = "No linked children";
+    option.disabled = true;
+    select.appendChild(option);
+  } else {
+    children.forEach((child) => {
+      const option = document.createElement("option");
+      option.value = child.id;
+      option.text = child.username;
+      option.dataset.type = child.student_type;
+      if (selectedChild && selectedChild.id === child.id) {
+        option.selected = true;
+      }
+      select.appendChild(option);
+    });
+  }
+
+  li.appendChild(select);
+  sidebarList.appendChild(li);
+
+  initCustomSelects();
+
+  const customSelect = document.querySelector(".child-selector-select");
+  if (customSelect) {
+    customSelect.addEventListener("change", (e) => {
+      const childId = parseInt(e.target.value);
+      ChildSelector.setSelectedChild(childId);
+    });
+
+    ChildSelector.onChildChanged(() => {
+      const options = customSelect.options;
+      for (let i = 0; i < options.length; i++) {
+        options[i].selected = options[i].value == ChildSelector.getSelectedChildId();
+      }
+      customSelect.dispatchEvent(new Event("sync"));
+    });
+
+    li.style.display = "flex";
+  }
+}

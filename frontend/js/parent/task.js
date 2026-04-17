@@ -12,12 +12,18 @@ let currentStudentId = null;
 
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadStudents();
+  await ChildSelector.init();
+  currentStudentId = ChildSelector.getSelectedChildId();
   await archiveExpiredGoals();
   await loadTasks();
   setDates();
   renderTasks();
   setupEventListeners();
+
+  ChildSelector.onChildChanged((child) => {
+    currentStudentId = child ? child.id : null;
+    loadTasks().then(renderTasks);
+  });
 });
 
 // Archive expired weekly and monthly goals
@@ -28,27 +34,7 @@ async function archiveExpiredGoals() {
       console.log(`Archived ${result.archivedCount} expired goals`);
     }
   } catch (error) {
-    // Silent fail - don't interrupt user experience
     console.log("No expired goals to archive");
-  }
-}
-
-// Load students for parent
-async function loadStudents() {
-  try {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      window.location.href = "/login.html";
-      return;
-    }
-
-    const students = await todoApi.getStudents();
-    if (students && students.length > 0) {
-      // Use first student by default
-      currentStudentId = students[0].id;
-    }
-  } catch (error) {
-    console.error("Error loading students:", error);
   }
 }
 
@@ -73,7 +59,6 @@ async function loadTasks() {
     };
   } catch (error) {
     console.error("Error loading tasks:", error);
-    // Fall back to empty state
     tasks = {
       todo: [],
       weekly: [],

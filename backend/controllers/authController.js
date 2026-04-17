@@ -170,7 +170,7 @@ class AuthController {
 
       // Get all accepted parent-student links for this student
       const result = await db.query(
-        `SELECT u.id, u.username as parent_username, u.email as parent_email, psl.id as link_id, psl.status, psl.created_at
+        `SELECT psl.id as link_id, u.id as parent_id, u.username as parent_username, u.email as parent_email, psl.status, psl.created_at
          FROM users u
          INNER JOIN parent_student_links psl ON u.id = psl.parent_id
          WHERE psl.student_id = $1 AND psl.status = 'accepted'
@@ -231,7 +231,7 @@ class AuthController {
 
       // Get all pending parent-student links for this student
       const result = await db.query(
-        `SELECT u.id, u.username as parent_username, u.email as parent_email, psl.id, psl.created_at
+        `SELECT psl.id as link_id, u.id as parent_id, u.username as parent_username, u.email as parent_email, psl.created_at
          FROM users u
          INNER JOIN parent_student_links psl ON u.id = psl.parent_id
          WHERE psl.student_id = $1 AND psl.status = 'pending'

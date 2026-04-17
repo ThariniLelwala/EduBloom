@@ -2,6 +2,7 @@
 const authController = require("../controllers/authController");
 const parentController = require("../controllers/parentController");
 const todoController = require("../controllers/parent/todoController");
+const calendarController = require("../controllers/parent/calendarController");
 const verificationController = require("../controllers/teacher/verificationController");
 const {
   verifyToken,
@@ -258,6 +259,75 @@ function handleAuthRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("parent")],
         todoController.getExpiredGoals
+      )(req, res);
+    }
+
+    // ========== PARENT CALENDAR ROUTES ==========
+
+    // Create deadline: POST /api/parent/calendar/deadlines
+    if (method === "POST" && pathname === "/api/parent/calendar/deadlines") {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        calendarController.createDeadline
+      )(req, res);
+    }
+
+    // Get deadlines for student: GET /api/parent/calendar/students/:studentId/deadlines
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/parent\/calendar\/students\/\d+\/deadlines$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        calendarController.getDeadlines
+      )(req, res);
+    }
+
+    // Update deadline: PUT /api/parent/calendar/deadlines/:deadlineId
+    if (method === "PUT" && pathname.match(/^\/api\/parent\/calendar\/deadlines\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        calendarController.updateDeadline
+      )(req, res);
+    }
+
+    // Delete deadline: DELETE /api/parent/calendar/deadlines/:deadlineId
+    if (method === "DELETE" && pathname.match(/^\/api\/parent\/calendar\/deadlines\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        calendarController.deleteDeadline
+      )(req, res);
+    }
+
+    // Create parent task: POST /api/parent/calendar/parent-tasks
+    if (method === "POST" && pathname === "/api/parent/calendar/parent-tasks") {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        calendarController.createParentTask
+      )(req, res);
+    }
+
+    // Get parent tasks: GET /api/parent/calendar/parent-tasks
+    if (method === "GET" && pathname === "/api/parent/calendar/parent-tasks") {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        calendarController.getParentTasks
+      )(req, res);
+    }
+
+    // Update parent task: PUT /api/parent/calendar/parent-tasks/:taskId
+    if (method === "PUT" && pathname.match(/^\/api\/parent\/calendar\/parent-tasks\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        calendarController.updateParentTask
+      )(req, res);
+    }
+
+    // Delete parent task: DELETE /api/parent/calendar/parent-tasks/:taskId
+    if (method === "DELETE" && pathname.match(/^\/api\/parent\/calendar\/parent-tasks\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        calendarController.deleteParentTask
       )(req, res);
     }
 

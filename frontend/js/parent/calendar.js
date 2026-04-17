@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const eventsList = document.getElementById("events-list");
   const todoList = document.getElementById("todo-list");
   const parentOnlyList = document.getElementById("parent-only-list");
-  const timetableContainer = document.getElementById("timetable-container");
 
   let currentDate = new Date();
   let deadlines = [];
@@ -14,13 +13,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     todo: [],
     weekly: [],
     monthly: [],
-    parentOnly: [],
   };
   let editContext = null;
   let deleteContext = null;
   let currentTaskType = null;
+  let currentStudentId = null;
 
-  // ===== Modals =====
   const deadlineModal = document.getElementById("deadline-modal");
   const deadlineInput = document.getElementById("deadline-input");
   const deadlineDate = document.getElementById("deadline-date");
@@ -31,32 +29,34 @@ document.addEventListener("DOMContentLoaded", async () => {
   const editInput = document.getElementById("edit-input");
   const deleteModal = document.getElementById("delete-modal");
 
-  // ===== Load Data =====
   async function loadData() {
+    const selectedChild = ChildSelector.getSelectedChild();
+    currentStudentId = selectedChild ? selectedChild.id : null;
+
     try {
-      // Load parent tasks from localStorage
-      const savedTasks = localStorage.getItem("parentTasks");
-      if (savedTasks) {
-        const parsedTasks = JSON.parse(savedTasks);
-        parentTasks.todo = parsedTasks.todo || [];
-        parentTasks.weekly = parsedTasks.weekly || [];
-        parentTasks.monthly = parsedTasks.monthly || [];
+      if (currentStudentId) {
+        const [deadlinesData, todosData, parentOnlyData] = await Promise.all([
+          calendarApi.getDeadlines(currentStudentId),
+          todoApi.getTodos(currentStudentId),
+          calendarApi.getParentTasks()
+        ]);
+
+        deadlines = deadlinesData || [];
+        parentTasks.todo = (todosData || []).filter(t => t.type === "todo");
+        parentTasks.parentOnly = parentOnlyData || [];
+      } else {
+        deadlines = [];
+        parentTasks.todo = [];
+        parentTasks.parentOnly = [];
       }
 
-      // Load parent-only tasks from localStorage
-      const savedParentOnly = localStorage.getItem("parentOnlyTasks");
-      if (savedParentOnly) {
-        parentTasks.parentOnly = JSON.parse(savedParentOnly);
-      }
-
-      // Load deadlines
-      const res = await fetch("../../data/tasks.json");
-      if (res.ok) {
-        const data = await res.json();
-        deadlines = data.deadlines || [];
-      }
+      parentTasks.weekly = [];
+      parentTasks.monthly = [];
     } catch (err) {
       console.error("Error loading data:", err);
+      deadlines = [];
+      parentTasks.todo = [];
+      parentTasks.parentOnly = [];
     }
 
     renderAll();
@@ -67,10 +67,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderDeadlines();
     renderTodoList();
     renderParentOnlyList();
-    renderTimetable();
   }
 
-  // ===== Calendar Rendering =====
   function renderCalendar(date) {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -84,7 +82,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     calendarDays.innerHTML = "";
 
-    // Previous month placeholders
     for (let i = firstDay; i > 0; i--) {
       const div = document.createElement("div");
       div.classList.add("calendar-date", "inactive");
@@ -92,7 +89,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       calendarDays.appendChild(div);
     }
 
-    // Current month
     for (let i = 1; i <= lastDate; i++) {
       const div = document.createElement("div");
       div.classList.add("calendar-date");
@@ -117,7 +113,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       calendarDays.appendChild(div);
     }
 
-    // Next month placeholders
     const totalCells = firstDay + lastDate;
     const nextDays = 7 - (totalCells % 7);
     if (nextDays < 7) {
@@ -130,7 +125,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // ===== Deadlines/Events Rendering =====
   function renderDeadlines() {
     eventsList.innerHTML = "";
     const today = new Date();
@@ -173,12 +167,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const editBtn = document.createElement("i");
       editBtn.className = "fa fa-pencil";
-      editBtn.addEventListener("click", () => openEditModal(index, "deadline"));
+      editBtn.addEventListener("click", () => openEditModal(index, "deadline", dl.id));
 
       const deleteBtn = document.createElement("i");
       deleteBtn.className = "fa fa-trash";
       deleteBtn.addEventListener("click", () =>
-        openDeleteModal(index, "deadline")
+        openDeleteModal(index, "deadline", dl.id)
       );
 
       actions.appendChild(editBtn);
@@ -193,7 +187,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // ===== Child's To-Do List Rendering =====
   function renderTodoList() {
     todoList.innerHTML = "";
 
@@ -207,16 +200,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       const li = document.createElement("li");
       li.className = "task-item";
 
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.className = "task-checkbox";
-      checkbox.checked = task.completed || false;
-      checkbox.addEventListener("change", () => {
-        task.completed = checkbox.checked;
-        li.classList.toggle("completed", checkbox.checked);
-        saveTasks();
-      });
-
       const label = document.createElement("span");
       label.className = "task-text";
       label.textContent = task.text;
@@ -227,19 +210,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       const editBtn = document.createElement("i");
       editBtn.className = "fa fa-pencil";
       editBtn.addEventListener("click", () =>
-        openEditModal(index, "todo-child")
+        openEditModal(index, "todo-child", task.id)
       );
 
       const deleteBtn = document.createElement("i");
       deleteBtn.className = "fa fa-trash";
       deleteBtn.addEventListener("click", () =>
-        openDeleteModal(index, "todo-child")
+        openDeleteModal(index, "todo-child", task.id)
       );
 
       actions.appendChild(editBtn);
       actions.appendChild(deleteBtn);
 
-      li.appendChild(checkbox);
       li.appendChild(label);
       li.appendChild(actions);
 
@@ -249,7 +231,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // ===== Parent-Only Tasks Rendering =====
   function renderParentOnlyList() {
     parentOnlyList.innerHTML = "";
 
@@ -267,10 +248,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       checkbox.type = "checkbox";
       checkbox.className = "task-checkbox";
       checkbox.checked = task.completed || false;
-      checkbox.addEventListener("change", () => {
-        task.completed = checkbox.checked;
-        li.classList.toggle("completed", checkbox.checked);
-        saveParentOnlyTasks();
+      checkbox.addEventListener("change", async () => {
+        try {
+          await calendarApi.updateParentTask(task.id, { completed: checkbox.checked });
+          task.completed = checkbox.checked;
+          li.classList.toggle("completed", checkbox.checked);
+        } catch (err) {
+          checkbox.checked = !checkbox.checked;
+          console.error("Error updating task:", err);
+        }
       });
 
       const label = document.createElement("span");
@@ -283,13 +269,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       const editBtn = document.createElement("i");
       editBtn.className = "fa fa-pencil";
       editBtn.addEventListener("click", () =>
-        openEditModal(index, "parent-only")
+        openEditModal(index, "parent-only", task.id)
       );
 
       const deleteBtn = document.createElement("i");
       deleteBtn.className = "fa fa-trash";
       deleteBtn.addEventListener("click", () =>
-        openDeleteModal(index, "parent-only")
+        openDeleteModal(index, "parent-only", task.id)
       );
 
       actions.appendChild(editBtn);
@@ -305,44 +291,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // ===== Timetable Rendering (Child's School Schedule) =====
-  function renderTimetable() {
-    // This would display the child's school timetable
-    // For now, showing a placeholder - can be integrated with actual timetable data
-    const timetableHTML = `
-      <div style="padding: 12px; color: rgba(255, 255, 255, 0.7); font-size: 0.9rem;">
-        <p style="margin: 0 0 8px 0;">
-          <strong>Monday - Friday</strong>
-        </p>
-        <p style="margin: 0 0 4px 0;">📚 School hours: 8:00 AM - 3:00 PM</p>
-        <p style="margin: 0;">View your child's detailed timetable in their profile.</p>
-      </div>
-    `;
-    timetableContainer.innerHTML = timetableHTML;
-  }
-
-  // ===== Save Functions =====
-  function saveTasks() {
-    localStorage.setItem(
-      "parentTasks",
-      JSON.stringify({
-        todo: parentTasks.todo,
-        weekly: parentTasks.weekly,
-        monthly: parentTasks.monthly,
-      })
-    );
-  }
-
-  function saveParentOnlyTasks() {
-    localStorage.setItem(
-      "parentOnlyTasks",
-      JSON.stringify(parentTasks.parentOnly)
-    );
-  }
-
-  // ===== Modal Functions =====
-  function openEditModal(index, type) {
-    editContext = { index, type };
+  function openEditModal(index, type, id) {
+    editContext = { index, type, id };
     editInput.value =
       type === "deadline"
         ? deadlines[index].title
@@ -355,59 +305,72 @@ document.addEventListener("DOMContentLoaded", async () => {
     editInput.focus();
   }
 
-  function openDeleteModal(index, type) {
-    deleteContext = { index, type };
+  function openDeleteModal(index, type, id) {
+    deleteContext = { index, type, id };
     deleteModal.classList.add("show");
   }
 
-  function saveEditedItem() {
+  async function saveEditedItem() {
     if (!editContext) return;
 
-    const { index, type } = editContext;
+    const { index, type, id } = editContext;
     const newText = editInput.value.trim();
 
     if (!newText) return;
 
-    if (type === "deadline") {
-      deadlines[index].title = newText;
-    } else if (type === "todo-child") {
-      parentTasks.todo[index].text = newText;
-      saveTasks();
-    } else if (type === "parent-only") {
-      parentTasks.parentOnly[index].text = newText;
-      saveParentOnlyTasks();
-    }
+    try {
+      if (type === "deadline") {
+        await calendarApi.updateDeadline(id, { title: newText });
+        deadlines[index].title = newText;
+      } else if (type === "todo-child") {
+        await todoApi.updateTodo(id, { text: newText });
+        parentTasks.todo[index].text = newText;
+      } else if (type === "parent-only") {
+        await calendarApi.updateParentTask(id, { text: newText });
+        parentTasks.parentOnly[index].text = newText;
+      }
 
-    renderAll();
-    editModal.classList.remove("show");
-    editContext = null;
+      renderAll();
+      editModal.classList.remove("show");
+      editContext = null;
+    } catch (err) {
+      console.error("Error saving edit:", err);
+      alert("Failed to save changes");
+    }
   }
 
-  function deleteItem() {
+  async function deleteItem() {
     if (!deleteContext) return;
 
-    const { index, type } = deleteContext;
+    const { index, type, id } = deleteContext;
 
-    if (type === "deadline") {
-      deadlines.splice(index, 1);
-    } else if (type === "todo-child") {
-      parentTasks.todo.splice(index, 1);
-      saveTasks();
-    } else if (type === "parent-only") {
-      parentTasks.parentOnly.splice(index, 1);
-      saveParentOnlyTasks();
+    try {
+      if (type === "deadline") {
+        await calendarApi.deleteDeadline(id);
+        deadlines.splice(index, 1);
+      } else if (type === "todo-child") {
+        await todoApi.deleteTodo(id);
+        parentTasks.todo.splice(index, 1);
+      } else if (type === "parent-only") {
+        await calendarApi.deleteParentTask(id);
+        parentTasks.parentOnly.splice(index, 1);
+      }
+
+      renderAll();
+      deleteModal.classList.remove("show");
+      deleteContext = null;
+    } catch (err) {
+      console.error("Error deleting:", err);
+      alert("Failed to delete item");
     }
-
-    renderAll();
-    deleteModal.classList.remove("show");
-    deleteContext = null;
   }
 
-  // ===== Event Listeners =====
-
-  // Add Event Button
   document.querySelectorAll(".add-deadline-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
+      if (!currentStudentId) {
+        alert("Please select a child first");
+        return;
+      }
       deadlineInput.value = "";
       deadlineDate.value = "";
       deadlineModal.classList.add("show");
@@ -415,17 +378,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Save Deadline
   document
     .getElementById("modal-save-deadline")
-    .addEventListener("click", () => {
+    .addEventListener("click", async () => {
       if (!deadlineInput.value || !deadlineDate.value) return;
-      deadlines.push({ title: deadlineInput.value, date: deadlineDate.value });
-      renderAll();
-      deadlineModal.classList.remove("show");
+
+      try {
+        const newDeadline = await calendarApi.createDeadline(
+          currentStudentId,
+          deadlineInput.value,
+          deadlineDate.value
+        );
+        deadlines.push(newDeadline);
+        renderAll();
+        deadlineModal.classList.remove("show");
+      } catch (err) {
+        console.error("Error creating deadline:", err);
+        alert("Failed to create deadline");
+      }
     });
 
-  // Add Task Buttons
   document.querySelectorAll(".add-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       currentTaskType = btn.dataset.type;
@@ -438,37 +410,40 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Save Task
-  document.getElementById("modal-save").addEventListener("click", () => {
+  document.getElementById("modal-save").addEventListener("click", async () => {
     const text = taskInput.value.trim();
     if (!text) return;
 
-    const newTask = { id: Date.now(), text, completed: false };
+    try {
+      if (currentTaskType === "parent-only") {
+        const newTask = await calendarApi.createParentTask(text);
+        parentTasks.parentOnly.unshift(newTask);
+      } else if (currentTaskType === "todo") {
+        if (!currentStudentId) {
+          alert("Please select a child first");
+          return;
+        }
+        const newTask = await todoApi.createTodo(currentStudentId, "todo", text);
+        parentTasks.todo.unshift(newTask);
+      }
 
-    if (currentTaskType === "parent-only") {
-      parentTasks.parentOnly.push(newTask);
-      saveParentOnlyTasks();
-    } else if (currentTaskType === "todo") {
-      parentTasks.todo.push(newTask);
-      saveTasks();
+      renderAll();
+      taskModal.classList.remove("show");
+      currentTaskType = null;
+    } catch (err) {
+      console.error("Error creating task:", err);
+      alert("Failed to create task");
     }
-
-    renderAll();
-    taskModal.classList.remove("show");
-    currentTaskType = null;
   });
 
-  // Edit Modal Save
   document
     .getElementById("edit-save")
     .addEventListener("click", saveEditedItem);
 
-  // Delete Modal Confirm
   document
     .getElementById("delete-confirm")
     .addEventListener("click", deleteItem);
 
-  // Close Modals
   document.querySelectorAll(".modal-close, .modal-cancel").forEach((btn) => {
     btn.addEventListener("click", () => {
       deadlineModal.classList.remove("show");
@@ -478,7 +453,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Calendar Navigation
   prevBtn.addEventListener("click", () => {
     currentDate.setMonth(currentDate.getMonth() - 1);
     renderCalendar(currentDate);
@@ -489,7 +463,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderCalendar(currentDate);
   });
 
-  // Enter key support
   taskInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
       document.getElementById("modal-save").click();
@@ -508,6 +481,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // Initial Load
+  await ChildSelector.init();
   await loadData();
+
+  ChildSelector.onChildChanged(() => {
+    loadData();
+  });
 });
