@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduBloom - Quiz History</title>
+    <script src="../../../js/sidebar.js"></script>
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/topbar.css" />
+    <link rel="stylesheet" href="../../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/cards.css" />
+    <link rel="stylesheet" href="../../../css/custom-select.css" />
+    <link rel="stylesheet" href="../../../css/student/quiz.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="bg-image"></div>
+
+    <div class="container">
+      <div id="sidebar-container"></div>
+      <main id="content">
+        <div class="card welcome full">
+          <div class="welcome-content">
+            <h1 class="heading"><i class="fas fa-history"></i>Quiz History</h1>
+            <div>View all your quiz attempts and track your progress.</div>
+          </div>
+          <div class="welcome-image"></div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label for="quiz-filter">Quiz:</label>
+            <select id="quiz-filter" class="custom-select">
+              <option value="">All Quizzes</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Score:</label>
+            <div class="score-filters">
+              <button class="filter-btn active" data-score="">All</button>
+              <button class="filter-btn" data-score="90">90%+</button>
+              <button class="filter-btn" data-score="70">70%+</button>
+              <button class="filter-btn" data-score="50">50%+</button>
+              <button class="filter-btn" data-score="0">&lt;50%</button>
+            </div>
+          </div>
+          <div class="filter-group">
+            <label>Date:</label>
+            <input type="date" id="date-from" placeholder="From" />
+            <span>to</span>
+            <input type="date" id="date-to" placeholder="To" />
+          </div>
+          <button id="clear-filters" class="btn-secondary">Clear Filters</button>
+        </div>
+
+        <!-- Attempts Container -->
+        <div id="attempts-container" class="attempts-grid">
+          <!-- Attempts rendered dynamically -->
+        </div>
+
+        <!-- No Results Message -->
+        <div id="no-results" class="no-results" style="display: none;">
+          <i class="fas fa-search"></i>
+          <p>No quiz attempts found matching your filters.</p>
+        </div>
+      </main>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detail-modal" class="modal">
+      <div class="modal-content detail-modal-content">
+        <div class="modal-header">
+          <h2 id="detail-title">Attempt Detail</h2>
+          <button class="modal-close" id="detail-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="detail-stats">
+            <div class="stat-item">
+              <span class="stat-label">Score:</span>
+              <span class="stat-value" id="detail-score">-</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Correct:</span>
+              <span class="stat-value" id="detail-correct">-</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Date:</span>
+              <span class="stat-value" id="detail-date">-</span>
+            </div>
+          </div>
+          <div id="questions-container" class="questions-list">
+            <!-- Questions rendered dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../../js/custom-select.js"></script>
+    <script src="../../../js/api/studentQuizApi.js"></script>
+    <script src="../../../js/student/quiz/quiz-history.js"></script>
+    <script src="../../../js/confirmation-modal.js"></script>
+    <script src="../../../js/topbar.js"></script>
+  </body>
+</html>
+
+<script src="../../../js/bg-manager.js"></script>

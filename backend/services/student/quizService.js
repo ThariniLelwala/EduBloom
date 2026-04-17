@@ -515,6 +515,185 @@ class StudentQuizService {
 
     return { message: "Question deleted successfully" };
   }
+
+  /**
+   * Submit a quiz attempt (save results)
+   */
+  async submitQuizAttempt(studentId, quizSetIds, totalQuestions, correctAnswers, answers, startedAt) {
+    if (!studentId || !quizSetIds || !Array.isArray(quizSetIds)) {
+      throw new Error("Student ID and quiz set IDs are required");
+    }
+
+    if (totalQuestions === undefined || correctAnswers === undefined) {
+      throw new Error("Total questions and correct answers count are required");
+    }
+
+    const scorePercentage = totalQuestions > 0 
+      ? Math.round((correctAnswers / totalQuestions) * 10000) / 100 
+      : 0;
+
+    const result = await db.query(
+      `INSERT INTO student_quiz_attempts 
+       (student_id, quiz_set_ids, total_questions, correct_answers, score_percentage, answers, started_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id, student_id, quiz_set_ids, total_questions, correct_answers, score_percentage, 
+                 answers, started_at, completed_at, created_at`,
+      [studentId, quizSetIds, totalQuestions, correctAnswers, scorePercentage, 
+       JSON.stringify(answers || []), startedAt || null]
+    );
+
+    return result.rows[0];
+  }
+
+  /**
+   * Get all quiz attempts for a student
+   */
+  async getQuizAttempts(studentId, limit = 50) {
+    if (!studentId) {
+      throw new Error("Student ID is required");
+    }
+
+    const result = await db.query(
+      `SELECT id, student_id, quiz_set_ids, total_questions, correct_answers, 
+              score_percentage, started_at, completed_at, created_at
+       FROM student_quiz_attempts
+       WHERE student_id = $1
+       ORDER BY created_at DESC
+       LIMIT $2`,
+      [studentId, limit || 50]
+    );
+
+    // Get quiz names for each attempt
+    for (let attempt of result.rows) {
+      if (attempt.quiz_set_ids && attempt.quiz_set_ids.length > 0) {
+        const quizNames = [];
+        for (const quizSetId of attempt.quiz_set_ids) {
+          const quizResult = await db.query(
+            `SELECT name FROM student_quiz_sets WHERE id = $1`,
+            [quizSetId]
+          );
+          if (quizResult.rows.length > 0) {
+            quizNames.push(quizResult.rows[0].name);
+          }
+        }
+        attempt.quiz_names = quizNames;
+      } else {
+        attempt.quiz_names = [];
+      }
+    }
+
+    return result.rows;
+  }
+
+  /**
+   * Get a specific quiz attempt
+   */
+  async getQuizAttempt(attemptId, studentId) {
+    if (!attemptId || !studentId) {
+      throw new Error("Attempt ID and Student ID are required");
+    }
+
+    const result = await db.query(
+      `SELECT id, student_id, quiz_set_ids, total_questions, correct_answers, 
+              score_percentage, answers, started_at, completed_at, created_at
+       FROM student_quiz_attempts
+       WHERE id = $1 AND student_id = $2`,
+      [attemptId, studentId]
+    );
+
+    if (result.rows.length === 0) {
+      throw new Error("Quiz attempt not found");
+    }
+
+    const attempt = result.rows[0];
+
+    // Get quiz names for the attempt
+    if (attempt.quiz_set_ids && attempt.quiz_set_ids.length > 0) {
+      const quizNames = [];
+      for (const quizSetId of attempt.quiz_set_ids) {
+        const quizResult = await db.query(
+          `SELECT name FROM student_quiz_sets WHERE id = $1`,
+          [quizSetId]
+        );
+        if (quizResult.rows.length > 0) {
+          quizNames.push(quizResult.rows[0].name);
+        }
+      }
+      attempt.quiz_names = quizNames;
+    } else {
+      attempt.quiz_names = [];
+    }
+
+    return attempt;
+  }
+
+  /**
+   * Get quiz attempts for specific quiz sets
+   */
+  async getQuizAttemptsBySets(studentId, quizSetIds) {
+    if (!studentId || !quizSetIds || !Array.isArray(quizSetIds)) {
+      throw new Error("Student ID and quiz set IDs are required");
+    }
+
+    const result = await db.query(
+      `SELECT id, student_id, quiz_set_ids, total_questions, correct_answers, 
+              score_percentage, started_at, completed_at, created_at
+       FROM student_quiz_attempts
+       WHERE student_id = $1 AND quiz_set_ids && $2::int[]
+       ORDER BY created_at DESC`,
+      [studentId, quizSetIds]
+    );
+
+    // Get quiz names for each attempt
+    for (let attempt of result.rows) {
+      if (attempt.quiz_set_ids && attempt.quiz_set_ids.length > 0) {
+        const quizNames = [];
+        for (const quizSetId of attempt.quiz_set_ids) {
+          const quizResult = await db.query(
+            `SELECT name FROM student_quiz_sets WHERE id = $1`,
+            [quizSetId]
+          );
+          if (quizResult.rows.length > 0) {
+            quizNames.push(quizResult.rows[0].name);
+          }
+        }
+        attempt.quiz_names = quizNames;
+      } else {
+        attempt.quiz_names = [];
+      }
+    }
+
+    return result.rows;
+  }
+
+  /**
+   * Get quiz stats (best score, average score, total attempts)
+   */
+  async getQuizStats(studentId) {
+    if (!studentId) {
+      throw new Error("Student ID is required");
+    }
+
+    const result = await db.query(
+      `SELECT 
+        COUNT(*) as total_attempts,
+        COALESCE(AVG(score_percentage), 0) as average_score,
+        COALESCE(MAX(score_percentage), 0) as best_score,
+        COALESCE(SUM(correct_answers), 0) as total_correct,
+        COALESCE(SUM(total_questions), 0) as total_questions
+       FROM student_quiz_attempts
+       WHERE student_id = $1`,
+      [studentId]
+    );
+
+    return {
+      totalAttempts: parseInt(result.rows[0].total_attempts) || 0,
+      averageScore: parseFloat(result.rows[0].average_score) || 0,
+      bestScore: parseFloat(result.rows[0].best_score) || 0,
+      totalCorrect: parseInt(result.rows[0].total_correct) || 0,
+      totalQuestions: parseInt(result.rows[0].total_questions) || 0
+    };
+  }
 }
 
 module.exports = new StudentQuizService();

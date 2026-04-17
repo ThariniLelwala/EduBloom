@@ -4,7 +4,7 @@
  */
 
 let currentSubjectId = null;
-const API_BASE_URL = "http://localhost:3000/api/student"; // Backend API base URL
+const API_BASE_URL = "/api/student"; // Backend API base URL
 
 // Get authentication token from localStorage
 function getAuthToken() {

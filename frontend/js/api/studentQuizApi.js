@@ -165,6 +165,50 @@ class StudentQuizApi {
   async deleteQuestion(questionId) {
     return this.request(`${this.baseUrl}/questions/${questionId}`, "DELETE");
   }
+
+  // ========== QUIZ ATTEMPTS ==========
+
+  /**
+   * Submit a quiz attempt (save results)
+   */
+  async submitAttempt(quizSetIds, totalQuestions, correctAnswers, answers, startedAt) {
+    return this.request(`${this.baseUrl}/attempts`, "POST", {
+      quizSetIds,
+      totalQuestions,
+      correctAnswers,
+      answers,
+      startedAt
+    });
+  }
+
+  /**
+   * Get all quiz attempts for the current student
+   */
+  async getAttempts(limit = 50) {
+    return this.request(`${this.baseUrl}/attempts?limit=${limit}`);
+  }
+
+  /**
+   * Get a specific quiz attempt
+   */
+  async getAttempt(attemptId) {
+    return this.request(`${this.baseUrl}/attempts/${attemptId}`);
+  }
+
+  /**
+   * Get quiz attempts for specific quiz sets
+   */
+  async getAttemptsBySets(quizSetIds) {
+    const setIdsParam = quizSetIds.join(",");
+    return this.request(`${this.baseUrl}/attempts/sets?setIds=${setIdsParam}`);
+  }
+
+  /**
+   * Get quiz stats for the current student
+   */
+  async getStats() {
+    return this.request(`${this.baseUrl}/stats`);
+  }
 }
 
 // Create singleton instance

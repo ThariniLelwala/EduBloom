@@ -281,6 +281,101 @@ class StudentQuizController {
         req.user.id
       );
 
+    res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ message: "Question deleted successfully" }));
+    } catch (err) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  /**
+   * Submit a quiz attempt (save results)
+   * POST /api/student/quizzes/attempts
+   */
+  async submitAttempt(req, res) {
+    try {
+      const data = await parseRequestBody(req);
+      const result = await quizService.submitQuizAttempt(
+        req.user.id,
+        data.quizSetIds,
+        data.totalQuestions,
+        data.correctAnswers,
+        data.answers,
+        data.startedAt
+      );
+
+      res.writeHead(201, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(result));
+    } catch (err) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  /**
+   * Get all quiz attempts for the logged-in student
+   * GET /api/student/quizzes/attempts
+   */
+  async getAttempts(req, res) {
+    try {
+      const url = new URL(req.url, `http://${req.headers.host}`);
+      const limit = parseInt(url.searchParams.get("limit")) || 50;
+      const result = await quizService.getQuizAttempts(req.user.id, limit);
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(result));
+    } catch (err) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  /**
+   * Get a specific quiz attempt
+   * GET /api/student/quizzes/attempts/:attemptId
+   */
+  async getAttempt(req, res) {
+    try {
+      const attemptId = parseInt(req.url.split("/")[5]);
+      const result = await quizService.getQuizAttempt(attemptId, req.user.id);
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(result));
+    } catch (err) {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  /**
+   * Get quiz attempts for specific quiz sets
+   * GET /api/student/quizzes/attempts/sets
+   */
+  async getAttemptsBySets(req, res) {
+    try {
+      const url = new URL(req.url, `http://${req.headers.host}`);
+      const setIdsParam = url.searchParams.get("setIds");
+      const quizSetIds = setIdsParam ? setIdsParam.split(",").map(id => parseInt(id)) : [];
+      
+      const result = await quizService.getQuizAttemptsBySets(req.user.id, quizSetIds);
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(result));
+    } catch (err) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  /**
+   * Get quiz stats for the logged-in student
+   * GET /api/student/quizzes/stats
+   */
+  async getStats(req, res) {
+    try {
+      const result = await quizService.getQuizStats(req.user.id);
+
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
     } catch (err) {

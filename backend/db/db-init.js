@@ -334,6 +334,31 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_quiz_answers_is_correct ON quiz_answers(is_correct);
     `);
 
+    // Quiz Attempts table (track student quiz completions)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS quiz_attempts (
+        id SERIAL PRIMARY KEY,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        quiz_set_ids INT[] NOT NULL,
+        total_questions INT NOT NULL,
+        correct_answers INT NOT NULL DEFAULT 0,
+        score_percentage DECIMAL(5,2) NOT NULL DEFAULT 0,
+        answers JSONB DEFAULT '[]',
+        started_at TIMESTAMP,
+        completed_at TIMESTAMP DEFAULT NOW(),
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Create indexes for quiz_attempts
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_quiz_attempts_student_id ON quiz_attempts(student_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_quiz_attempts_created_at ON quiz_attempts(created_at DESC);
+    `);
+
     // Flashcard Subjects table (student creates subjects for organizing flashcards)
     await db.query(`
       CREATE TABLE IF NOT EXISTS flashcard_subjects (
@@ -576,6 +601,31 @@ async function initializeDatabase() {
 
     await db.query(`
       CREATE INDEX IF NOT EXISTS idx_student_quiz_answers_is_correct ON student_quiz_answers(is_correct);
+    `);
+
+    // Student Quiz Attempts table (track student quiz completions)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS student_quiz_attempts (
+        id SERIAL PRIMARY KEY,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        quiz_set_ids INT[] NOT NULL,
+        total_questions INT NOT NULL,
+        correct_answers INT NOT NULL DEFAULT 0,
+        score_percentage DECIMAL(5,2) NOT NULL DEFAULT 0,
+        answers JSONB DEFAULT '[]',
+        started_at TIMESTAMP,
+        completed_at TIMESTAMP DEFAULT NOW(),
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Create indexes for student_quiz_attempts
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_student_quiz_attempts_student_id ON student_quiz_attempts(student_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_student_quiz_attempts_created_at ON student_quiz_attempts(created_at DESC);
     `);
 
     // GPA Semesters table

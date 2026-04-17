@@ -540,6 +540,53 @@ function handleStudentRoutes(req, res) {
       )(req, res);
     }
 
+    // Quiz Attempts routes
+    // Submit attempt: POST /api/student/quizzes/attempts
+    if (method === "POST" && pathname === "/api/student/quizzes/attempts") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.submitAttempt
+      )(req, res);
+    }
+
+    // Get all attempts: GET /api/student/quizzes/attempts
+    if (method === "GET" && pathname === "/api/student/quizzes/attempts") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.getAttempts
+      )(req, res);
+    }
+
+    // Get attempts by quiz sets: GET /api/student/quizzes/attempts/sets
+    if (
+      method === "GET" &&
+      pathname === "/api/student/quizzes/attempts/sets"
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.getAttemptsBySets
+      )(req, res);
+    }
+
+    // Get specific attempt: GET /api/student/quizzes/attempts/:attemptId
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/student\/quizzes\/attempts\/\d+$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.getAttempt
+      )(req, res);
+    }
+
+    // Get quiz stats: GET /api/student/quizzes/stats
+    if (method === "GET" && pathname === "/api/student/quizzes/stats") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        quizController.getStats
+      )(req, res);
+    }
+
     // ========== GPA TRACKER MANAGEMENT ROUTES ==========
 
     // GPA Semesters routes

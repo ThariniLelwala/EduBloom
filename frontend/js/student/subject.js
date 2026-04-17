@@ -3,7 +3,7 @@
  * Handles topics and file uploads for a specific subject
  */
 
-const API_BASE_URL = "http://localhost:3000/api/student";
+const API_BASE_URL = "/api/student";
 let currentSubjectId = null;
 let currentTopicId = null;
 let topics = [];

@@ -7,18 +7,52 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  let currentIndex = 0; // index of first question on page
+  let currentIndex = 0;
   let score = 0;
-  const pageSize = 2; // number of questions per page
-  const userAnswers = {}; // track answers
+  const pageSize = 2;
+  const userAnswers = {};
+  let quizStartTime = null;
+  let submittedAttemptId = null;
 
-  // Create a globally unique key per question
   function getKey(q) {
-    const quizId = q.quizId || quizData.id; // prefer per-question quizId
+    const quizId = q.quizId || quizData.id;
     return `${quizId}-${q.id}`;
   }
 
+  function getUniqueQuizSetIds() {
+    const uniqueIds = new Set();
+    quizData.questions.forEach(q => {
+      if (q.quizId) {
+        uniqueIds.add(q.quizId);
+      }
+    });
+    return Array.from(uniqueIds);
+  }
+
+  async function submitQuizResult(finalScore) {
+    const quizSetIds = getUniqueQuizSetIds();
+    
+    try {
+      const result = await studentQuizApi.submitAttempt(
+        quizSetIds,
+        quizData.questions.length,
+        finalScore,
+        userAnswers,
+        quizStartTime
+      );
+      submittedAttemptId = result.id;
+      return result;
+    } catch (error) {
+      console.error("Failed to submit quiz result:", error);
+      return null;
+    }
+  }
+
   function renderQuestions() {
+    if (!quizStartTime) {
+      quizStartTime = new Date().toISOString();
+    }
+
     container.innerHTML = "";
 
     const endIndex = Math.min(
@@ -54,12 +88,10 @@ document.addEventListener("DOMContentLoaded", () => {
         </ul>
       `;
 
-      // Add event listeners for answers
       card.querySelectorAll(".answer-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
           userAnswers[qKey] = btn.textContent;
 
-          // reset styles in this question
           card
             .querySelectorAll(".answer-btn")
             .forEach((b) => b.classList.remove("selected"));
@@ -70,7 +102,6 @@ document.addEventListener("DOMContentLoaded", () => {
       container.appendChild(card);
     }
 
-    // Navigation buttons
     const nav = document.createElement("div");
     nav.classList.add("quiz-nav");
 
@@ -105,24 +136,46 @@ document.addEventListener("DOMContentLoaded", () => {
     container.appendChild(nav);
   }
 
-  function renderResult() {
+  async function renderResult() {
     score = 0;
     quizData.questions.forEach((q) => {
       const qKey = getKey(q);
       if (userAnswers[qKey] === q.correct) score++;
     });
 
+    const percentage = quizData.questions.length > 0 
+      ? Math.round((score / quizData.questions.length) * 100) 
+      : 0;
+
+    await submitQuizResult(score);
+
     container.innerHTML = `
       <div class="question-card">
         <h2>Quiz Completed!</h2>
-        <p>Your score: ${score} / ${quizData.questions.length}</p>
-        <button class="btn-primary" onclick="window.location.href='quiz-set.html?subjectId=${
-          quizData.subjectId || ""
-        }&subjectName=${encodeURIComponent(
+        <div class="result-score">
+          <div class="score-circle ${percentage >= 70 ? 'good' : percentage >= 50 ? 'ok' : 'low'}">
+            <span class="score-number">${percentage}%</span>
+          </div>
+        </div>
+        <p class="score-detail">Your score: ${score} / ${quizData.questions.length}</p>
+        <div class="result-message">
+          ${percentage >= 70 
+            ? "<p>Great job! You passed!</p>" 
+            : percentage >= 50 
+            ? "<p>Good effort! Keep practicing!</p>" 
+            : "<p>Keep studying! You'll improve!</p>"}
+        </div>
+        <div class="result-actions">
+          <button class="btn-primary" onclick="window.location.href='quiz-set.html?subjectId=${
+            quizData.subjectId || ""
+          }&subjectName=${encodeURIComponent(
       quizData.subjectName || "Quizzes"
     )}'">Back to Quizzes</button>
+        </div>
       </div>
     `;
+
+    localStorage.removeItem("currentQuiz");
   }
 
   renderQuestions();

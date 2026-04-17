@@ -13,6 +13,7 @@ let pausedCountdownTime = sessionDuration; // for paused state
 
 // Global session tracking for backend
 let currentSessionId = null; // Backend ID of active session
+let sessionGlobalStartTime; // For tracking global session start time
 
 const TIMER_STATE_KEY = "pomodoroTimerState";
 
@@ -273,7 +274,7 @@ async function stopTimer() {
 let isSwitching = false;
 
 // ===== Switch between focus and break =====
-function switchSession() {
+async function switchSession() {
   if (isSwitching) return; // Prevent re-entry
   isSwitching = true;
   if (totalRemaining <= 0 && mode === "custom") {
@@ -294,7 +295,7 @@ function switchSession() {
     // Update backend with new cycle count
     if (currentSessionId) {
          try {
-            studentPomodoroApi.updateSession(currentSessionId, completedSessions).catch(err => {
+            await studentPomodoroApi.updateSession(currentSessionId, completedSessions).catch(err => {
                 console.error("Failed to update session cycles:", err);
                 // If backend says session not active/found, we should stop local timer to sync state
                 if (err.message.includes("Session not found") || err.message.includes("not active")) {

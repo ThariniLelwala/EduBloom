@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   let quizzes = [];
   let editId = null;
 
-  // Check authentication
   function checkAuth() {
     const token = localStorage.getItem("authToken");
     if (!token) {
@@ -26,7 +25,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     return true;
   }
 
-  // Load data from backend
   async function loadQuizzes() {
     try {
       if (!checkAuth()) return;
@@ -40,6 +38,57 @@ document.addEventListener("DOMContentLoaded", async () => {
       quizzes = [];
       renderQuizzes();
     }
+  }
+
+  async function loadQuizHistory() {
+    try {
+      const quizIds = quizzes.map(q => q.id);
+      if (quizIds.length === 0) return;
+
+      const attempts = await studentQuizApi.getAttemptsBySets(quizIds);
+      renderQuizHistory(attempts);
+    } catch (error) {
+      console.error("Error loading quiz history:", error);
+    }
+  }
+
+  function renderQuizHistory(attempts) {
+    const historySection = document.getElementById("quiz-history-section");
+    const historyContainer = document.getElementById("quiz-history-container");
+
+    if (!attempts || attempts.length === 0) {
+      historySection.style.display = "none";
+      return;
+    }
+
+    historySection.style.display = "block";
+    historyContainer.innerHTML = "";
+
+    attempts.slice(0, 10).forEach(attempt => {
+      const item = document.createElement("div");
+      item.className = "history-item";
+      
+      const percentage = parseFloat(attempt.score_percentage) || 0;
+      const scoreClass = percentage >= 70 ? "good" : percentage >= 50 ? "ok" : "low";
+      const date = new Date(attempt.created_at).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      item.innerHTML = `
+        <div class="history-score ${scoreClass}">
+          <span class="score-value">${percentage}%</span>
+        </div>
+        <div class="history-details">
+          <span class="history-quiz">${attempt.quiz_names?.join(", ") || "Quiz"}</span>
+          <span class="history-meta">${attempt.correct_answers}/${attempt.total_questions} correct</span>
+          <span class="history-date">${date}</span>
+        </div>
+      `;
+      historyContainer.appendChild(item);
+    });
   }
 
   function renderQuizzes() {
@@ -90,7 +139,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (confirmed) {
             try {
               await studentQuizApi.deleteQuizSet(quiz.id);
-              loadQuizzes(); // Reload from backend
+              loadQuizzes();
             } catch (error) {
               alert("Failed to delete quiz: " + error.message);
             }
@@ -98,7 +147,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           dropdown.style.display = "none";
         });
 
-      // Navigate to questions page
       card.addEventListener("click", (e) => {
         if (e.target.closest(".dots") || e.target.closest(".dropdown")) return;
         window.location.href = `questions.html?subjectId=${subjectId}&quizId=${
@@ -109,7 +157,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     });
 
-    // Add Quiz card
     const addCard = document.createElement("div");
     addCard.classList.add("subject-card", "add-card");
     addCard.innerHTML = `<i class="fas fa-plus"></i><span>Add Quiz</span>`;
@@ -132,15 +179,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
       if (editId) {
-        // Update existing quiz set
         await studentQuizApi.updateQuizSet(editId, { name });
       } else {
-        // Create new quiz set
         await studentQuizApi.createQuizSet(subjectId, name);
       }
 
       modal.style.display = "none";
-      loadQuizzes(); // Reload from backend
+      loadQuizzes();
     } catch (error) {
       alert("Failed to save quiz: " + error.message);
     }
@@ -154,10 +199,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       .forEach((dd) => (dd.style.display = "none"));
   });
 
-  // Load initial data
   await loadQuizzes();
+  await loadQuizHistory();
 
-  // ---------------- Take Quiz Logic ----------------
   const takeQuizBtn = document.getElementById("take-quiz-btn");
   const takeQuizModal = document.getElementById("take-quiz-modal");
   const closeTakeQuiz = takeQuizModal.querySelector(".modal-close");
@@ -201,13 +245,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     try {
-      // Gather questions from selected quizzes
       let selectedQuestions = [];
       for (const quizId of selectedIds) {
         const quizData = await studentQuizApi.getQuizSet(quizId);
         if (quizData.questions && quizData.questions.length > 0) {
           quizData.questions.forEach((q) => {
-            // Transform backend format to frontend format
             const correctAnswer = q.answers.find((a) => a.is_correct);
             selectedQuestions.push({
               id: q.id,
@@ -225,10 +267,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
       }
 
-      // Shuffle questions
       selectedQuestions = selectedQuestions.sort(() => Math.random() - 0.5);
 
-      // Store in localStorage
       localStorage.setItem(
         "currentQuiz",
         JSON.stringify({
@@ -238,7 +278,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         })
       );
 
-      // Navigate to take quiz page
       window.location.href = `take-quiz.html?subjectId=${subjectId}&subjectName=${encodeURIComponent(
         subjectName
       )}`;

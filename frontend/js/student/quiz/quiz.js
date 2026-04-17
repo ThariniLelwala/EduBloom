@@ -104,6 +104,22 @@ document.addEventListener("DOMContentLoaded", () => {
     addCard.innerHTML = `<i class="fas fa-plus"></i><span>Add Subject</span>`;
     container.appendChild(addCard);
 
+    // Quiz History card - no dropdown, just click to navigate
+    const historyCard = document.createElement("div");
+    historyCard.classList.add("subject-card");
+    historyCard.style.justifyContent = "center";
+    historyCard.innerHTML = `
+      <div class="subject-header" style="justify-content: center; flex-direction: column; align-items: center;">
+        <i class="fas fa-history" style="font-size: 24px; margin-bottom: 8px;"></i>
+        <span>Quiz History</span>
+      </div>
+    `;
+    container.appendChild(historyCard);
+
+    historyCard.addEventListener("click", () => {
+      window.location.href = "quiz-history.html";
+    });
+
     addCard.addEventListener("click", () => {
       editId = null;
       modalTitle.textContent = "Add Subject";
