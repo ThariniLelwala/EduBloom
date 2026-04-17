@@ -3,6 +3,7 @@ const handleAuthRoutes = require("./authRoutes");
 const handleStudentRoutes = require("./studentRoutes");
 const handleTeacherRoutes = require("./teacherRoutes");
 const handleAdminRoutes = require("./adminRoutes");
+const handleParentRoutes = require("./parentRoutes");
 
 const handleApiRoutes = (req, res) => {
   console.log("\n========== NEW REQUEST ==========");
@@ -20,6 +21,9 @@ const handleApiRoutes = (req, res) => {
     return handleTeacherRoutes(req, res);
   } else if (pathname.startsWith("/api/admin/")) {
     return handleAdminRoutes(req, res);
+  } else if (pathname.startsWith("/api/parent/")) {
+    console.log("[INDEX] -> parentRoutes");
+    return handleParentRoutes(req, res);
   }
 
   console.log("[INDEX] -> authRoutes (fallback)");
