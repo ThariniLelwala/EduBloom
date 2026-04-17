@@ -1,8 +1,12 @@
 // Admin Dashboard - Connected to Backend API
 
+let currentEditingId = null;
+let currentDeletingId = null;
+
 document.addEventListener("DOMContentLoaded", async () => {
   await loadDashboardData();
   bindDashboardEvents();
+  await loadAdminTasks();
 });
 
 async function loadDashboardData() {
@@ -82,12 +86,6 @@ async function loadHelpdeskCount() {
   document.getElementById("helpdesk-count").textContent = "0";
 }
 
-function bindDashboardEvents() {
-  const modal = document.getElementById("task-modal");
-  document.getElementById("modal-close")?.addEventListener("click", () => modal?.classList.remove("show"));
-  document.getElementById("modal-cancel")?.addEventListener("click", () => modal?.classList.remove("show"));
-}
-
 function updateWelcomeMessage() {
   const username = localStorage.getItem("username");
   const welcomeHeading = document.getElementById("welcome-heading");
@@ -145,4 +143,156 @@ function escapeHtml(text) {
   const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
+}
+
+async function loadAdminTasks() {
+  const list = document.getElementById("dashboard-tasks-list");
+  if (!list) return;
+
+  try {
+    const tasks = await adminApi.getTodos();
+    renderTasks(tasks);
+  } catch (error) {
+    console.error("Error loading tasks:", error);
+    list.innerHTML = '<li style="padding: 16px; text-align: center;">Failed to load tasks</li>';
+  }
+}
+
+function renderTasks(tasks) {
+  const list = document.getElementById("dashboard-tasks-list");
+  if (!list) return;
+
+  if (!tasks || tasks.length === 0) {
+    list.innerHTML = '<li style="padding: 16px; text-align: center; color: rgba(255,255,255,0.5);">No tasks yet</li>';
+    return;
+  }
+
+  list.innerHTML = "";
+  tasks.forEach(task => {
+    const li = document.createElement("li");
+    li.style.cssText = "display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);";
+    li.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+        <input type="checkbox" ${task.completed ? 'checked' : ''} 
+          onchange="toggleTask(${task.id}, this.checked)"
+          style="cursor: pointer; accent-color: var(--color-primary); width: 18px; height: 18px;">
+        <span style="${task.completed ? 'text-decoration: line-through; opacity: 0.5;' : ''} flex: 1;">${escapeHtml(task.text)}</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button onclick="openEditModal(${task.id}, '${escapeHtml(task.text).replace(/'/g, "\\'")}')" 
+          style="background: none; border: none; color: rgba(255,255,255,0.6); cursor: pointer; padding: 4px;">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button onclick="openDeleteModal(${task.id})" 
+          style="background: none; border: none; color: rgba(255,255,255,0.6); cursor: pointer; padding: 4px;">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    `;
+    list.appendChild(li);
+  });
+}
+
+async function toggleTask(id, completed) {
+  try {
+    const task = await adminApi.getTodos().then(todos => todos.find(t => t.id === id));
+    if (task) {
+      await adminApi.updateTodo(id, task.text, completed);
+      await loadAdminTasks();
+    }
+  } catch (error) {
+    console.error("Error updating task:", error);
+    await loadAdminTasks();
+  }
+}
+
+function openEditModal(id, text) {
+  currentEditingId = id;
+  const modal = document.getElementById("edit-modal");
+  const input = document.getElementById("edit-input");
+  if (modal && input) {
+    input.value = text;
+    modal.classList.add("show");
+  }
+}
+
+function openDeleteModal(id) {
+  currentDeletingId = id;
+  const modal = document.getElementById("delete-modal");
+  if (modal) {
+    modal.classList.add("show");
+  }
+}
+
+function bindDashboardEvents() {
+  const modal = document.getElementById("task-modal");
+  const editModal = document.getElementById("edit-modal");
+  const deleteModal = document.getElementById("delete-modal");
+  const addBtn = document.getElementById("dashboard-add-btn");
+  const modalClose = document.getElementById("modal-close");
+  const modalCancel = document.getElementById("modal-cancel");
+  const modalSave = document.getElementById("modal-save");
+  const editModalClose = document.getElementById("edit-modal-close");
+  const editCancel = document.getElementById("edit-cancel");
+  const editSave = document.getElementById("edit-save");
+  const deleteModalClose = document.getElementById("delete-modal-close");
+  const deleteCancel = document.getElementById("delete-cancel");
+  const deleteConfirm = document.getElementById("delete-confirm");
+
+  addBtn?.addEventListener("click", () => {
+    currentEditingId = null;
+    const input = document.getElementById("task-input");
+    if (input) input.value = "";
+    modal?.classList.add("show");
+  });
+
+  modalClose?.addEventListener("click", () => modal?.classList.remove("show"));
+  modalCancel?.addEventListener("click", () => modal?.classList.remove("show"));
+
+  modalSave?.addEventListener("click", async () => {
+    const input = document.getElementById("task-input");
+    const text = input?.value.trim();
+    if (text) {
+      try {
+        await adminApi.createTodo(text);
+        modal?.classList.remove("show");
+        await loadAdminTasks();
+      } catch (error) {
+        console.error("Error creating task:", error);
+      }
+    }
+  });
+
+  editModalClose?.addEventListener("click", () => editModal?.classList.remove("show"));
+  editCancel?.addEventListener("click", () => editModal?.classList.remove("show"));
+
+  editSave?.addEventListener("click", async () => {
+    const input = document.getElementById("edit-input");
+    const text = input?.value.trim();
+    if (text && currentEditingId) {
+      try {
+        const task = await adminApi.getTodos().then(todos => todos.find(t => t.id === currentEditingId));
+        await adminApi.updateTodo(currentEditingId, text, task?.completed || false);
+        editModal?.classList.remove("show");
+        await loadAdminTasks();
+      } catch (error) {
+        console.error("Error updating task:", error);
+      }
+    }
+  });
+
+  deleteModalClose?.addEventListener("click", () => deleteModal?.classList.remove("show"));
+  deleteCancel?.addEventListener("click", () => deleteModal?.classList.remove("show"));
+
+  deleteConfirm?.addEventListener("click", async () => {
+    if (currentDeletingId) {
+      try {
+        await adminApi.deleteTodo(currentDeletingId);
+        deleteModal?.classList.remove("show");
+        await loadAdminTasks();
+      } catch (error) {
+        console.error("Error deleting task:", error);
+      }
+    }
+  });
 }

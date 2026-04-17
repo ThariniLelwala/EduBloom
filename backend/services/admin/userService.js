@@ -3,6 +3,8 @@ const db = require("../../db/db");
 const { hashPassword, verifyPassword } = require("../../utils/hash");
 const { generateToken } = require("../../utils/token");
 
+const MAIN_ADMIN_USERNAME = "admin";
+
 class UserService {
   /**
    * Get all users with optional filtering and searching (includes admins)
@@ -149,7 +151,7 @@ class UserService {
 
     // Prevent admin from suspending their own account
     if (userId === adminUser.id) {
-      throw new Error("You cannot suspend your own admin account");
+      throw new Error("You cannot delete your own account");
     }
 
     // Check if user exists
@@ -162,6 +164,11 @@ class UserService {
     }
 
     const user = userCheck.rows[0];
+
+    // Prevent deletion of main admin
+    if (user.username === MAIN_ADMIN_USERNAME) {
+      throw new Error("Main admin cannot be deleted");
+    }
 
     // Move user to suspended_users table
     await db.query(
@@ -207,7 +214,7 @@ class UserService {
 
     // Prevent admin from suspending their own account
     if (userIds.includes(adminUser.id)) {
-      throw new Error("You cannot suspend your own admin account");
+      throw new Error("You cannot delete your own account");
     }
 
     // Get users to be suspended
@@ -215,6 +222,14 @@ class UserService {
       "SELECT * FROM users WHERE id = ANY($1)",
       [userIds]
     );
+
+    // Prevent deletion of main admin
+    const mainAdminInList = usersToSuspend.rows.find(
+      (user) => user.username === MAIN_ADMIN_USERNAME
+    );
+    if (mainAdminInList) {
+      throw new Error("Main admin cannot be deleted");
+    }
 
     // Move each user to suspended_users table
     for (const user of usersToSuspend.rows) {
