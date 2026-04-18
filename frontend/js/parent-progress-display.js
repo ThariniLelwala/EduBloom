@@ -1,4 +1,5 @@
-// Progress Page JavaScript
+// Parent Progress Display JavaScript
+// For parent view - displays school student progress only
 
 // Mood value mapping (0-4 scale) - Same as diary.html
 const moodValueMap = {
@@ -18,36 +19,10 @@ const energyValueMap = {
   Max: 4,
 };
 
-// Grade to GPA mapping
-const defaultGradeToGPA = {
-  "A+": 4.0,
-  A: 4.0,
-  "A-": 3.7,
-  "B+": 3.3,
-  B: 3.0,
-  "B-": 2.7,
-  "C+": 2.3,
-  C: 2.0,
-  "C-": 1.7,
-  "D+": 1.3,
-  D: 1.0,
-  F: 0.0,
-};
-
-// GPA data structure
-let gpaData = {
-  semesters: [],
-  currentGPA: 0,
-  highestGPA: 0,
-  lowestGPA: 0,
-  averageGPA: 0,
-};
-
 let monthlyChart = null;
 let currentProgressData = null;
 let scoresChart = null;
 let markTrackerChart = null;
-let gpaChart = null;
 
 // Get mood emoji
 function getMoodEmoji(mood) {
@@ -73,53 +48,27 @@ function getEnergyEmoji(energy) {
   return energyEmojis[energy] || "😃";
 }
 
-// Initialize page
-async function initializeProgress() {
-  await ChildSelector.init();
+// Process child progress data from parent view
+function processChildProgressData(progressData) {
+  currentProgressData = progressData;
   
-  // For student view, load data from student APIs
-  await loadStudentProgressData();
+  // Process and display all data
+  updateWeeklyStats();
+  generateWeeklyBreakdown();
+  initializeMonthlyChart();
+  loadMentalLogs();
+  loadTasks();
   
-  setupEventListeners();
-  
-  ChildSelector.onChildChanged((child) => {
-    checkAndInitializeGPA();
+  // Load exam scores and then initialize chart
+  loadExamScores().then(() => {
+    initializeScoresChart();
+    setupExamCountListener();
   });
-}
-
-// Load student progress data (for student view)
-async function loadStudentProgressData() {
-  try {
-    // Load data from student APIs
-    const [pomodoroData, diaryData, todoData] = await Promise.all([
-      window.studentPomodoroApi ? window.studentPomodoroApi.getSessions(50) : Promise.resolve({ sessions: [] }),
-      window.studentDiaryApi ? window.studentDiaryApi.getEntries() : Promise.resolve({ entries: [] }),
-      window.studentTodoApi ? window.studentTodoApi.getTodos() : Promise.resolve({ todos: [] })
-    ]);
-
-    currentProgressData = {
-      pomodoro: {
-        sessions: pomodoroData.sessions || [],
-        stats: {}
-      },
-      diary: {
-        entries: diaryData.entries || []
-      },
-      todos: {
-        items: todoData.todos || []
-      }
-    };
-
-    // Process and display data
-    updateWeeklyStats();
-    generateWeeklyBreakdown();
-    initializeMonthlyChart();
-    loadMentalLogs();
-    loadTasks();
-    checkAndInitializeGPA();
-  } catch (error) {
-    console.error("Error loading student progress data:", error);
-  }
+  
+  // Load mark tracker data
+  loadMarkTrackerScores().then(() => {
+    initializeMarkTrackerChart();
+  });
 }
 
 // Load and display mental logs data for current week
@@ -610,53 +559,6 @@ function initializeScoresChart() {
   });
 }
 
-// Check if university student and initialize GPA card
-function checkAndInitializeGPA() {
-  const selectedChild = ChildSelector.getSelectedChild();
-  const studentType = selectedChild ? selectedChild.student_type : localStorage.getItem("studentType");
-  
-  // Get all card elements with null checks
-  const gpaCard = document.getElementById("gpa-card");
-  const avgGpaCard = document.getElementById("avg-gpa-card");
-  const tasksCard = document.getElementById("tasks-card");
-  const avgScoresCard = document.getElementById("avg-scores-card");
-  const avgScoreSmallCard = document.getElementById("avg-score-card");
-  const markTrackerCard = document.getElementById("mark-tracker-card");
-
-  if (studentType === "university") {
-    // Only show/hide elements that exist
-    if (gpaCard) gpaCard.style.display = "block";
-    if (avgGpaCard) avgGpaCard.style.display = "block";
-    if (tasksCard) tasksCard.style.display = "block";
-    if (avgScoresCard) avgScoresCard.style.display = "none";
-    if (avgScoreSmallCard) avgScoreSmallCard.style.display = "none";
-    if (markTrackerCard) markTrackerCard.style.display = "none";
-    
-    loadGPAFromTracker();
-    updateGPAStats();
-    updateAvgGPACard();
-    initializeGPAChart();
-  } else {
-    // School student view
-    if (gpaCard) gpaCard.style.display = "none";
-    if (avgGpaCard) avgGpaCard.style.display = "none";
-    if (tasksCard) tasksCard.style.display = "none";
-    if (avgScoresCard) avgScoresCard.style.display = "block";
-    if (avgScoreSmallCard) avgScoreSmallCard.style.display = "block";
-    if (markTrackerCard) markTrackerCard.style.display = "block";
-    
-    // Load exam scores and then initialize chart
-    loadExamScores().then(() => {
-      initializeScoresChart();
-      setupExamCountListener();
-    });
-    // Load mark tracker data
-    loadMarkTrackerScores().then(() => {
-        initializeMarkTrackerChart();
-    });
-  }
-}
-
 // ==================== MARK TRACKER SCORES FOR SCHOOL STUDENTS ====================
 let marksData = null;
 
@@ -733,15 +635,15 @@ function updateMarkTrackerStats(dataArray) {
     const avg = (numericData.reduce((a, b) => a + b, 0) / numericData.length).toFixed(2);
 
     statsContainer.innerHTML = `
-      <div class="gpa-stat">
+      <div class="score-stat">
         <span class="stat-label">Highest</span>
         <span class="stat-value">${max}</span>
       </div>
-      <div class="gpa-stat">
+      <div class="score-stat">
         <span class="stat-label">Lowest</span>
         <span class="stat-value">${min}</span>
       </div>
-      <div class="gpa-stat">
+      <div class="score-stat">
         <span class="stat-label">Average</span>
         <span class="stat-value">${avg}</span>
       </div>
@@ -769,18 +671,6 @@ function updateMarkTrackerChart(subjectFilter = "all") {
     // Clear empty state if it exists
     clearEmptyState('mark-tracker-card');
     
-    markTrackerChart.data.labels = chartData.labels;
-    markTrackerChart.data.datasets[0].data = chartData.data;
-    markTrackerChart.data.datasets[0].label = chartData.label;
-    markTrackerChart.update();
-    
-    updateMarkTrackerStats(chartData.data);
-}
-
-function updateMarkTrackerChart(subjectFilter = "all") {
-    if (!markTrackerChart) return;
-    
-    const chartData = processMarksForChart(subjectFilter);
     markTrackerChart.data.labels = chartData.labels;
     markTrackerChart.data.datasets[0].data = chartData.data;
     markTrackerChart.data.datasets[0].label = chartData.label;
@@ -858,209 +748,6 @@ function initializeMarkTrackerChart() {
     });
     
     updateMarkTrackerStats(chartData.data);
-}
-
-// Load GPA data from API
-function loadGPAFromTracker() {
-  try {
-    let semesters = [];
-    
-    // Get semesters from current progress data
-    if (currentProgressData && currentProgressData.gpa) {
-      semesters = currentProgressData.gpa.semesters || [];
-    }
-
-    if (!semesters || semesters.length === 0) {
-      return;
-    }
-
-    const customGradeMappings = JSON.parse(
-      localStorage.getItem("customGradeMappings") || "{}"
-    );
-    const gradeMappings = { ...defaultGradeToGPA, ...customGradeMappings };
-
-    // Process semesters and calculate GPAs
-    gpaData.semesters = [];
-    let totalWeightedGPA = 0;
-    let totalCredits = 0;
-    let allGPAs = [];
-    let latestGPA = null;
-
-    semesters.forEach((semester) => {
-      const semesterGPA = calculateSemesterGPA(semester, gradeMappings);
-
-      if (semesterGPA !== null) {
-        gpaData.semesters.push({
-          semester: semester.name,
-          gpa: semesterGPA,
-        });
-
-        // Calculate weighted average
-        const semesterCredits = semester.subjects.reduce(
-          (sum, subject) => sum + (parseFloat(subject.credits) || 0),
-          0
-        );
-        totalWeightedGPA += semesterGPA * semesterCredits;
-        totalCredits += semesterCredits;
-        allGPAs.push(semesterGPA);
-        latestGPA = semesterGPA;
-      }
-    });
-
-    // Update overall stats
-    if (allGPAs.length > 0) {
-      gpaData.currentGPA =
-        totalCredits > 0
-          ? totalWeightedGPA / totalCredits
-          : allGPAs.reduce((a, b) => a + b, 0) / allGPAs.length;
-      gpaData.highestGPA = Math.max(...allGPAs);
-      gpaData.lowestGPA = Math.min(...allGPAs);
-      gpaData.averageGPA =
-        totalCredits > 0
-          ? totalWeightedGPA / totalCredits
-          : allGPAs.reduce((a, b) => a + b, 0) / allGPAs.length;
-    }
-  } catch (error) {
-    console.error("Error loading GPA tracker data:", error);
-  }
-}
-
-// Calculate GPA for a semester
-function calculateSemesterGPA(semester, gradeMappings) {
-  let totalPoints = 0;
-  let totalCredits = 0;
-
-  semester.subjects.forEach((subject) => {
-    const gpa = gradeMappings[subject.grade];
-    const credits = parseFloat(subject.credits) || 0;
-
-    if (gpa !== undefined && gpa !== null && credits > 0) {
-      totalPoints += gpa * credits;
-      totalCredits += credits;
-    }
-  });
-
-  if (totalCredits === 0) return null;
-
-  return parseFloat((totalPoints / totalCredits).toFixed(2));
-}
-
-// Update GPA statistics
-function updateGPAStats() {
-  const currentGpaEl = document.getElementById("current-gpa");
-  const highestGpaEl = document.getElementById("highest-gpa");
-  const lowestGpaEl = document.getElementById("lowest-gpa");
-  const averageGpaEl = document.getElementById("average-gpa");
-  
-  if (currentGpaEl) currentGpaEl.textContent = gpaData.currentGPA.toFixed(2);
-  if (highestGpaEl) highestGpaEl.textContent = gpaData.highestGPA.toFixed(2);
-  if (lowestGpaEl) lowestGpaEl.textContent = gpaData.lowestGPA.toFixed(2);
-  if (averageGpaEl) averageGpaEl.textContent = gpaData.averageGPA.toFixed(2);
-}
-
-// Update Average GPA card with trend
-function updateAvgGPACard() {
-  const avgGpaDisplayEl = document.getElementById("avg-gpa-display");
-  if (avgGpaDisplayEl) avgGpaDisplayEl.textContent = gpaData.averageGPA.toFixed(2);
-
-  // Calculate trend
-  const trendElement = document.getElementById("gpa-trend");
-  if (!trendElement) return;
-  
-  let trend = "Stable";
-  let trendIcon = "fa-minus";
-  let trendClass = "";
-
-  if (gpaData.semesters.length > 1) {
-    const priorSemesterGPA =
-      gpaData.semesters[gpaData.semesters.length - 2].gpa;
-    const lastSemesterGPA = gpaData.semesters[gpaData.semesters.length - 1].gpa;
-    const difference = lastSemesterGPA - priorSemesterGPA;
-
-    if (difference > 0.1) {
-      trend = "Improving";
-      trendIcon = "fa-arrow-up";
-      trendClass = "trend-up";
-    } else if (difference < -0.1) {
-      trend = "Declining";
-      trendIcon = "fa-arrow-down";
-      trendClass = "trend-down";
-    }
-  }
-
-  trendElement.innerHTML = `<i class="fas ${trendIcon}"></i> ${trend}`;
-  trendElement.className = `stat-secondary ${trendClass}`;
-}
-
-// Initialize GPA chart
-function initializeGPAChart() {
-  const ctx = document.getElementById("gpaChart");
-  if (!ctx) return;
-
-  // Destroy existing chart if it exists
-  if (gpaChart) {
-    gpaChart.destroy();
-    gpaChart = null;
-  }
-
-  gpaChart = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: gpaData.semesters.map((s) => s.semester),
-      datasets: [
-        {
-          label: "GPA Progression",
-          data: gpaData.semesters.map((s) => s.gpa),
-          borderColor: "rgba(255, 255, 255, 0.8)",
-          backgroundColor: "rgba(255, 255, 255, 0.1)",
-          tension: 0.4,
-          fill: true,
-          pointBackgroundColor: "rgba(255, 255, 255, 0.8)",
-          pointBorderColor: "rgba(255, 255, 255, 0.3)",
-          pointRadius: 5,
-          pointHoverRadius: 7,
-          pointBorderWidth: 2,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: true,
-          labels: {
-            color: "rgba(255, 255, 255, 0.7)",
-            font: {
-              size: 12,
-            },
-          },
-        },
-      },
-      scales: {
-        y: {
-          beginAtZero: false,
-          min: 2.0,
-          max: 4.0,
-          ticks: {
-            color: "rgba(255, 255, 255, 0.5)",
-            stepSize: 0.5,
-          },
-          grid: {
-            color: "rgba(255, 255, 255, 0.05)",
-          },
-        },
-        x: {
-          ticks: {
-            color: "rgba(255, 255, 255, 0.5)",
-          },
-          grid: {
-            color: "rgba(255, 255, 255, 0.05)",
-          },
-        },
-      },
-    },
-  });
 }
 
 // Update weekly statistics
@@ -1481,5 +1168,5 @@ function setupCustomSelect() {
   });
 }
 
-// Initialize on page load
-document.addEventListener("DOMContentLoaded", initializeProgress);
+// Make function globally accessible for parent-progress.js
+window.processParentProgressData = processChildProgressData;

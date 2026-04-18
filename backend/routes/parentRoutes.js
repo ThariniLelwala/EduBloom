@@ -2,6 +2,7 @@
 const parentController = require("../controllers/parentController");
 const todoController = require("../controllers/parent/todoController");
 const calendarController = require("../controllers/parent/calendarController");
+const progressController = require("../controllers/parent/progressController");
 const {
   verifyToken,
   requireRole,
@@ -55,6 +56,85 @@ function handleParentRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("parent")],
         parentController.removeStudentLink
+      )(req, res);
+    }
+
+    // ========== PROGRESS DATA ROUTES ==========
+
+    // Get child's pomodoro sessions: GET /api/parent/children/:childId/pomodoro/sessions
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/parent\/children\/\d+\/pomodoro\/sessions$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        progressController.getPomodoroSessions
+      )(req, res);
+    }
+
+    // Get child's pomodoro stats: GET /api/parent/children/:childId/pomodoro/stats
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/parent\/children\/\d+\/pomodoro\/stats$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        progressController.getPomodoroStats
+      )(req, res);
+    }
+
+    // Get child's diary entries: GET /api/parent/children/:childId/diary/entries
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/parent\/children\/\d+\/diary\/entries$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        progressController.getDiaryEntries
+      )(req, res);
+    }
+
+    // Get child's todos: GET /api/parent/children/:childId/todos
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/parent\/children\/\d+\/todos$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        progressController.getTodos
+      )(req, res);
+    }
+
+    // Get child's todos by type: GET /api/parent/children/:childId/todos/:type
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/parent\/children\/\d+\/todos\/(todo|weekly|monthly)$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        progressController.getTodos
+      )(req, res);
+    }
+
+    // Get child's exam terms: GET /api/parent/children/:childId/exams/terms
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/parent\/children\/\d+\/exams\/terms$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        progressController.getExamTerms
+      )(req, res);
+    }
+
+    // Get child's mark subjects: GET /api/parent/children/:childId/marks/subjects
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/parent\/children\/\d+\/marks\/subjects$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        progressController.getMarkSubjects
       )(req, res);
     }
 
