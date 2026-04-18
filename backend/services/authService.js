@@ -234,7 +234,6 @@ class AuthService {
       return true;
     } catch (err) {
       // Link might already exist
-      console.log("Link might already exist:", err.message);
       return false;
     }
   }

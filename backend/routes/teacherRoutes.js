@@ -18,15 +18,7 @@ const { getId, isPath, matches } = require("../utils/routeHelpers");
 
 const url = require("url");
 
-// Force immediate output
-const originalLog = console.log;
-console.log = function(...args) {
-  process.stdout.write(Date.now() + " " + args.join(" ") + "\n");
-  originalLog.apply(console, args);
-};
-
 function handleTeacherRoutes(req, res) {
-  console.log("TEACHER ROUTES CALLED for:", req.url);
 
   try {
     // =========================================================================
@@ -83,7 +75,6 @@ function handleTeacherRoutes(req, res) {
     
     // POST /api/teacher/subjects/create - Create subject
     if (method === "POST" && isPath(pathname, "/api/teacher/subjects/create")) {
-      console.log("[TeacherRoutes] Matched: POST /api/teacher/subjects/create");
       return applyMiddleware([verifyToken, requireRole("teacher")], subjectController.createSubject)(req, res);
     }
 
@@ -221,10 +212,7 @@ function handleTeacherRoutes(req, res) {
     // PROFILE MANAGEMENT - /api/teacher/profile
     // =========================================================================
     
-    console.log("[TeacherRoutes] Checking profile at line 221, pathname:", pathname, "isPath:", isPath(pathname, "/api/teacher/profile"));
-    
     if (isPath(pathname, "/api/teacher/profile")) {
-      console.log("[TeacherRoutes] MATCHED profile route!");
       if (method === "GET") return applyMiddleware([verifyToken, requireRole("teacher")], profileController.getProfile)(req, res);
       if (method === "PUT") return applyMiddleware([verifyToken, requireRole("teacher")], profileController.updateProfile)(req, res);
     }

@@ -149,7 +149,6 @@ function approveVerification(verificationId) {
     )
   ) {
     // Update backend (placeholder)
-    console.log(`Approving verification ${verificationId}`);
 
     // Remove from pending list
     allVerifications = allVerifications.filter((v) => v.id !== verificationId);
@@ -172,7 +171,6 @@ function rejectVerification(verificationId) {
   if (reason === null) return;
 
   // Update backend (placeholder)
-  console.log(`Rejecting verification ${verificationId} with reason: ${reason}`);
 
   // Remove from pending list
   allVerifications = allVerifications.filter((v) => v.id !== verificationId);

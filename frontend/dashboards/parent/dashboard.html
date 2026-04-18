@@ -158,8 +158,6 @@
     <script src="../../js/topbar.js"></script>
     <script src="../../js/bg-manager.js"></script>
     <script>
-      console.log("Script started executing");
-
       // Load and display child's todo tasks on dashboard
       let dashboardTasks = {
         todo: [],
@@ -170,9 +168,7 @@
       let currentEditingIndex = -1;
       let currentEditingType = "";
 
-      console.log("About to add DOMContentLoaded listener");
       document.addEventListener("DOMContentLoaded", () => {
-        console.log("DOMContentLoaded fired!");
         initializeDashboard();
       });
 
@@ -212,14 +208,12 @@
               monthly: result.todos.filter(t => t.type === 'monthly'),
             };
           } else {
-            console.log("Using localStorage tasks");
             const savedTasks = localStorage.getItem(`parentTasks_${selectedChild.id}`);
             if (savedTasks) {
               dashboardTasks = JSON.parse(savedTasks);
             }
           }
         } catch (err) {
-          console.log("Using localStorage tasks (API unavailable)");
           const savedTasks = localStorage.getItem(`parentTasks_${selectedChild.id}`);
           if (savedTasks) {
             dashboardTasks = JSON.parse(savedTasks);
@@ -421,7 +415,6 @@
       }
 
       document.addEventListener("DOMContentLoaded", () => {
-        console.log("DOMContentLoaded fired!");
         loadChildTasks();
         setupModalListeners();
         initializeAverageScoreCard();

@@ -155,9 +155,6 @@ async function loadMentalLogs() {
       return;
     }
 
-    console.log("Diary entries loaded:", entries);
-    console.log("moodValueMap:", moodValueMap);
-
     // Get current week's entries (last 7 days) for total count
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -178,12 +175,9 @@ async function loadMentalLogs() {
       .filter((entry) => entry.mood && moodValueMap.hasOwnProperty(entry.mood))
       .map((entry) => moodValueMap[entry.mood]);
 
-    console.log("Moods found:", moodsWithValues);
-
     if (moodsWithValues.length > 0) {
       const averageValue =
         moodsWithValues.reduce((a, b) => a + b, 0) / moodsWithValues.length;
-      console.log("Average value:", averageValue);
 
       // Find the closest mood value
       const moodValues = Object.values(moodValueMap);
@@ -228,12 +222,6 @@ async function loadMentalLogs() {
     document.getElementById("total-entries").textContent = totalEntries;
     document.getElementById("avg-mood").textContent = averageMood;
     document.getElementById("avg-energy").textContent = averageEnergy;
-
-    console.log("Mental logs loaded for current week:", {
-      totalEntries,
-      averageMood,
-      averageEnergy,
-    });
   } catch (error) {
     console.error("Error loading mental logs:", error);
     document.getElementById("total-entries").textContent = "0";
@@ -283,17 +271,6 @@ function loadTasks() {
         document.getElementById(
           "monthly-tasks-completed"
         ).textContent = `${completedMonthlyGoals}/${totalMonthlyGoals}`;
-
-        console.log("Tasks loaded:", {
-          completedAllTasks,
-          totalAllTasks,
-          completedTodos,
-          totalTodos,
-          completedWeeklyGoals,
-          totalWeeklyGoals,
-          completedMonthlyGoals,
-          totalMonthlyGoals,
-        });
       })
       .catch((error) => {
         console.error("Error loading tasks:", error);
@@ -333,7 +310,6 @@ async function loadExamScores() {
       })
     };
 
-    console.log("Exam data loaded from API:", examsData);
     updateLatestAverageScore();
     populateExamSelectFilter();
     updateScoresChart();
@@ -821,7 +797,6 @@ function loadGPAFromTracker() {
     const storedGPAData = localStorage.getItem("gpaTrackerData");
 
     if (!storedGPAData) {
-      console.log("No GPA tracker data found, using sample data");
       return;
     }
 
@@ -872,8 +847,6 @@ function loadGPAFromTracker() {
           ? totalWeightedGPA / totalCredits
           : allGPAs.reduce((a, b) => a + b, 0) / allGPAs.length;
     }
-
-    console.log("GPA data loaded successfully:", gpaData);
   } catch (error) {
     console.error("Error loading GPA tracker data:", error);
   }

@@ -8,25 +8,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Load profile data from localStorage or API
   function loadProfileData() {
-    // Debug: Log all localStorage data
-    console.log("localStorage contents:");
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      console.log(`${key}: ${localStorage.getItem(key)}`);
-    }
-
     const token = localStorage.getItem("authToken");
     const userRole = localStorage.getItem("userRole");
     const username = localStorage.getItem("username");
     const studentType = localStorage.getItem("studentType");
     const profileInfo = document.getElementById("profile-info");
-
-    console.log("Profile data check:", {
-      token,
-      userRole,
-      username,
-      studentType,
-    });
 
     // If we have a token, try to fetch full profile from API
     if (token) {

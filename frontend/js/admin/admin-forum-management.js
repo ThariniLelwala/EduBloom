@@ -345,7 +345,6 @@ function initializeModalHandlers() {
   const confirmGrantBtn = document.getElementById("confirm-grant-btn");
   if (confirmGrantBtn) {
     confirmGrantBtn.addEventListener("click", () => {
-      console.log("Forum approved with ID:", currentApprovalId);
       document
         .getElementById("grant-confirmation-modal")
         .classList.remove("show");
@@ -358,7 +357,6 @@ function initializeModalHandlers() {
   const confirmRejectBtn = document.getElementById("confirm-reject-btn");
   if (confirmRejectBtn) {
     confirmRejectBtn.addEventListener("click", () => {
-      console.log("Forum rejected with ID:", currentApprovalId);
       document
         .getElementById("reject-confirmation-modal")
         .classList.remove("show");

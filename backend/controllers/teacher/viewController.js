@@ -5,18 +5,13 @@ class ViewController {
   async incrementView(req, res) {
     try {
       const pathname = req.url.split("?")[0];
-      console.log("[ViewController] incrementView called with pathname:", pathname);
       const parts = pathname.split("/");
-      
-      console.log("[ViewController] parts:", parts);
       
       // For /api/public/forums/2/view -> parts = ["", "api", "public", "forums", "2", "view"]
       // For /api/public/notes/2/view -> parts = ["", "api", "public", "notes", "2", "view"]
       // For /api/public/quizzes/2/view -> parts = ["", "api", "public", "quizzes", "2", "view"]
       const resourceType = parts[3];
       const resourceId = parseInt(parts[4]);
-
-      console.log("[ViewController] resourceType:", resourceType, "resourceId:", resourceId);
 
       if (!resourceType || isNaN(resourceId)) {
         res.writeHead(400, { "Content-Type": "application/json" });
@@ -28,7 +23,6 @@ class ViewController {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ success: true }));
     } catch (err) {
-      console.error("[ViewController] Error:", err.message);
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }

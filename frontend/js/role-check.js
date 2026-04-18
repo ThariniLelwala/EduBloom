@@ -10,15 +10,6 @@
 function isUniversityStudent() {
   const studentType = localStorage.getItem("studentType");
   const userRole = localStorage.getItem("userRole");
-
-  // Log for debugging
-  console.log(
-    "Checking university student - studentType:",
-    studentType,
-    "userRole:",
-    userRole
-  );
-
   return userRole === "student" && studentType === "university";
 }
 
@@ -29,15 +20,6 @@ function isUniversityStudent() {
 function isSchoolStudent() {
   const studentType = localStorage.getItem("studentType");
   const userRole = localStorage.getItem("userRole");
-
-  // Log for debugging
-  console.log(
-    "Checking school student - studentType:",
-    studentType,
-    "userRole:",
-    userRole
-  );
-
   return userRole === "student" && studentType === "school";
 }
 
@@ -70,30 +52,21 @@ function getStudentType() {
  * Fetches profile data if studentType is not in localStorage
  */
 async function ensureStudentTypeLoaded() {
-  // If student type is already loaded, don't fetch again
   if (localStorage.getItem("studentType")) {
-    console.log(
-      "Student type already in localStorage:",
-      localStorage.getItem("studentType")
-    );
     return;
   }
 
-  // If user is not a student, no need to load student type
   const userRole = localStorage.getItem("userRole");
   if (userRole !== "student") {
-    console.log("User is not a student, skipping student type fetch");
     return;
   }
 
   try {
     const token = localStorage.getItem("authToken");
     if (!token) {
-      console.log("No auth token found");
       return;
     }
 
-    console.log("Fetching student profile to get student type...");
     const response = await fetch("/api/auth/profile", {
       method: "GET",
       headers: {
@@ -104,17 +77,9 @@ async function ensureStudentTypeLoaded() {
 
     if (response.ok) {
       const data = await response.json();
-      console.log("Profile response:", data);
-
       if (data.user && data.user.student_type) {
         localStorage.setItem("studentType", data.user.student_type);
-        console.log(
-          "Student type loaded from backend:",
-          data.user.student_type
-        );
       }
-    } else {
-      console.log("Failed to fetch profile:", response.status);
     }
   } catch (error) {
     console.error("Error fetching student type:", error);
@@ -126,22 +91,13 @@ async function ensureStudentTypeLoaded() {
  * Redirects to dashboard if not a university student
  */
 async function requireUniversityStudent() {
-  console.log("=== Checking University Student Access ===");
-  console.log("studentType:", localStorage.getItem("studentType"));
-  console.log("userRole:", localStorage.getItem("userRole"));
-
-  // Ensure student type is loaded from backend if missing
   await ensureStudentTypeLoaded();
 
-  console.log("isUniversityStudent():", isUniversityStudent());
-
   if (!isUniversityStudent()) {
-    console.log("Access denied - not a university student");
     alert("This page is only available for university students.");
     window.location.href = "dashboard.html";
     return;
   }
-  console.log("Access granted - is a university student");
 }
 
 /**
@@ -149,22 +105,13 @@ async function requireUniversityStudent() {
  * Redirects to dashboard if not a school student
  */
 async function requireSchoolStudent() {
-  console.log("=== Checking School Student Access ===");
-  console.log("studentType:", localStorage.getItem("studentType"));
-  console.log("userRole:", localStorage.getItem("userRole"));
-
-  // Ensure student type is loaded from backend if missing
   await ensureStudentTypeLoaded();
 
-  console.log("isSchoolStudent():", isSchoolStudent());
-
   if (!isSchoolStudent()) {
-    console.log("Access denied - not a school student");
     alert("This page is only available for school students.");
     window.location.href = "dashboard.html";
     return;
   }
-  console.log("Access granted - is a school student");
 }
 
 /**

@@ -29,12 +29,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Archive expired weekly and monthly goals
 async function archiveExpiredGoals() {
   try {
-    const result = await todoApi.archiveExpiredGoals();
-    if (result.archivedCount > 0) {
-      console.log(`Archived ${result.archivedCount} expired goals`);
-    }
+    await todoApi.archiveExpiredGoals();
   } catch (error) {
-    console.log("No expired goals to archive");
+    // No expired goals to archive
   }
 }
 
@@ -42,7 +39,6 @@ async function archiveExpiredGoals() {
 async function loadTasks() {
   try {
     if (!currentStudentId) {
-      console.log("No student selected");
       tasks = {
         todo: [],
         weekly: [],
