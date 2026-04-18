@@ -124,9 +124,24 @@ class ParentProgressApi {
   // ========== CONVENIENCE METHODS ==========
 
   /**
-   * Get all progress data for a child
+   * Get all progress data for a child (convenience endpoint)
    */
   async getAllProgressData(childId) {
+    try {
+      const result = await this.request(`${this.baseUrl}/${childId}/progress/all`, "GET");
+      return result.data || result;
+    } catch (error) {
+      console.error("Error fetching all progress data:", error);
+      // Fallback to individual calls if consolidated endpoint fails
+      console.warn("Falling back to individual API calls...");
+      return this.getAllProgressDataFallback(childId);
+    }
+  }
+
+  /**
+   * Fallback: Get all progress data using individual API calls
+   */
+  async getAllProgressDataFallback(childId) {
     try {
       const [
         pomodoroSessions,
@@ -163,7 +178,7 @@ class ParentProgressApi {
         }
       };
     } catch (error) {
-      console.error("Error fetching all progress data:", error);
+      console.error("Error fetching all progress data (fallback):", error);
       throw error;
     }
   }

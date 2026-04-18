@@ -20,7 +20,18 @@ function handleParentRoutes(req, res) {
     if (method === "GET" && pathname === "/api/parent/children") {
       return applyMiddleware(
         [verifyToken, requireRole("parent")],
-        parentController.getChildren
+        progressController.getLinkedChildren
+      )(req, res);
+    }
+
+    // Get all progress data for child: GET /api/parent/children/:childId/progress/all
+    if (
+      method === "GET" &&
+      pathname.match(/^\/api\/parent\/children\/\d+\/progress\/all$/)
+    ) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        progressController.getAllProgressData
       )(req, res);
     }
 
