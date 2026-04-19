@@ -19,6 +19,8 @@ const { getId, isPath, matches } = require("../utils/routeHelpers");
 const url = require("url");
 
 function handleTeacherRoutes(req, res) {
+  const pathname = req.url.split("?")[0];
+  const method = req.method;
 
   try {
     // =========================================================================
@@ -226,50 +228,51 @@ function handleTeacherRoutes(req, res) {
     // =========================================================================
     // PUBLIC RESOURCES (Teacher-created content) - /api/public/*
     // These are teacher resources exposed for students/parents to access
+    // Note: These endpoints don't require authentication as they are public resources
     // =========================================================================
     
     // Public notes - GET /api/public/notes
     if (method === "GET" && isPath(pathname, "/api/public/notes")) {
-      return applyMiddleware([verifyToken], publicController.getAllPublicNotes)(req, res);
+      return publicController.getAllPublicNotes(req, res);
     }
 
     // GET /api/public/subjects/:id/notes
     if (method === "GET" && matches("/api/public/subjects/\\d+/notes")(pathname)) {
       req.params = { subjectId: getId(pathname, 4) };
-      return applyMiddleware([verifyToken], publicController.getPublicNotesBySubject)(req, res);
+      return publicController.getPublicNotesBySubject(req, res);
     }
 
     // Public quizzes
     if (method === "GET" && isPath(pathname, "/api/public/quizzes")) {
-      return applyMiddleware([verifyToken], publicController.getAllPublishedQuizzes)(req, res);
+      return publicController.getAllPublishedQuizzes(req, res);
     }
 
     if (method === "GET" && matches("/api/public/subjects/\\d+/quizzes")(pathname)) {
       req.params = { subjectId: getId(pathname, 4) };
-      return applyMiddleware([verifyToken], publicController.getPublishedQuizzesBySubject)(req, res);
+      return publicController.getPublishedQuizzesBySubject(req, res);
     }
 
     if (method === "GET" && matches("/api/public/quizzes/\\d+")(pathname)) {
       req.params = { quizSetId: getId(pathname, 4) };
-      return applyMiddleware([verifyToken], publicController.getPublishedQuizSet)(req, res);
+      return publicController.getPublishedQuizSet(req, res);
     }
 
     // Public forums
     if (method === "GET" && isPath(pathname, "/api/public/forums")) {
-      return applyMiddleware([verifyToken], publicController.getAllPublishedForums)(req, res);
+      return publicController.getAllPublishedForums(req, res);
     }
 
     if (method === "GET" && matches("/api/public/forums/grade/\\d+")(pathname)) {
       req.params = { grade: getId(pathname, 5) };
-      return applyMiddleware([verifyToken], publicController.getPublishedForumsByGrade)(req, res);
+      return publicController.getPublishedForumsByGrade(req, res);
     }
 
     // Public teachers list - GET /api/public/teachers
     if (method === "GET" && isPath(pathname, "/api/public/teachers")) {
-      return applyMiddleware([verifyToken], publicController.getAllTeachers)(req, res);
+      return publicController.getAllTeachers(req, res);
     }
 
-    // Public view count routes
+    // Public view count routes - These still need auth for tracking
     if (method === "POST" && matches("/api/public/notes/\\d+/view")(pathname)) {
       req.params = { id: getId(pathname, 4), type: "notes" };
       return applyMiddleware([verifyToken], viewController.incrementView)(req, res);

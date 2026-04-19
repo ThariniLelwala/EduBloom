@@ -3,6 +3,7 @@ const parentController = require("../controllers/parentController");
 const todoController = require("../controllers/parent/todoController");
 const calendarController = require("../controllers/parent/calendarController");
 const progressController = require("../controllers/parent/progressController");
+const resourceController = require("../controllers/parent/resourceController");
 const {
   verifyToken,
   requireRole,
@@ -292,6 +293,38 @@ function handleParentRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("parent")],
         calendarController.deleteParentTask
+      )(req, res);
+    }
+
+    // Resource recommendations: POST /api/parent/resources/recommend
+    if (method === "POST" && pathname === "/api/parent/resources/recommend") {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        resourceController.addRecommendation
+      )(req, res);
+    }
+
+    // Get recommendations for student: GET /api/parent/resources/:studentId/recommendations
+    if (method === "GET" && pathname.match(/^\/api\/parent\/resources\/\d+\/recommendations$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        resourceController.getRecommendations
+      )(req, res);
+    }
+
+    // Remove recommendation: DELETE /api/parent/resources/recommend/:id
+    if (method === "DELETE" && pathname.match(/^\/api\/parent\/resources\/recommend\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        resourceController.removeRecommendation
+      )(req, res);
+    }
+
+    // Remove recommendation by resource: DELETE /api/parent/resources/remove-recommendation
+    if (method === "POST" && pathname === "/api/parent/resources/remove-recommendation") {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        resourceController.removeRecommendationByResource
       )(req, res);
     }
 
