@@ -11,18 +11,22 @@ function handleSupportRoutes(req, res) {
   const method = req.method;
 
   try {
+    // Create help request: POST /api/support/tickets
     if (method === "POST" && pathname === "/api/support/tickets") {
       return applyMiddleware([verifyToken], supportController.createTicket)(req, res);
     }
 
+    // Get user's help requests: GET /api/support/my-tickets
     if (method === "GET" && pathname === "/api/support/my-tickets") {
       return applyMiddleware([verifyToken], supportController.getUserTickets)(req, res);
     }
 
+    // Get all help requests (admin): GET /api/support/tickets
     if (method === "GET" && pathname === "/api/support/tickets") {
       return applyMiddleware([verifyToken, requireRole("admin")], supportController.getAllTickets)(req, res);
     }
 
+    // Update help request status: PUT /api/support/tickets/:id
     if (method === "PUT" && pathname.match(/^\/api\/support\/tickets\/\d+$/)) {
       const ticketId = pathname.split("/").pop();
       req.params = { ticketId };

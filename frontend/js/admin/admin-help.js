@@ -1,7 +1,7 @@
-// Help & Support Management Functions
+// Help & Support - Connected to Backend API
 
 // Load all help content
-function loadHelpContent() {
+async function loadHelpContent() {
   loadFAQs();
   loadHelpRequests();
   initializeHelpModalHandlers();
@@ -9,45 +9,14 @@ function loadHelpContent() {
 
 // ===== FAQs Management =====
 
-function loadFAQs() {
-  const faqs = getFAQs();
-  renderFAQs(faqs);
-}
-
-function getFAQs() {
-  const faqs = localStorage.getItem("faqs")
-    ? JSON.parse(localStorage.getItem("faqs"))
-    : getDefaultFAQs();
-  return faqs;
-}
-
-function getDefaultFAQs() {
-  return [
-    {
-      id: 1,
-      question: "How do I reset my password?",
-      answer:
-        "Click on 'Forgot Password' on the login page and follow the instructions sent to your email.",
-    },
-    {
-      id: 2,
-      question: "How do I create a forum?",
-      answer:
-        "Navigate to the forums section and click 'Create Forum'. Fill in the details and submit for approval.",
-    },
-    {
-      id: 3,
-      question: "Can I edit my posts after publishing?",
-      answer:
-        "Yes, you can edit your posts within 24 hours of publishing. After that, contact support.",
-    },
-    {
-      id: 4,
-      question: "How do I report inappropriate content?",
-      answer:
-        "Click the flag icon on any post to report it. Our moderation team will review it within 48 hours.",
-    },
-  ];
+async function loadFAQs() {
+  try {
+    const faqs = await adminApi.getAllFAQs();
+    renderFAQs(faqs || []);
+  } catch (error) {
+    console.error("Error loading FAQs:", error);
+    renderFAQs([]);
+  }
 }
 
 function renderFAQs(faqs) {
@@ -57,8 +26,7 @@ function renderFAQs(faqs) {
   container.innerHTML = "";
 
   if (faqs.length === 0) {
-    container.innerHTML =
-      '<div class="admin-empty-state"><p>No FAQs found. Click "Add FAQ" to create one.</p></div>';
+    container.innerHTML = '<div class="admin-empty-state"><p>No FAQs found. Click "Add FAQ" to create one.</p></div>';
     return;
   }
 
@@ -69,7 +37,6 @@ function renderFAQs(faqs) {
       <div class="faq-header">
         <h4 style="color: var(--color-white); margin: 0; flex: 1;">${faq.question}</h4>
         <div class="faq-actions">
-          <i class="fas fa-edit" style="cursor: pointer; color: rgba(255, 255, 255, 0.7);" title="Edit" data-faq-id="${faq.id}" data-edit-faq="${faq.id}"></i>
           <i class="fas fa-trash" style="cursor: pointer; color: rgba(255, 255, 255, 0.7);" title="Delete" data-faq-id="${faq.id}"></i>
         </div>
       </div>
@@ -83,7 +50,7 @@ function renderFAQs(faqs) {
 
 function bindFAQDeleteButtons() {
   document.querySelectorAll(".faq-item [data-faq-id]").forEach((icon) => {
-    icon.addEventListener("click", (e) => {
+    icon.addEventListener("click", async (e) => {
       const faqId = e.target.getAttribute("data-faq-id");
       window.deletingFaqId = faqId;
       document.getElementById("delete-faq-modal").classList.add("show");
@@ -93,69 +60,17 @@ function bindFAQDeleteButtons() {
 
 // ===== Help Requests Management =====
 
-function loadHelpRequests() {
-  const requests = getHelpRequests();
-  renderHelpRequests(requests);
-}
-
-function getHelpRequests() {
-  const requests = localStorage.getItem("helpRequests")
-    ? JSON.parse(localStorage.getItem("helpRequests"))
-    : getDefaultHelpRequests();
-  return requests;
-}
-
-function getDefaultHelpRequests() {
-  return [
-    {
-      id: 1,
-      user: "John Smith",
-      topic: "Cannot login to account",
-      message:
-        "I forgot my password and the reset email is not arriving in my inbox.",
-      date: "2025-10-23",
-      status: "pending",
-      reply: null,
-    },
-    {
-      id: 2,
-      user: "Sarah Johnson",
-      topic: "Quiz not submitting",
-      message: "When I try to submit my quiz, it shows an error message.",
-      date: "2025-10-22",
-      status: "replied",
-      reply:
-        "Please clear your browser cache and try again. If the issue persists, contact us.",
-    },
-    {
-      id: 3,
-      user: "Mike Chen",
-      topic: "How to upload resources",
-      message: "What is the maximum file size for uploading documents?",
-      date: "2025-10-21",
-      status: "pending",
-      reply: null,
-    },
-    {
-      id: 4,
-      user: "Emma Davis",
-      topic: "Forum permission denied",
-      message: "I created a forum but cannot post in it.",
-      date: "2025-10-20",
-      status: "resolved",
-      reply:
-        "Your forum permissions have been updated. You should now be able to post.",
-    },
-    {
-      id: 5,
-      user: "Alex Wilson",
-      topic: "Cannot add class members",
-      message: "How do I add new members to my class?",
-      date: "2025-10-19",
-      status: "pending",
-      reply: null,
-    },
-  ];
+async function loadHelpRequests() {
+  try {
+    const requests = await adminApi.getAllHelpRequests();
+    window.allHelpRequests = requests || [];
+    renderHelpRequests(window.allHelpRequests);
+    bindHelpRequestsFilters();
+  } catch (error) {
+    console.error("Error loading help requests:", error);
+    window.allHelpRequests = [];
+    renderHelpRequests([]);
+  }
 }
 
 function renderHelpRequests(requests) {
@@ -164,15 +79,18 @@ function renderHelpRequests(requests) {
 
   tbody.innerHTML = "";
 
+  if (requests.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: rgba(255,255,255,0.6);">No help requests found</td></tr>`;
+    return;
+  }
+
   requests.forEach((request) => {
     const row = document.createElement("tr");
     row.innerHTML = `
       <td class="text-white">${request.user}</td>
       <td class="text-muted">${request.topic}</td>
       <td class="text-muted">${request.date}</td>
-      <td class="text-capitalize" style="color: var(--color-white);">
-        ${request.status}
-      </td>
+      <td class="text-capitalize" style="color: var(--color-white);">${request.status}</td>
       <td class="admin-table-action">
         <i class="fas fa-eye" style="cursor: pointer;" title="View & Reply" data-request-id="${request.id}"></i>
       </td>
@@ -184,41 +102,34 @@ function renderHelpRequests(requests) {
 }
 
 function bindHelpRequestViewButtons() {
-  document
-    .querySelectorAll("#help-requests-tbody [data-request-id]")
-    .forEach((icon) => {
-      icon.addEventListener("click", (e) => {
-        const requestId = e.target.getAttribute("data-request-id");
-        const requests = getHelpRequests();
-        const request = requests.find((r) => r.id == requestId);
+  document.querySelectorAll("#help-requests-tbody [data-request-id]").forEach((icon) => {
+    icon.addEventListener("click", async (e) => {
+      const requestId = e.target.getAttribute("data-request-id");
+      window.currentRequestId = requestId;
 
-        if (request) {
-          window.currentRequestId = requestId;
-          document.getElementById("help-request-title").textContent =
-            request.topic;
-          document.getElementById("help-request-user").textContent =
-            request.user;
-          document.getElementById("help-request-topic").textContent =
-            request.topic;
-          document.getElementById("help-request-message").textContent =
-            request.message;
-          document.getElementById("help-request-date").textContent =
-            request.date;
-          document.getElementById("reply-input").value = "";
+      try {
+        const request = await adminApi.getHelpRequest(requestId);
+        document.getElementById("help-request-title").textContent = request.topic;
+        document.getElementById("help-request-user").textContent = request.user;
+        document.getElementById("help-request-topic").textContent = request.topic;
+        document.getElementById("help-request-message").textContent = request.message;
+        document.getElementById("help-request-date").textContent = request.date;
+        document.getElementById("reply-input").value = "";
 
-          const replyDiv = document.getElementById("current-reply-div");
-          if (request.reply) {
-            replyDiv.style.display = "block";
-            document.getElementById("help-request-reply").textContent =
-              request.reply;
-          } else {
-            replyDiv.style.display = "none";
-          }
-
-          document.getElementById("help-request-modal").classList.add("show");
+        const replyDiv = document.getElementById("current-reply-div");
+        if (request.reply) {
+          replyDiv.style.display = "block";
+          document.getElementById("help-request-reply").textContent = request.reply;
+        } else {
+          replyDiv.style.display = "none";
         }
-      });
+
+        document.getElementById("help-request-modal").classList.add("show");
+      } catch (error) {
+        alert("Error loading help request: " + error.message);
+      }
     });
+  });
 }
 
 // ===== Filtering =====
@@ -232,13 +143,13 @@ function bindHelpRequestsFilters() {
   const applyFilters = () => {
     const searchTerm = searchInput.value.toLowerCase();
     const status = statusFilter?.value || "";
-    const allRequests = getHelpRequests();
+    const allRequests = window.allHelpRequests || [];
 
     let filtered = allRequests.filter(
       (request) =>
-        request.user.toLowerCase().includes(searchTerm) ||
-        request.topic.toLowerCase().includes(searchTerm) ||
-        request.message.toLowerCase().includes(searchTerm)
+        (request.user || "").toLowerCase().includes(searchTerm) ||
+        (request.topic || "").toLowerCase().includes(searchTerm) ||
+        (request.message || "").toLowerCase().includes(searchTerm)
     );
 
     if (status) {
@@ -255,7 +166,7 @@ function bindHelpRequestsFilters() {
 // ===== Modal Handlers =====
 
 function initializeHelpModalHandlers() {
-  // Close modal when clicking X or Cancel button
+  // Close modal handlers
   document.querySelectorAll(".modal-close").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const modalId = e.target.getAttribute("data-modal");
@@ -284,23 +195,18 @@ function initializeHelpModalHandlers() {
   // Save FAQ button
   const saveFaqBtn = document.getElementById("save-faq-btn");
   if (saveFaqBtn) {
-    saveFaqBtn.addEventListener("click", () => {
-      const question = document
-        .getElementById("faq-question-input")
-        .value.trim();
+    saveFaqBtn.addEventListener("click", async () => {
+      const question = document.getElementById("faq-question-input").value.trim();
       const answer = document.getElementById("faq-answer-input").value.trim();
 
       if (question && answer) {
-        const faqs = getFAQs();
-        const newFaq = {
-          id: faqs.length > 0 ? Math.max(...faqs.map((f) => f.id)) + 1 : 1,
-          question,
-          answer,
-        };
-        faqs.push(newFaq);
-        localStorage.setItem("faqs", JSON.stringify(faqs));
-        document.getElementById("add-faq-modal").classList.remove("show");
-        loadFAQs();
+        try {
+          await adminApi.createFAQ({ question, answer });
+          document.getElementById("add-faq-modal").classList.remove("show");
+          loadFAQs();
+        } catch (error) {
+          alert("Error creating FAQ: " + error.message);
+        }
       } else {
         alert("Please fill in both question and answer fields.");
       }
@@ -310,14 +216,16 @@ function initializeHelpModalHandlers() {
   // Delete FAQ button
   const confirmDeleteBtn = document.getElementById("confirm-delete-faq-btn");
   if (confirmDeleteBtn) {
-    confirmDeleteBtn.addEventListener("click", () => {
+    confirmDeleteBtn.addEventListener("click", async () => {
       const faqId = window.deletingFaqId;
       if (faqId) {
-        let faqs = getFAQs();
-        faqs = faqs.filter((f) => f.id != faqId);
-        localStorage.setItem("faqs", JSON.stringify(faqs));
-        document.getElementById("delete-faq-modal").classList.remove("show");
-        loadFAQs();
+        try {
+          await adminApi.deleteFAQ(faqId);
+          document.getElementById("delete-faq-modal").classList.remove("show");
+          loadFAQs();
+        } catch (error) {
+          alert("Error deleting FAQ: " + error.message);
+        }
       }
     });
   }
@@ -325,29 +233,23 @@ function initializeHelpModalHandlers() {
   // Send reply button
   const sendReplyBtn = document.getElementById("send-reply-btn");
   if (sendReplyBtn) {
-    sendReplyBtn.addEventListener("click", () => {
+    sendReplyBtn.addEventListener("click", async () => {
       const reply = document.getElementById("reply-input").value.trim();
       const requestId = window.currentRequestId;
 
       if (reply && requestId) {
-        let requests = getHelpRequests();
-        const request = requests.find((r) => r.id == requestId);
-        if (request) {
-          request.reply = reply;
-          request.status = "replied";
-          localStorage.setItem("helpRequests", JSON.stringify(requests));
-          document
-            .getElementById("help-request-modal")
-            .classList.remove("show");
+        try {
+          await adminApi.replyToHelpRequest(requestId, reply);
+          document.getElementById("help-request-modal").classList.remove("show");
           loadHelpRequests();
+        } catch (error) {
+          alert("Error sending reply: " + error.message);
         }
       } else {
         alert("Please type a reply before sending.");
       }
     });
   }
-
-  bindHelpRequestsFilters();
 }
 
 // Initialize on page load

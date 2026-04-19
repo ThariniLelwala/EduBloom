@@ -894,116 +894,90 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_forum_tags_post_id ON forum_tags(post_id);
     `);
 
-    await db.query(`
+await db.query(`
       CREATE INDEX IF NOT EXISTS idx_forum_replies_post_id ON forum_replies(post_id);
     `);
 
-    // Parent Calendar Deadlines table
+    // Flagged Content table
     await db.query(`
-      CREATE TABLE IF NOT EXISTS parent_calendar_deadlines (
+      CREATE TABLE IF NOT EXISTS flagged_content (
         id SERIAL PRIMARY KEY,
-        parent_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        content_id INT NOT NULL,
+        content_type VARCHAR(20) NOT NULL CHECK (content_type IN ('forum', 'note', 'quiz')),
+        author_id INT,
+        flagged_by INT,
+        reason VARCHAR(50),
+        description TEXT,
+        content_preview TEXT,
+        status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'dismissed', 'deleted')),
+        created_at TIMESTAMP DEFAULT NOW(),
+        resolved_at TIMESTAMP
+      );
+    `);
+
+    // Add missing columns to existing table
+    try { await db.query(`ALTER TABLE flagged_content ADD COLUMN IF NOT EXISTS author_id INT`); } catch(e) {}
+    try { await db.query(`ALTER TABLE flagged_content ADD COLUMN IF NOT EXISTS flagged_by INT`); } catch(e) {}
+    try { await db.query(`ALTER TABLE flagged_content ADD COLUMN IF NOT EXISTS reason VARCHAR(50)`); } catch(e) {}
+    try { await db.query(`ALTER TABLE flagged_content ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'pending'`); } catch(e) {}
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_flagged_content_status ON flagged_content(status);
+    `);
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_flagged_content_type ON flagged_content(content_type);
+    `);
+
+    // Announcements table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS announcements (
+        id SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
-        event_date DATE NOT NULL,
+        message TEXT NOT NULL,
+        target_role VARCHAR(20) DEFAULT 'all' CHECK (target_role IN ('all', 'student', 'teacher', 'parent', 'admin')),
+        created_by INT REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    try { await db.query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS target_role VARCHAR(20) DEFAULT 'all'`); } catch(e) {}
+    try { await db.query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS created_by INT`); } catch(e) {}
+    try { await db.query(`ALTER TABLE announcements ALTER COLUMN author_id DROP NOT NULL`); } catch(e) {}
+    try { await db.query(`ALTER TABLE announcements ALTER COLUMN created_by DROP NOT NULL`); } catch(e) {}
+
+    // FAQs table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS faqs (
+        id SERIAL PRIMARY KEY,
+        question VARCHAR(500) NOT NULL,
+        answer TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Help Requests table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS help_requests (
+        id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(id) ON DELETE SET NULL,
+        topic VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'replied', 'resolved')),
+        reply TEXT,
+        replied_by INT REFERENCES users(id) ON DELETE SET NULL,
+        replied_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
 
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_calendar_deadlines_parent_id ON parent_calendar_deadlines(parent_id);
-    `);
+    try { await db.query(`ALTER TABLE help_requests ADD COLUMN IF NOT EXISTS replied_by INT`); } catch(e) {}
+    try { await db.query(`ALTER TABLE help_requests ADD COLUMN IF NOT EXISTS replied_at TIMESTAMP`); } catch(e) {}
 
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_calendar_deadlines_student_id ON parent_calendar_deadlines(student_id);
-    `);
-
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_calendar_deadlines_event_date ON parent_calendar_deadlines(event_date);
-    `);
-
-    // Parent Only Tasks table (tasks visible only to parent, not synced to child)
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS parent_only_tasks (
-        id SERIAL PRIMARY KEY,
-        parent_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        text VARCHAR(500) NOT NULL,
-        completed BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
-
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_parent_only_tasks_parent_id ON parent_only_tasks(parent_id);
-    `);
-
-    // Parent resource recommendations table
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS parent_resource_recommendations (
-        id SERIAL PRIMARY KEY,
-        parent_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        resource_type VARCHAR(50) NOT NULL,
-        resource_id INT NOT NULL,
-        recommended BOOLEAN DEFAULT TRUE,
-        created_at TIMESTAMP DEFAULT NOW(),
-        UNIQUE(parent_id, student_id, resource_type, resource_id)
-      );
-    `);
-
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_parent_recs_parent_student ON parent_resource_recommendations(parent_id, student_id);
-    `);
-
-    // Support Tickets table
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS support_tickets (
-        id SERIAL PRIMARY KEY,
-        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'teacher', 'student', 'parent')),
-        topic VARCHAR(255) NOT NULL,
-        message TEXT NOT NULL,
-        status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'resolved', 'closed')),
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
-
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_support_tickets_user_id ON support_tickets(user_id);
-    `);
-
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_support_tickets_status ON support_tickets(status);
-    `);
-
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_support_tickets_created_at ON support_tickets(created_at DESC);
-    `);
-
-    console.log("✅ Database tables and indexes created successfully");
-
-    // Check if admin user exists, if not create one
-    const adminCheck = await db.query(
-      "SELECT * FROM users WHERE role = 'admin' LIMIT 1"
-    );
-    if (adminCheck.rows.length === 0) {
-      const { hashPassword } = require("../utils/hash");
-      const { hashed, salt } = hashPassword("admin123"); // Change this password!
-
-      await db.query(
-        `INSERT INTO users (username, email, password, salt, role)
-         VALUES ($1, $2, $3, $4, $5)`,
-        ["admin", "admin@edubloom.com", hashed, salt, "admin"]
-      );
-      console.log(
-        "✅ Default admin user created (username: admin, password: admin123)"
-      );
-      console.log("⚠️  Please change the admin password after first login!");
-    }
   } catch (err) {
-    console.error("❌ Error initializing database:", err);
+    console.error("Database initialization error:", err);
+    throw err;
   }
 }
 

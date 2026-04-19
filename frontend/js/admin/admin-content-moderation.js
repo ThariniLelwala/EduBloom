@@ -1,169 +1,61 @@
-// Content Moderation Statistics Functions
+// Content Moderation - Connected to Backend API
 
-// Load all content moderation statistics
-function loadContentModerationStats() {
-  loadTotalContent();
-  loadPendingReview();
-  loadTodaysUploads();
-  loadEngagedUsers();
-}
+// Load statistics
+async function loadContentModerationStats() {
+  try {
+    const stats = await adminApi.getModerationStatistics();
+    
+    const quizzesElement = document.getElementById("total-quizzes-count");
+    const forumsElement = document.getElementById("total-forums-count");
+    const notesElement = document.getElementById("total-notes-count");
+    const pendingElement = document.getElementById("pending-review-count");
+    const todayElement = document.getElementById("today-uploads-count");
+    const engagedElement = document.getElementById("engaged-users-count");
 
-function loadTotalContent() {
-  const quizzesCount = getTotalQuizzesCount();
-  const forumsCount = getTotalForumsCount();
-  const notesCount = getTotalNotesCount();
-
-  const quizzesElement = document.getElementById("total-quizzes-count");
-  const forumsElement = document.getElementById("total-forums-count");
-  const notesElement = document.getElementById("total-notes-count");
-
-  if (quizzesElement) {
-    quizzesElement.textContent = quizzesCount;
-  }
-  if (forumsElement) {
-    forumsElement.textContent = forumsCount;
-  }
-  if (notesElement) {
-    notesElement.textContent = notesCount;
+    if (quizzesElement) quizzesElement.textContent = stats.totalQuizzes || 0;
+    if (forumsElement) forumsElement.textContent = stats.totalForums || 0;
+    if (notesElement) notesElement.textContent = stats.totalNotes || 0;
+    if (pendingElement) pendingElement.textContent = stats.pendingReview || 0;
+    if (todayElement) todayElement.textContent = stats.todayUploads || 0;
+    if (engagedElement) engagedElement.textContent = stats.engagedUsers || 0;
+  } catch (error) {
+    console.error("Error loading stats:", error);
+    setDefaultStats();
   }
 }
 
-function getTotalQuizzesCount() {
-  // Count quizzes from localStorage or return simulated data
-  const quizzes = JSON.parse(localStorage.getItem("quizzes")) || [];
-  return quizzes.length || 28;
-}
-
-function getTotalForumsCount() {
-  // Count forums from localStorage or return simulated data
-  const forums = JSON.parse(localStorage.getItem("forums")) || [];
-  return forums.length || 24;
-}
-
-function getTotalNotesCount() {
-  // Count notes from localStorage or return simulated data
-  const notes = JSON.parse(localStorage.getItem("notes")) || [];
-  return notes.length || 35;
-}
-
-function loadPendingReview() {
-  const pendingReviewCount = getPendingReviewCount();
-  const element = document.getElementById("pending-review-count");
-  if (element) {
-    element.textContent = pendingReviewCount;
-  }
-}
-
-function getPendingReviewCount() {
-  // Get pending review count from localStorage or simulate
-  const pendingReviews =
-    JSON.parse(localStorage.getItem("pendingReviews")) || [];
-  return pendingReviews.length || 8;
-}
-
-function loadTodaysUploads() {
-  const todayUploadsCount = getTodaysUploadsCount();
-  const element = document.getElementById("today-uploads-count");
-  if (element) {
-    element.textContent = todayUploadsCount;
-  }
-}
-
-function getTodaysUploadsCount() {
-  // Get today's uploads count from localStorage or simulate
-  const todayUploads = JSON.parse(localStorage.getItem("todayUploads")) || [];
-  return todayUploads.length || 12;
-}
-
-function loadEngagedUsers() {
-  const engagedUsersCount = getEngagedUsersCount();
-  const element = document.getElementById("engaged-users-count");
-  if (element) {
-    element.textContent = engagedUsersCount;
-  }
-}
-
-function getEngagedUsersCount() {
-  // Get engaged users count from localStorage or simulate
-  const engagedUsers = JSON.parse(localStorage.getItem("engagedUsers")) || [];
-  return engagedUsers.length || 156;
+function setDefaultStats() {
+  const elements = ["total-quizzes-count", "total-forums-count", "total-notes-count", 
+                    "pending-review-count", "today-uploads-count", "engaged-users-count"];
+  elements.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = "0";
+  });
 }
 
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", () => {
   loadContentModerationStats();
-  initializeFlaggedContent();
-  bindFlaggedContentEvents();
+  loadFlaggedContent();
+  initializeModals();
 });
 
-// ===== Flagged Content Functions =====
-
-let allFlaggedContent = [];
-let filteredFlaggedContent = [];
-let currentViewingContent = null;
-
-// Sample flagged content data
-function initializeFlaggedContent() {
-  allFlaggedContent = [
-    {
-      id: "FC001",
-      author: "John Doe",
-      contentType: "forum",
-      flagReason:
-        "This forum post contains offensive language and inappropriate discussion",
-      actualContent:
-        "I can't believe how terrible this topic is. Everyone here is incompetent and doesn't deserve to be in this community. This is absolutely unacceptable!",
-      flaggedBy: "Sarah Smith",
-      reason: "inappropriate",
-      timestamp: "2025-10-24 10:30",
-    },
-    {
-      id: "FC002",
-      author: "Mike Johnson",
-      contentType: "note",
-      flagReason: "Repeated promotional links and advertising content",
-      actualContent:
-        "Check out this amazing product! Click here: www.spam-link.com. Don't miss our sale! Visit www.spam-link.com now. Limited time offer at www.spam-link.com!",
-      flaggedBy: "Emily Brown",
-      reason: "spam",
-      timestamp: "2025-10-24 09:15",
-    },
-    {
-      id: "FC003",
-      author: "Alex Davis",
-      contentType: "quiz",
-      flagReason: "Quiz contains false medical information",
-      actualContent:
-        "Question: Which of the following is a cure for COVID-19? A) Bleach B) Essential Oils C) Garlic D) Prayer. Answer: All of the above are effective remedies.",
-      flaggedBy: "James Taylor",
-      reason: "misinformation",
-      timestamp: "2025-10-23 14:20",
-    },
-    {
-      id: "FC004",
-      author: "Jessica Wilson",
-      contentType: "forum",
-      flagReason: "Personal attack and harassment directed at another user",
-      actualContent:
-        "@AlexSmith you are the worst person I know. Everyone agrees you don't belong here. Stop posting your garbage content!",
-      flaggedBy: "Rachel Green",
-      reason: "harassment",
-      timestamp: "2025-10-23 11:45",
-    },
-    {
-      id: "FC005",
-      author: "David Martinez",
-      contentType: "note",
-      flagReason: "Spam post with multiple affiliate links",
-      actualContent:
-        "Amazing money-making opportunity! Visit www.earn-money.com with code DAVID10. Get 50% off at www.shop-now.com. Buy now and earn commissions!",
-      flaggedBy: "Lisa Anderson",
-      reason: "spam",
-      timestamp: "2025-10-22 16:00",
-    },
-  ];
-  filteredFlaggedContent = [...allFlaggedContent];
-  renderFlaggedContent();
+// Load flagged content
+async function loadFlaggedContent() {
+  try {
+    const filters = {
+      status: "pending",
+      contentType: document.getElementById("filter-content-type")?.value || null,
+      reason: document.getElementById("filter-flag-reason")?.value || null
+    };
+    window.allFlaggedContent = await adminApi.getFlaggedContent(filters);
+    renderFlaggedContent();
+    bindFilterEvents();
+  } catch (error) {
+    console.error("Error loading flagged content:", error);
+    window.allFlaggedContent = [];
+    renderFlaggedContent();
+  }
 }
 
 // Render flagged content table
@@ -173,249 +65,196 @@ function renderFlaggedContent() {
 
   tbody.innerHTML = "";
 
-  if (filteredFlaggedContent.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="6" class="admin-empty-state">
-          No flagged content found
-        </td>
-      </tr>
-    `;
+  if (!window.allFlaggedContent || window.allFlaggedContent.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: rgba(255,255,255,0.6);">No flagged content found</td></tr>`;
     return;
   }
 
-  filteredFlaggedContent.forEach((item) => {
+  const reasonLabels = { inappropriate: "Inappropriate", spam: "Spam", harassment: "Harassment", misinformation: "Misinformation" };
+  const typeLabels = { forum: "Forum", note: "Note", quiz: "Quiz" };
+
+  window.allFlaggedContent.forEach(item => {
     const tr = document.createElement("tr");
-
-    const reasonLabel =
-      {
-        inappropriate: "Inappropriate",
-        spam: "Spam",
-        harassment: "Harassment",
-        misinformation: "Misinformation",
-      }[item.reason] || item.reason;
-
-    const contentTypeLabel =
-      {
-        forum: "Forum",
-        note: "Note",
-        quiz: "Quiz",
-      }[item.contentType] || item.contentType;
-
     tr.innerHTML = `
       <td class="text-white">${item.id}</td>
       <td class="text-muted">${item.author}</td>
-      <td class="text-muted text-capitalize">${contentTypeLabel}</td>
+      <td class="text-muted text-capitalize">${typeLabels[item.contentType] || item.contentType}</td>
       <td class="text-muted">${item.flaggedBy}</td>
-      <td class="text-muted">${reasonLabel}</td>
+      <td class="text-muted">${reasonLabels[item.reason] || item.reason}</td>
       <td style="text-align: center;">
-        <button class="view-flagged-btn admin-table-action" data-content-id="${item.id}" title="View">
+        <button class="view-flagged-btn admin-table-action" data-content-id="${item.id}" data-flag-id="${item.contentId}" title="View">
           <i class="fas fa-eye"></i>
         </button>
       </td>
     `;
-
     tbody.appendChild(tr);
   });
 
   bindViewButtons();
 }
 
-// Filter flagged content
-function filterFlaggedContent() {
-  const searchQuery = document
-    .getElementById("search-flagged")
-    .value.toLowerCase();
-  const contentTypeFilter = document.getElementById(
-    "filter-content-type"
-  ).value;
-  const flagReasonFilter = document.getElementById("filter-flag-reason").value;
-
-  filteredFlaggedContent = allFlaggedContent.filter((item) => {
-    const matchesSearch =
-      item.id.toLowerCase().includes(searchQuery) ||
-      item.author.toLowerCase().includes(searchQuery);
-    const matchesContentType =
-      !contentTypeFilter || item.contentType === contentTypeFilter;
-    const matchesFlagReason =
-      !flagReasonFilter || item.reason === flagReasonFilter;
-
-    return matchesSearch && matchesContentType && matchesFlagReason;
-  });
-
-  renderFlaggedContent();
-}
-
-// Bind filter events
-function bindFlaggedContentEvents() {
+// Filter functions
+function bindFilterEvents() {
   const searchInput = document.getElementById("search-flagged");
   const contentTypeFilter = document.getElementById("filter-content-type");
   const flagReasonFilter = document.getElementById("filter-flag-reason");
 
-  if (searchInput) {
-    searchInput.addEventListener("input", filterFlaggedContent);
-  }
-  if (contentTypeFilter) {
-    contentTypeFilter.addEventListener("change", filterFlaggedContent);
-  }
-  if (flagReasonFilter) {
-    flagReasonFilter.addEventListener("change", filterFlaggedContent);
-  }
-
-  // Modal close buttons
-  const modal = document.getElementById("flagged-content-modal");
-  const modalClose = document.getElementById("flagged-modal-close");
-  const dismissFlagBtn = document.getElementById("dismiss-flag-btn");
-  const deleteContentBtn = document.getElementById("delete-content-btn");
-
-  if (modalClose) {
-    modalClose.addEventListener("click", () => {
-      modal.classList.remove("show");
-    });
-  }
-
-  if (dismissFlagBtn) {
-    dismissFlagBtn.addEventListener("click", () => {
-      if (currentViewingContent) {
-        allFlaggedContent = allFlaggedContent.filter(
-          (item) => item.id !== currentViewingContent.id
-        );
-        filterFlaggedContent();
-        modal.classList.remove("show");
-        currentViewingContent = null;
-      }
-    });
-  }
-
-  if (deleteContentBtn) {
-    deleteContentBtn.addEventListener("click", () => {
-      if (currentViewingContent) {
-        const deleteConfirmModal = document.getElementById(
-          "delete-confirmation-modal"
-        );
-        if (deleteConfirmModal) {
-          deleteConfirmModal.classList.add("show");
-        }
-      }
-    });
-  }
-
-  // Delete confirmation modal handlers
-  const deleteConfirmModal = document.getElementById(
-    "delete-confirmation-modal"
-  );
-  const deleteConfirmClose = document.getElementById("delete-confirm-close");
-  const deleteCancelBtn = document.getElementById("delete-cancel-btn");
-  const deleteConfirmBtn = document.getElementById("delete-confirm-btn");
-
-  if (deleteConfirmClose) {
-    deleteConfirmClose.addEventListener("click", () => {
-      deleteConfirmModal.classList.remove("show");
-    });
-  }
-
-  if (deleteCancelBtn) {
-    deleteCancelBtn.addEventListener("click", () => {
-      deleteConfirmModal.classList.remove("show");
-    });
-  }
-
-  if (deleteConfirmBtn) {
-    deleteConfirmBtn.addEventListener("click", () => {
-      if (currentViewingContent) {
-        allFlaggedContent = allFlaggedContent.filter(
-          (item) => item.id !== currentViewingContent.id
-        );
-        filterFlaggedContent();
-        modal.classList.remove("show");
-        deleteConfirmModal.classList.remove("show");
-        currentViewingContent = null;
-      }
-    });
-  }
-
-  // Close delete confirmation modal when clicking outside
-  if (deleteConfirmModal) {
-    window.addEventListener("click", (e) => {
-      if (e.target === deleteConfirmModal) {
-        deleteConfirmModal.classList.remove("show");
-      }
-    });
-  }
+  if (searchInput) searchInput.addEventListener("input", applyFilters);
+  if (contentTypeFilter) contentTypeFilter.addEventListener("change", loadFlaggedContent);
+  if (flagReasonFilter) flagReasonFilter.addEventListener("change", loadFlaggedContent);
 }
 
-// Bind view buttons
-function bindViewButtons() {
-  const viewButtons = document.querySelectorAll(".view-flagged-btn");
-  const modal = document.getElementById("flagged-content-modal");
+function applyFilters() {
+  const searchTerm = document.getElementById("search-flagged")?.value.toLowerCase() || "";
+  const contentType = document.getElementById("filter-content-type")?.value || "";
+  const reason = document.getElementById("filter-flag-reason")?.value || "";
 
-  viewButtons.forEach((btn) => {
+  if (!window.allFlaggedContent) return;
+
+  const filtered = window.allFlaggedContent.filter(item => {
+    const matchesSearch = item.id.toLowerCase().includes(searchTerm) || 
+                          (item.author || "").toLowerCase().includes(searchTerm);
+    const matchesType = !contentType || item.contentType === contentType;
+    const matchesReason = !reason || item.reason === reason;
+    return matchesSearch && matchesType && matchesReason;
+  });
+
+  const tbody = document.getElementById("flagged-content-body");
+  if (!tbody) return;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: rgba(255,255,255,0.6);">No results found</td></tr>`;
+    return;
+  }
+
+  const reasonLabels = { inappropriate: "Inappropriate", spam: "Spam", harassment: "Harassment", misinformation: "Misinformation" };
+  const typeLabels = { forum: "Forum", note: "Note", quiz: "Quiz" };
+
+  filtered.forEach(item => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="text-white">${item.id}</td>
+      <td class="text-muted">${item.author}</td>
+      <td class="text-muted text-capitalize">${typeLabels[item.contentType] || item.contentType}</td>
+      <td class="text-muted">${item.flaggedBy}</td>
+      <td class="text-muted">${reasonLabels[item.reason] || item.reason}</td>
+      <td style="text-align: center;">
+        <button class="view-flagged-btn admin-table-action" data-content-id="${item.id}" data-flag-id="${item.contentId}" title="View">
+          <i class="fas fa-eye"></i>
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  bindViewButtons();
+}
+
+// Modal handling
+let currentFlagId = null;
+
+function initializeModals() {
+  const modal = document.getElementById("flagged-content-modal");
+  const deleteModal = document.getElementById("delete-confirmation-modal");
+
+  // Close buttons
+  document.getElementById("flagged-modal-close")?.addEventListener("click", () => modal?.classList.remove("show"));
+  document.getElementById("delete-confirm-close")?.addEventListener("click", () => deleteModal?.classList.remove("show"));
+  document.getElementById("delete-cancel-btn")?.addEventListener("click", () => deleteModal?.classList.remove("show"));
+
+  // Dismiss flag
+  document.getElementById("dismiss-flag-btn")?.addEventListener("click", async () => {
+    if (currentFlagId) {
+      try {
+        await adminApi.dismissFlag(currentFlagId);
+        modal?.classList.remove("show");
+        loadFlaggedContent();
+        loadContentModerationStats();
+      } catch (error) {
+        alert("Error dismissing flag: " + error.message);
+      }
+    }
+  });
+
+  // Delete content - show confirmation
+  document.getElementById("delete-content-btn")?.addEventListener("click", () => {
+    deleteModal?.classList.add("show");
+  });
+
+  // Confirm delete
+  document.getElementById("delete-confirm-btn")?.addEventListener("click", async () => {
+    if (currentFlagId) {
+      try {
+        await adminApi.deleteFlaggedContent(currentFlagId);
+        modal?.classList.remove("show");
+        deleteModal?.classList.remove("show");
+        loadFlaggedContent();
+        loadContentModerationStats();
+      } catch (error) {
+        alert("Error deleting content: " + error.message);
+      }
+    }
+  });
+}
+
+function bindViewButtons() {
+  document.querySelectorAll(".view-flagged-btn").forEach(btn => {
     btn.addEventListener("click", (e) => {
       const contentId = btn.dataset.contentId;
-      const content = allFlaggedContent.find((item) => item.id === contentId);
+      const flagId = parseInt(btn.dataset.flagId);
+      currentFlagId = flagId;
 
-      if (content) {
-        currentViewingContent = content;
+      const content = window.allFlaggedContent?.find(item => item.id === contentId);
+      if (!content) return;
 
-        const reasonLabel =
-          {
-            inappropriate: "Inappropriate",
-            spam: "Spam",
-            harassment: "Harassment",
-            misinformation: "Misinformation",
-          }[content.reason] || content.reason;
+      const reasonLabels = { inappropriate: "Inappropriate", spam: "Spam", harassment: "Harassment", misinformation: "Misinformation" };
+      const typeLabels = { forum: "Forum", note: "Note", quiz: "Quiz" };
 
-        const contentTypeLabel =
-          {
-            forum: "Forum",
-            note: "Note",
-            quiz: "Quiz",
-          }[content.contentType] || content.contentType;
-
-        const detailsDiv = document.getElementById("flagged-content-details");
+      const detailsDiv = document.getElementById("flagged-content-details");
+      if (detailsDiv) {
         detailsDiv.innerHTML = `
           <div style="display: grid; gap: 16px;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
               <div>
-                <label style="color: rgba(255, 255, 255, 0.7); font-size: 12px; font-weight: 600;">Content ID</label>
+                <label style="color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600;">Content ID</label>
                 <p style="color: var(--color-white); margin-top: 4px;">${content.id}</p>
               </div>
               <div>
-                <label style="color: rgba(255, 255, 255, 0.7); font-size: 12px; font-weight: 600;">Content Type</label>
-                <p style="color: var(--color-white); margin-top: 4px;">${contentTypeLabel}</p>
+                <label style="color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600;">Content Type</label>
+                <p style="color: var(--color-white); margin-top: 4px;">${typeLabels[content.contentType] || content.contentType}</p>
               </div>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
               <div>
-                <label style="color: rgba(255, 255, 255, 0.7); font-size: 12px; font-weight: 600;">Author</label>
+                <label style="color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600;">Author</label>
                 <p style="color: var(--color-white); margin-top: 4px;">${content.author}</p>
               </div>
               <div>
-                <label style="color: rgba(255, 255, 255, 0.7); font-size: 12px; font-weight: 600;">Flagged By</label>
+                <label style="color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600;">Flagged By</label>
                 <p style="color: var(--color-white); margin-top: 4px;">${content.flaggedBy}</p>
               </div>
             </div>
             <div>
-              <label style="color: rgba(255, 255, 255, 0.7); font-size: 12px; font-weight: 600;">Flag Reason</label>
-              <p style="color: var(--color-white); margin-top: 4px;">${reasonLabel}</p>
+              <label style="color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600;">Flag Reason</label>
+              <p style="color: var(--color-white); margin-top: 4px;">${reasonLabels[content.reason] || content.reason}</p>
             </div>
             <div>
-              <label style="color: rgba(255, 255, 255, 0.7); font-size: 12px; font-weight: 600;">Flag Description</label>
-              <p style="color: var(--color-white); margin-top: 4px; padding: 12px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">${content.flagReason}</p>
+              <label style="color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600;">Flag Description</label>
+              <p style="color: var(--color-white); margin-top: 4px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px;">${content.flagReason || "No description"}</p>
             </div>
             <div>
-              <label style="color: rgba(255, 255, 255, 0.7); font-size: 12px; font-weight: 600;">Actual Content (${contentTypeLabel})</label>
-              <p style="color: var(--color-white); margin-top: 4px; padding: 12px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); max-height: 200px; overflow-y: auto;">${content.actualContent}</p>
+              <label style="color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600;">Content Preview</label>
+              <p style="color: var(--color-white); margin-top: 4px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; max-height: 150px; overflow-y: auto;">${content.contentPreview || content.contentTitle || "No preview available"}</p>
             </div>
             <div>
-              <label style="color: rgba(255, 255, 255, 0.7); font-size: 12px; font-weight: 600;">Timestamp</label>
-              <p style="color: var(--color-white); margin-top: 4px;">${content.timestamp}</p>
+              <label style="color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600;">Timestamp</label>
+              <p style="color: var(--color-white); margin-top: 4px;">${content.timestamp ? new Date(content.timestamp).toLocaleString() : "N/A"}</p>
             </div>
           </div>
         `;
-
-        modal.classList.add("show");
       }
+
+      document.getElementById("flagged-content-modal")?.classList.add("show");
     });
   });
 }

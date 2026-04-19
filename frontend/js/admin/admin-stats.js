@@ -56,7 +56,7 @@ function getTotalNotesCount() {
 
 // Load pending verifications
 function loadPendingApprovals() {
-  const verificationsList = document.getElementById("verifications-list");
+  const verificationsList = document.getElementById("verifications-list") || document.getElementById("approvals-list");
   if (!verificationsList) return;
 
   // Get pending verifications from backend or simulate

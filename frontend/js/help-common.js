@@ -1,4 +1,5 @@
 // Help Common Handler - Shared functionality for all help pages
+// Note: This submits help requests to the help_requests table (used by admin dashboard)
 (function () {
   const API_BASE = "/api/support";
 
@@ -210,16 +211,17 @@
       }
 
       try {
+        // Submit help request to help_requests table (viewable in admin dashboard)
         const result = await apiRequest("/tickets", "POST", { topic, message, role });
 
         showToast(
-          "Support request sent successfully! We'll get back to you soon.",
+          "Help request sent successfully! We'll get back to you soon.",
           "success"
         );
         form.reset();
       } catch (error) {
-        console.error("Error submitting support ticket:", error);
-        showToast("Failed to submit support request. Please try again.", "error");
+        console.error("Error submitting help request:", error);
+        showToast("Failed to submit help request. Please try again.", "error");
       }
     });
   }

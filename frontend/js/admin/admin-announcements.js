@@ -1,47 +1,17 @@
-// Announcements Management Functions
+// Announcements Management - Connected to Backend API
 
-// Load all announcements
-function loadAnnouncements() {
-  const announcements = getAnnouncements();
-  renderAnnouncements(announcements);
+// Load announcements
+async function loadAnnouncements() {
+  try {
+    const announcements = await adminApi.getAllAnnouncements();
+    renderAnnouncements(announcements || []);
+  } catch (error) {
+    console.error("Error loading announcements:", error);
+    renderAnnouncements([]);
+  }
 }
 
-function getAnnouncements() {
-  const announcements = localStorage.getItem("announcements")
-    ? JSON.parse(localStorage.getItem("announcements"))
-    : getDefaultAnnouncements();
-  return announcements;
-}
-
-function getDefaultAnnouncements() {
-  return [
-    {
-      id: 1,
-      title: "System Maintenance Scheduled",
-      message:
-        "We will be performing system maintenance on October 28th from 2:00 AM to 4:00 AM UTC. The platform will be temporarily unavailable during this time.",
-      date: "2025-10-24",
-      time: "10:30 AM",
-    },
-    {
-      id: 2,
-      title: "New Feature: Enhanced Quiz Analytics",
-      message:
-        "We've released a new feature that provides detailed analytics for quiz performance. Teachers can now view comprehensive reports and identify areas where students need additional support.",
-      date: "2025-10-22",
-      time: "3:45 PM",
-    },
-    {
-      id: 3,
-      title: "Welcome to EduBloom",
-      message:
-        "Thank you for joining EduBloom! We're excited to have you as part of our learning community. Check out our help section for tutorials and best practices.",
-      date: "2025-10-20",
-      time: "9:00 AM",
-    },
-  ];
-}
-
+// Render announcements
 function renderAnnouncements(announcements) {
   const container = document.getElementById("announcements-container");
   if (!container) return;
@@ -49,10 +19,17 @@ function renderAnnouncements(announcements) {
   container.innerHTML = "";
 
   if (announcements.length === 0) {
-    container.innerHTML =
-      '<div class="admin-empty-state"><p>No announcements yet. Click "Add" to create one.</p></div>';
+    container.innerHTML = '<div class="admin-empty-state"><p>No announcements yet. Click "Add" to create one.</p></div>';
     return;
   }
+
+  const roleLabels = {
+    all: "All Users",
+    student: "Students",
+    teacher: "Teachers",
+    parent: "Parents",
+    admin: "Admins"
+  };
 
   announcements.forEach((announcement) => {
     const announcementItem = document.createElement("div");
@@ -61,7 +38,12 @@ function renderAnnouncements(announcements) {
       <div class="announcement-header">
         <div style="flex: 1;">
           <h4 style="color: var(--color-white); margin: 0 0 4px 0;">${announcement.title}</h4>
-          <p style="color: rgba(255, 255, 255, 0.6); font-size: 12px; margin: 0;">${announcement.date} at ${announcement.time}</p>
+          <p style="color: rgba(255, 255, 255, 0.6); font-size: 12px; margin: 0;">
+            ${announcement.date} at ${announcement.time} 
+            <span style="margin-left: 8px; padding: 2px 8px; background: rgba(255,255,255,0.1); border-radius: 4px; font-size: 10px;">
+              ${roleLabels[announcement.targetRole] || "All Users"}
+            </span>
+          </p>
         </div>
         <div class="announcement-actions">
           <i class="fas fa-edit" style="cursor: pointer; color: rgba(255, 255, 255, 0.7);" title="Edit" data-announcement-id="${announcement.id}" data-edit-announcement="${announcement.id}"></i>
@@ -76,43 +58,39 @@ function renderAnnouncements(announcements) {
   bindAnnouncementActions();
 }
 
+// Bind action buttons
 function bindAnnouncementActions() {
   // Delete buttons
   document.querySelectorAll("[data-delete-announcement]").forEach((icon) => {
     icon.addEventListener("click", (e) => {
       const announcementId = e.target.getAttribute("data-announcement-id");
       window.deletingAnnouncementId = announcementId;
-      document
-        .getElementById("delete-announcement-modal")
-        .classList.add("show");
+      document.getElementById("delete-announcement-modal").classList.add("show");
     });
   });
 
   // Edit buttons
   document.querySelectorAll("[data-edit-announcement]").forEach((icon) => {
-    icon.addEventListener("click", (e) => {
+    icon.addEventListener("click", async (e) => {
       const announcementId = e.target.getAttribute("data-announcement-id");
-      const announcements = getAnnouncements();
-      const announcement = announcements.find((a) => a.id == announcementId);
+      const announcements = await adminApi.getAllAnnouncements();
+      const announcement = announcements.find(a => a.id == announcementId);
 
       if (announcement) {
         window.editingAnnouncementId = announcementId;
-        document.getElementById("announcement-modal-title").textContent =
-          "Edit Announcement";
-        document.getElementById("announcement-title-input").value =
-          announcement.title;
-        document.getElementById("announcement-message-input").value =
-          announcement.message;
+        document.getElementById("announcement-modal-title").textContent = "Edit Announcement";
+        document.getElementById("announcement-title-input").value = announcement.title;
+        document.getElementById("announcement-message-input").value = announcement.message;
+        document.getElementById("announcement-target-role").value = announcement.targetRole || "all";
         document.getElementById("announcement-modal").classList.add("show");
       }
     });
   });
 }
 
-// ===== Modal Handlers =====
-
+// Initialize modal handlers
 function initializeAnnouncementModalHandlers() {
-  // Close modal when clicking X or Cancel button
+  // Close modal handlers
   document.querySelectorAll(".modal-close").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const modalId = e.target.getAttribute("data-modal");
@@ -133,10 +111,10 @@ function initializeAnnouncementModalHandlers() {
   if (addAnnouncementBtn) {
     addAnnouncementBtn.addEventListener("click", () => {
       window.editingAnnouncementId = null;
-      document.getElementById("announcement-modal-title").textContent =
-        "Add Announcement";
+      document.getElementById("announcement-modal-title").textContent = "Add Announcement";
       document.getElementById("announcement-title-input").value = "";
       document.getElementById("announcement-message-input").value = "";
+      document.getElementById("announcement-target-role").value = "all";
       document.getElementById("announcement-modal").classList.add("show");
     });
   }
@@ -144,51 +122,24 @@ function initializeAnnouncementModalHandlers() {
   // Save announcement button
   const saveAnnouncementBtn = document.getElementById("save-announcement-btn");
   if (saveAnnouncementBtn) {
-    saveAnnouncementBtn.addEventListener("click", () => {
-      const title = document
-        .getElementById("announcement-title-input")
-        .value.trim();
-      const message = document
-        .getElementById("announcement-message-input")
-        .value.trim();
+    saveAnnouncementBtn.addEventListener("click", async () => {
+      const title = document.getElementById("announcement-title-input").value.trim();
+      const message = document.getElementById("announcement-message-input").value.trim();
+      const targetRole = document.getElementById("announcement-target-role").value;
 
       if (title && message) {
-        let announcements = getAnnouncements();
-        const now = new Date();
-        const date = now.toISOString().split("T")[0];
-        const time = now.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-
-        if (window.editingAnnouncementId) {
-          // Edit existing announcement
-          const announcement = announcements.find(
-            (a) => a.id == window.editingAnnouncementId
-          );
-          if (announcement) {
-            announcement.title = title;
-            announcement.message = message;
+        try {
+          if (window.editingAnnouncementId) {
+            await adminApi.updateAnnouncement(window.editingAnnouncementId, { title, message, targetRole });
+          } else {
+            await adminApi.createAnnouncement({ title, message, targetRole });
           }
-        } else {
-          // Add new announcement
-          const newAnnouncement = {
-            id:
-              announcements.length > 0
-                ? Math.max(...announcements.map((a) => a.id)) + 1
-                : 1,
-            title,
-            message,
-            date,
-            time,
-          };
-          announcements.unshift(newAnnouncement);
+          document.getElementById("announcement-modal").classList.remove("show");
+          loadAnnouncements();
+          window.editingAnnouncementId = null;
+        } catch (error) {
+          alert("Error saving announcement: " + error.message);
         }
-
-        localStorage.setItem("announcements", JSON.stringify(announcements));
-        document.getElementById("announcement-modal").classList.remove("show");
-        loadAnnouncements();
-        window.editingAnnouncementId = null;
       } else {
         alert("Please fill in both title and message fields.");
       }
@@ -196,20 +147,18 @@ function initializeAnnouncementModalHandlers() {
   }
 
   // Delete announcement button
-  const confirmDeleteBtn = document.getElementById(
-    "confirm-delete-announcement-btn"
-  );
+  const confirmDeleteBtn = document.getElementById("confirm-delete-announcement-btn");
   if (confirmDeleteBtn) {
-    confirmDeleteBtn.addEventListener("click", () => {
+    confirmDeleteBtn.addEventListener("click", async () => {
       const announcementId = window.deletingAnnouncementId;
       if (announcementId) {
-        let announcements = getAnnouncements();
-        announcements = announcements.filter((a) => a.id != announcementId);
-        localStorage.setItem("announcements", JSON.stringify(announcements));
-        document
-          .getElementById("delete-announcement-modal")
-          .classList.remove("show");
-        loadAnnouncements();
+        try {
+          await adminApi.deleteAnnouncement(announcementId);
+          document.getElementById("delete-announcement-modal").classList.remove("show");
+          loadAnnouncements();
+        } catch (error) {
+          alert("Error deleting announcement: " + error.message);
+        }
       }
     });
   }
