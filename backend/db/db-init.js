@@ -964,7 +964,7 @@ await db.query(`
         user_id INT REFERENCES users(id) ON DELETE SET NULL,
         topic VARCHAR(255) NOT NULL,
         message TEXT NOT NULL,
-        status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'replied', 'resolved')),
+        status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'replied', 'resolution_proposed', 'resolved')),
         reply TEXT,
         replied_by INT REFERENCES users(id) ON DELETE SET NULL,
         replied_at TIMESTAMP,
@@ -974,6 +974,34 @@ await db.query(`
 
     try { await db.query(`ALTER TABLE help_requests ADD COLUMN IF NOT EXISTS replied_by INT`); } catch(e) {}
     try { await db.query(`ALTER TABLE help_requests ADD COLUMN IF NOT EXISTS replied_at TIMESTAMP`); } catch(e) {}
+
+    // Help Request Messages table for threaded conversations
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS help_request_messages (
+        id SERIAL PRIMARY KEY,
+        help_request_id INT REFERENCES help_requests(id) ON DELETE CASCADE,
+        user_id INT REFERENCES users(id) ON DELETE SET NULL,
+        message TEXT NOT NULL,
+        is_admin BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Update status constraint if needed
+    try {
+      await db.query(`
+        ALTER TABLE help_requests 
+        DROP CONSTRAINT IF EXISTS help_requests_status_check
+      `);
+    } catch(e) {}
+    
+    try {
+      await db.query(`
+        ALTER TABLE help_requests 
+        ADD CONSTRAINT help_requests_status_check 
+        CHECK (status IN ('pending', 'replied', 'resolution_proposed', 'resolved'))
+      `);
+    } catch(e) {}
 
   } catch (err) {
     console.error("Database initialization error:", err);

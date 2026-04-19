@@ -30,7 +30,22 @@ function handleSupportRoutes(req, res) {
     if (method === "PUT" && pathname.match(/^\/api\/support\/tickets\/\d+$/)) {
       const ticketId = pathname.split("/").pop();
       req.params = { ticketId };
-      return applyMiddleware([verifyToken, requireRole("admin")], supportController.updateTicketStatus)(req, res);
+      return applyMiddleware([verifyToken], supportController.updateTicketStatus)(req, res);
+    }
+
+    // Add message to help request: POST /api/support/tickets/:id/messages
+    if (method === "POST" && pathname.match(/^\/api\/support\/tickets\/\d+\/messages$/)) {
+      const ticketId = pathname.split("/").slice(-2)[0];
+      req.params = { ticketId };
+      console.log("POST /api/support/tickets/:id/messages - Adding message to ticket:", ticketId);
+      return applyMiddleware([verifyToken], supportController.addMessage)(req, res);
+    }
+
+    // Get messages for help request: GET /api/support/tickets/:id/messages
+    if (method === "GET" && pathname.match(/^\/api\/support\/tickets\/\d+\/messages$/)) {
+      const ticketId = pathname.split("/").slice(-2)[0];
+      req.params = { ticketId };
+      return applyMiddleware([verifyToken], supportController.getTicketMessages)(req, res);
     }
 
     res.writeHead(404, { "Content-Type": "application/json" });

@@ -112,17 +112,20 @@ function bindHelpRequestViewButtons() {
         document.getElementById("help-request-title").textContent = request.topic;
         document.getElementById("help-request-user").textContent = request.user;
         document.getElementById("help-request-topic").textContent = request.topic;
-        document.getElementById("help-request-message").textContent = request.message;
+        document.getElementById("help-request-status").textContent = request.status;
         document.getElementById("help-request-date").textContent = request.date;
         document.getElementById("reply-input").value = "";
 
-        const replyDiv = document.getElementById("current-reply-div");
-        if (request.reply) {
-          replyDiv.style.display = "block";
-          document.getElementById("help-request-reply").textContent = request.reply;
+        // Show/hide propose resolution button based on status
+        const proposeBtn = document.getElementById("propose-resolution-btn");
+        if (request.status === 'replied' || request.status === 'pending') {
+          proposeBtn.style.display = 'block';
         } else {
-          replyDiv.style.display = "none";
+          proposeBtn.style.display = 'none';
         }
+
+        // Load conversation thread
+        await loadConversationThread(requestId);
 
         document.getElementById("help-request-modal").classList.add("show");
       } catch (error) {
@@ -130,6 +133,52 @@ function bindHelpRequestViewButtons() {
       }
     });
   });
+}
+
+async function loadConversationThread(requestId) {
+  try {
+    const messages = await adminApi.getHelpRequestMessages(requestId);
+    const threadContainer = document.getElementById("conversation-thread");
+    
+    if (!messages || messages.length === 0) {
+      threadContainer.innerHTML = '<p style="color: rgba(255, 255, 255, 0.5); font-size: 13px;">No messages yet</p>';
+      return;
+    }
+
+    threadContainer.innerHTML = messages.map(msg => `
+      <div style="padding: 12px; border-radius: 8px; background: ${msg.is_admin ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.05)'}; border-left: 3px solid ${msg.is_admin ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.2)'};">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <span style="color: var(--color-white); font-size: 12px; font-weight: 600;">
+            ${msg.is_admin ? 'Admin' : (msg.sender_name || 'User')}
+          </span>
+          <span style="color: rgba(255, 255, 255, 0.5); font-size: 11px;">
+            ${formatDate(msg.created_at)}
+          </span>
+        </div>
+        <p style="color: rgba(255, 255, 255, 0.8); font-size: 13px; line-height: 1.5; margin: 0; white-space: pre-wrap;">
+          ${escapeHtml(msg.message)}
+        </p>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error("Error loading conversation:", error);
+  }
+}
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 // ===== Filtering =====
@@ -232,21 +281,58 @@ function initializeHelpModalHandlers() {
 
   // Send reply button
   const sendReplyBtn = document.getElementById("send-reply-btn");
+  console.log("Send reply button found:", !!sendReplyBtn);
+  
   if (sendReplyBtn) {
     sendReplyBtn.addEventListener("click", async () => {
+      console.log("=== ADMIN REPLY BUTTON CLICKED ===");
       const reply = document.getElementById("reply-input").value.trim();
       const requestId = window.currentRequestId;
+      
+      console.log("Reply text:", reply);
+      console.log("Request ID:", requestId);
+      console.log("window.currentRequestId:", window.currentRequestId);
 
       if (reply && requestId) {
         try {
-          await adminApi.replyToHelpRequest(requestId, reply);
-          document.getElementById("help-request-modal").classList.remove("show");
+          console.log("Sending reply to ticket:", requestId);
+          await adminApi.addHelpRequestMessage(requestId, reply, true);
+          console.log("Message added successfully");
+          
+          await adminApi.updateHelpRequestStatus(requestId, 'replied');
+          console.log("Status updated to replied");
+          
+          document.getElementById("reply-input").value = "";
+          await loadConversationThread(requestId);
           loadHelpRequests();
         } catch (error) {
+          console.error("Error sending reply:", error);
           alert("Error sending reply: " + error.message);
         }
       } else {
+        console.log("Missing reply or request ID");
         alert("Please type a reply before sending.");
+      }
+      console.log("====================================");
+    });
+  } else {
+    console.error("Send reply button not found!");
+  }
+
+  // Propose resolution button
+  const proposeResolutionBtn = document.getElementById("propose-resolution-btn");
+  if (proposeResolutionBtn) {
+    proposeResolutionBtn.addEventListener("click", async () => {
+      const requestId = window.currentRequestId;
+      
+      if (confirm("Are you sure you want to propose this issue as resolved? The user will need to accept it.")) {
+        try {
+          await adminApi.updateHelpRequestStatus(requestId, 'resolution_proposed');
+          document.getElementById("help-request-modal").classList.remove("show");
+          loadHelpRequests();
+        } catch (error) {
+          alert("Error proposing resolution: " + error.message);
+        }
       }
     });
   }

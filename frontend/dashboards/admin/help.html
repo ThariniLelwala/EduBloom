@@ -171,7 +171,7 @@
 
     <!-- View/Reply Help Request Modal -->
     <div id="help-request-modal" class="modal">
-      <div class="modal-content">
+      <div class="modal-content" style="width: 600px; max-height: 80vh; overflow-y: auto;">
         <div class="modal-header">
           <h2 id="help-request-title">Help Request</h2>
           <span class="modal-close" data-modal="help-request-modal"
@@ -218,15 +218,11 @@
                   display: block;
                   margin-bottom: 4px;
                 "
-                >Message</label
+                >Status</label
               >
               <p
-                id="help-request-message"
-                style="
-                  color: var(--color-white);
-                  margin: 0;
-                  white-space: pre-wrap;
-                "
+                id="help-request-status"
+                style="color: var(--color-white); margin: 0"
               ></p>
             </div>
             <div>
@@ -244,25 +240,23 @@
                 style="color: var(--color-white); margin: 0"
               ></p>
             </div>
-            <div id="current-reply-div" style="display: none">
+            
+            <!-- Conversation Thread -->
+            <div>
               <label
                 style="
-                  color: rgba(255, 255, 255, 0.6);
+                  color: rgba(255, 255, 255, 0.8);
                   font-size: 12px;
                   display: block;
-                  margin-bottom: 4px;
+                  margin-bottom: 8px;
                 "
-                >Current Reply</label
+                >Conversation</label
               >
-              <p
-                id="help-request-reply"
-                style="
-                  color: var(--color-white);
-                  margin: 0;
-                  white-space: pre-wrap;
-                "
-              ></p>
+              <div id="conversation-thread" style="display: flex; flex-direction: column; gap: 12px; max-height: 300px; overflow-y: auto; padding: 12px; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+                <!-- Messages will be populated here -->
+              </div>
             </div>
+            
             <div>
               <label
                 style="
@@ -288,6 +282,9 @@
           </button>
           <button class="btn btn-primary" id="send-reply-btn">
             Send Reply
+          </button>
+          <button class="btn btn-primary" id="propose-resolution-btn" style="display: none;">
+            Propose Resolution
           </button>
         </div>
       </div>

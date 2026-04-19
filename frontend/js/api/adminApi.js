@@ -789,4 +789,78 @@ const adminApi = {
       throw error;
     }
   },
+
+  /**
+   * Get messages for a help request
+   * @param {number} id
+   * @returns {Promise<Array>} Messages
+   */
+  async getHelpRequestMessages(id) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const url = `/api/support/tickets/${id}/messages`;
+      console.log("Fetching messages for ticket:", id, "URL:", url);
+      
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      console.log("Get messages response:", data);
+      
+      if (!response.ok) throw new Error(data.error || "Failed to fetch messages");
+
+      return data.messages || [];
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Add message to help request
+   * @param {number} id
+   * @param {string} message
+   * @param {boolean} is_admin
+   * @returns {Promise<Object>} Result
+   */
+  async addHelpRequestMessage(id, message, is_admin = true) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const url = `/api/support/tickets/${id}/messages`;
+      console.log("=== ADMIN API ADD MESSAGE ===");
+      console.log("Adding message to ticket:", id);
+      console.log("URL:", url);
+      console.log("is_admin:", is_admin);
+      console.log("message:", message);
+      console.log("Token exists:", !!token);
+      
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ message, is_admin }),
+      });
+
+      console.log("Response status:", response.status);
+      console.log("Response ok:", response.ok);
+
+      const data = await response.json();
+      console.log("Add message response:", data);
+      console.log("===============================");
+      
+      if (!response.ok) throw new Error(data.error || "Failed to add message");
+
+      return data;
+    } catch (error) {
+      console.error("Error adding message:", error);
+      throw error;
+    }
+  },
 };
