@@ -116,6 +116,16 @@ function handleAuthRoutes(req, res) {
       )(req, res);
     }
 
+    // Get verification details for admin
+    if (method === "GET" && pathname.match(/^\/api\/admin\/verification-details\/\d+$/)) {
+      const verificationId = pathname.split("/").pop();
+      req.params = { verificationId };
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
+        verificationController.getVerificationDetails
+      )(req, res);
+    }
+
     if (method === "PUT" && pathname === "/api/teacher/update-verification") {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
@@ -139,6 +149,16 @@ function handleAuthRoutes(req, res) {
     ) {
       return applyMiddleware(
         [verifyToken, requireRole("teacher")],
+        verificationController.downloadVerificationFile
+      )(req, res);
+    }
+
+    // Admin download verification file
+    if (method === "GET" && pathname.match(/^\/api\/admin\/download-verification\/\d+$/)) {
+      const verificationId = pathname.split("/").pop();
+      req.params = { verificationId };
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
         verificationController.downloadVerificationFile
       )(req, res);
     }

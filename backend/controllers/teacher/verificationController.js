@@ -1,6 +1,11 @@
 // controllers/teacher/verificationController.js
 const { parseRequestBody } = require("../../middleware/authMiddleware");
 
+// Constants for verification system
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const COOL_DOWN_PERIOD = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+const FILE_RETENTION_PERIOD = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+
 class VerificationController {
   // Get teacher verification status
   async getVerificationStatus(req, res) {
@@ -20,6 +25,34 @@ class VerificationController {
         res.writeHead(200, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ verification: null }));
       }
+
+      // Include file existence info and resubmit availability
+      const verification = result.rows[0];
+      verification.has_file = verification.appointment_letter ? true : false;
+
+      // Calculate resubmit availability for rejected verifications
+      if (verification.status === 'rejected' && verification.reviewed_at) {
+        const timeSinceRejection = Date.now() - new Date(verification.reviewed_at).getTime();
+        verification.can_resubmit = timeSinceRejection >= COOL_DOWN_PERIOD;
+        
+        if (!verification.can_resubmit) {
+          verification.resubmit_available_at = new Date(new Date(verification.reviewed_at).getTime() + COOL_DOWN_PERIOD).toISOString();
+        } else {
+          verification.resubmit_available_at = null;
+        }
+      } else {
+        verification.can_resubmit = false;
+        verification.resubmit_available_at = null;
+      }
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ verification }));
+    } catch (err) {
+      console.error("Error fetching verification status:", err);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Failed to fetch verification status" }));
+    }
+  }
 
       // Include file existence info
       const verification = result.rows[0];
@@ -70,6 +103,26 @@ class VerificationController {
         fileBuffer = Buffer.from(data.appointmentLetter.data, "base64");
       }
 
+      // File size validation
+      if (fileBuffer && fileBuffer.length > MAX_FILE_SIZE) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(
+          JSON.stringify({
+            error: "File size exceeds 2MB limit",
+          })
+        );
+      }
+
+      // File type validation
+      if (fileName && !fileName.toLowerCase().endsWith('.pdf')) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(
+          JSON.stringify({
+            error: "Only PDF files are allowed",
+          })
+        );
+      }
+
       // Check if there's already a pending verification request
       const pendingCheck = await db.query(
         `SELECT id FROM teacher_verifications WHERE user_id = $1 AND status = 'pending'`,
@@ -85,17 +138,37 @@ class VerificationController {
         );
       }
 
+      // Check cool down period for rejected verifications
+      const recentRejection = await db.query(
+        `SELECT reviewed_at FROM teacher_verifications 
+         WHERE user_id = $1 AND status = 'rejected' 
+         ORDER BY reviewed_at DESC LIMIT 1`,
+        [userId]
+      );
+
+      if (recentRejection.rows.length > 0) {
+        const timeSinceRejection = Date.now() - new Date(recentRejection.rows[0].reviewed_at).getTime();
+        if (timeSinceRejection < COOL_DOWN_PERIOD) {
+          const daysRemaining = Math.ceil((COOL_DOWN_PERIOD - timeSinceRejection) / (24 * 60 * 60 * 1000));
+          res.writeHead(400, { "Content-Type": "application/json" });
+          return res.end(
+            JSON.stringify({
+              error: `Please wait ${daysRemaining} days before resubmitting`,
+            })
+          );
+        }
+      }
+
       // Insert verification request
       const result = await db.query(
         `INSERT INTO teacher_verifications (user_id, status, submitted_at, message, appointment_letter, file_name)
-         VALUES ($1, $2, NOW(), $3, $4, $5)
+         VALUES ($1, 'pending', NOW(), $2, $3, $4)
          RETURNING id, status, submitted_at`,
         [
           userId,
-          "pending",
           data.verificationMessage || "",
           fileBuffer,
-          fileName,
+          fileName
         ]
       );
 
@@ -137,6 +210,43 @@ class VerificationController {
       res.end(
         JSON.stringify({
           error: "Failed to fetch pending verifications",
+        })
+      );
+    }
+  }
+
+  // Admin: Get verification details
+  async getVerificationDetails(req, res) {
+    try {
+      const verificationId = req.params?.verificationId;
+      const db = require("../../db/db");
+
+      const result = await db.query(
+        `SELECT v.id, v.user_id, u.username, u.email, v.status, v.submitted_at, v.message, v.file_name, v.appointment_letter
+         FROM teacher_verifications v
+         JOIN users u ON v.user_id = u.id
+         WHERE v.id = $1`,
+        [verificationId]
+      );
+
+      if (result.rows.length === 0) {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        return res.end(
+          JSON.stringify({ error: "Verification not found" })
+        );
+      }
+
+      const verification = result.rows[0];
+      verification.has_file = verification.appointment_letter ? true : false;
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ verification }));
+    } catch (err) {
+      console.error("Error fetching verification details:", err);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          error: "Failed to fetch verification details",
         })
       );
     }
@@ -342,6 +452,60 @@ class VerificationController {
   // Download verification file
   async downloadVerificationFile(req, res) {
     try {
+      const verificationId = req.params?.verificationId;
+      const userId = req.user.id;
+      const db = require("../../db/db");
+
+      // Get the verification record with file
+      const result = await db.query(
+        `SELECT v.appointment_letter, v.file_name, v.user_id, u.username 
+         FROM teacher_verifications v
+         JOIN users u ON v.user_id = u.id
+         WHERE v.id = $1`,
+        [verificationId]
+      );
+
+      if (result.rows.length === 0) {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        return res.end(
+          JSON.stringify({ error: "Verification not found" })
+        );
+      }
+
+      const verification = result.rows[0];
+
+      if (!verification.appointment_letter) {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        return res.end(
+          JSON.stringify({ error: "No file attached to verification request" })
+        );
+      }
+
+      // Get file buffer
+      const fileBuffer = verification.appointment_letter;
+      const fileName = verification.file_name || "verification.pdf";
+
+      // Set response headers
+      res.writeHead(200, {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${fileName}"`,
+        "Content-Length": fileBuffer.length,
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY"
+      });
+
+      res.end(fileBuffer);
+    } catch (err) {
+      console.error("Error downloading verification file:", err);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          error: "Failed to download verification file",
+        })
+      );
+    }
+  }
+
       const userId = req.user.id;
       const db = require("../../db/db");
 
@@ -373,26 +537,15 @@ class VerificationController {
 
       // Get file buffer and determine content type
       const fileBuffer = verification.appointment_letter;
-      const fileName = verification.file_name || "appointment_letter";
-
-      // Determine content type based on file extension
-      let contentType = "application/octet-stream";
-      if (fileName.endsWith(".pdf")) {
-        contentType = "application/pdf";
-      } else if (fileName.endsWith(".doc") || fileName.endsWith(".docx")) {
-        contentType =
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-      } else if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
-        contentType = "image/jpeg";
-      } else if (fileName.endsWith(".png")) {
-        contentType = "image/png";
-      }
+      const fileName = verification.file_name || "appointment_letter.pdf";
 
       // Set response headers
       res.writeHead(200, {
-        "Content-Type": contentType,
+        "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${fileName}"`,
         "Content-Length": fileBuffer.length,
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY"
       });
 
       res.end(fileBuffer);
@@ -404,6 +557,34 @@ class VerificationController {
           error: "Failed to download verification file",
         })
       );
+    }
+  }
+
+  // Clean up old rejected verification files
+  async cleanupOldVerifications() {
+    try {
+      const db = require("../../db/db");
+      const cutoffDate = new Date(Date.now() - FILE_RETENTION_PERIOD);
+      
+      const result = await db.query(
+        `DELETE FROM teacher_verifications 
+         WHERE status = 'rejected' 
+         AND reviewed_at < $1
+         RETURNING id, file_name`,
+        [cutoffDate]
+      );
+      
+      console.log(`Cleaned up ${result.rows.length} old rejected verification files`);
+      
+      // Log cleanup activity
+      result.rows.forEach(file => {
+        console.log(`Deleted verification file: ${file.file_name} (ID: ${file.id})`);
+      });
+
+      return { success: true, deletedCount: result.rows.length };
+    } catch (err) {
+      console.error("Error cleaning up old verifications:", err);
+      return { success: false, error: err.message };
     }
   }
 }

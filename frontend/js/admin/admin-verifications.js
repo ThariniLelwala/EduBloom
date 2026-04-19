@@ -1,43 +1,20 @@
-// Teacher Verifications Management
+// Teacher Verifications Management - Connected to Backend
 
 let allVerifications = [];
 let filteredVerifications = [];
 
-// Initialize verifications data
-function initializeVerificationsData() {
-  allVerifications = [
-    {
-      id: 1,
-      userId: 2,
-      teacherName: "Sarah Smith",
-      email: "sarah.smith@email.com",
-      status: "pending",
-      submittedAt: "2025-10-23",
-      fileName: "appointment_letter.pdf",
-      message: "Here is my appointment letter from the school.",
-    },
-    {
-      id: 2,
-      userId: 5,
-      teacherName: "Alex Davis",
-      email: "alex.davis@email.com",
-      status: "pending",
-      submittedAt: "2025-10-22",
-      fileName: "teacher_certificate.pdf",
-      message: "Attaching my teaching certificate and ID.",
-    },
-    {
-      id: 3,
-      userId: 8,
-      teacherName: "Lisa Anderson",
-      email: "lisa.a@email.com",
-      status: "pending",
-      submittedAt: "2025-10-21",
-      fileName: "school_id_badge.jpg",
-      message: "My school identification badge.",
-    },
-  ];
-  filteredVerifications = [...allVerifications];
+// Load verifications from API
+async function loadVerifications() {
+  try {
+    allVerifications = await adminApi.getPendingVerifications();
+    filteredVerifications = [...allVerifications];
+    renderVerificationsTable();
+    loadPendingVerificationsCount();
+  } catch (error) {
+    console.error("Error loading verifications:", error);
+    showToast("Failed to load verifications", "error");
+    renderVerificationsTable();
+  }
 }
 
 // Load pending verifications count
@@ -70,16 +47,16 @@ function renderVerificationsTable() {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
-      <td class="text-white">${verification.teacherName}</td>
+      <td class="text-white">${verification.username}</td>
       <td class="text-muted">${verification.email}</td>
-      <td class="text-muted">${verification.submittedAt}</td>
+      <td class="text-muted">${formatDate(verification.submitted_at)}</td>
       <td>
-        <a href="#" class="file-link" title="View document" data-verification-id="${verification.id}">
-          <i class="fas fa-file-pdf"></i> ${verification.fileName}
+        <a href="#" class="file-link" title="Download document" data-verification-id="${verification.id}">
+          <i class="fas fa-file-pdf"></i> ${verification.file_name || 'verification.pdf'}
         </a>
       </td>
       <td class="text-muted" title="${verification.message}">
-        ${verification.message.substring(0, 40)}...
+        ${verification.message ? verification.message.substring(0, 40) + '...' : 'No message'}
       </td>
       <td style="text-align: center;">
         <button class="approve-verification-btn admin-table-action" data-verification-id="${verification.id}" title="Approve">
@@ -127,40 +104,39 @@ function bindVerificationEvents() {
       viewVerificationDetails(verificationId);
     }
 
-    // View file
+    // Download file
     if (e.target.closest(".file-link")) {
       e.preventDefault();
       const verificationId = parseInt(
         e.target.closest(".file-link").dataset.verificationId
       );
-      viewVerificationFile(verificationId);
+      downloadVerificationFile(verificationId);
     }
   });
 }
 
 // Approve verification
-function approveVerification(verificationId) {
+async function approveVerification(verificationId) {
   const verification = allVerifications.find((v) => v.id === verificationId);
   if (!verification) return;
 
   if (
     confirm(
-      `Approve verification for ${verification.teacherName}? This will mark them as verified.`
+      `Approve verification for ${verification.username}? This will mark them as verified.`
     )
   ) {
-    // Update backend (placeholder)
-
-    // Remove from pending list
-    allVerifications = allVerifications.filter((v) => v.id !== verificationId);
-    filterVerifications();
-    loadPendingVerificationsCount();
-
-    showNotification(`${verification.teacherName} has been verified!`);
+    try {
+      await adminApi.approveVerification(verificationId);
+      showToast(`${verification.username} has been verified!`, "success");
+      loadVerifications();
+    } catch (error) {
+      showToast("Failed to approve verification: " + error.message, "error");
+    }
   }
 }
 
 // Reject verification
-function rejectVerification(verificationId) {
+async function rejectVerification(verificationId) {
   const verification = allVerifications.find((v) => v.id === verificationId);
   if (!verification) return;
 
@@ -170,68 +146,80 @@ function rejectVerification(verificationId) {
   );
   if (reason === null) return;
 
-  // Update backend (placeholder)
-
-  // Remove from pending list
-  allVerifications = allVerifications.filter((v) => v.id !== verificationId);
-  filterVerifications();
-  loadPendingVerificationsCount();
-
-  showNotification(`Verification rejected for ${verification.teacherName}.`);
+  try {
+    await adminApi.rejectVerification(verificationId, reason);
+    showToast(`Verification rejected for ${verification.username}`, "success");
+    loadVerifications();
+  } catch (error) {
+    showToast("Failed to reject verification: " + error.message, "error");
+  }
 }
 
 // View verification details
-function viewVerificationDetails(verificationId) {
-  const verification = allVerifications.find((v) => v.id === verificationId);
-  if (!verification) return;
-
-  const detailsText = `
-Teacher Name: ${verification.teacherName}
+async function viewVerificationDetails(verificationId) {
+  try {
+    const verification = await adminApi.getVerificationDetails(verificationId);
+    
+    const detailsText = `
+Teacher Name: ${verification.username}
 Email: ${verification.email}
-Submitted: ${verification.submittedAt}
-Document: ${verification.fileName}
-Message: ${verification.message}
+Submitted: ${formatDate(verification.submitted_at)}
+Document: ${verification.file_name || 'verification.pdf'}
+Message: ${verification.message || 'No message'}
 Status: ${verification.status}
-  `;
+Has File: ${verification.has_file ? 'Yes' : 'No'}
+    `;
 
-  alert(detailsText);
+    alert(detailsText);
+  } catch (error) {
+    showToast("Failed to load verification details", "error");
+  }
 }
 
-// View verification file (placeholder)
-function viewVerificationFile(verificationId) {
-  const verification = allVerifications.find((v) => v.id === verificationId);
-  if (!verification) return;
-
-  alert(
-    `Opening document: ${verification.fileName}\n\nNote: In a real implementation, this would open the document viewer.`
-  );
+// Download verification file
+async function downloadVerificationFile(verificationId) {
+  try {
+    await adminApi.downloadVerificationFile(verificationId);
+    showToast("File downloaded successfully", "success");
+  } catch (error) {
+    showToast("Failed to download file: " + error.message, "error");
+  }
 }
 
-// Filter verifications
-function filterVerifications() {
-  // Can be extended with search and filter functionality
-  filteredVerifications = [...allVerifications];
-  renderVerificationsTable();
+// Format date helper
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 }
 
-// Show notification
-function showNotification(message) {
-  // Use existing toast or notification system if available
+// Show toast notification
+function showToast(message, type = "info") {
   const toast = document.getElementById("toast");
   if (toast) {
     toast.textContent = message;
+    toast.className = `toast toast-${type}`;
     toast.classList.add("show");
     setTimeout(() => {
       toast.classList.remove("show");
     }, 3000);
-  } else {
-    alert(message);
   }
 }
 
-// Initialize verifications on page load
+// Initialize on page load
 document.addEventListener("DOMContentLoaded", () => {
-  initializeVerificationsData();
-  loadPendingVerificationsCount();
-  renderVerificationsTable();
+  loadVerifications();
+  
+  // Add refresh button functionality
+  const refreshBtn = document.getElementById("refresh-verifications-btn");
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", () => {
+      loadVerifications();
+    });
+  }
 });

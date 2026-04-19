@@ -569,3 +569,185 @@ input[type="checkbox"]:checked {
 .custom-select-option.selected {
   background: rgba(255, 255, 255, 0.25);
 }
+
+/* Verification Status Card Styles */
+.verification-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.verification-status.pending {
+  border-left: 4px solid rgba(255, 193, 7, 0.8);
+}
+
+.verification-status.approved {
+  border-left: 4px solid rgba(34, 197, 94, 0.8);
+}
+
+.verification-status.rejected {
+  border-left: 4px solid rgba(239, 68, 68, 0.8);
+}
+
+.verification-status.error,
+.verification-status.unknown {
+  border-left: 4px solid rgba(107, 114, 128, 0.8);
+}
+
+.status-icon {
+  font-size: 32px;
+  min-width: 40px;
+  text-align: center;
+}
+
+.verification-status.pending .status-icon {
+  color: rgba(255, 193, 7, 0.9);
+}
+
+.verification-status.approved .status-icon {
+  color: rgba(34, 197, 94, 0.9);
+}
+
+.verification-status.rejected .status-icon {
+  color: rgba(239, 68, 68, 0.9);
+}
+
+.verification-status.error .status-icon,
+.verification-status.unknown .status-icon {
+  color: rgba(107, 114, 128, 0.9);
+}
+
+.status-content h4 {
+  color: var(--color-white);
+  margin: 0 0 8px 0;
+  font-size: 18px;
+}
+
+.status-content p {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 12px 0;
+  font-size: 14px;
+}
+
+.verification-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.verification-details span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cool-down-message {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 193, 7, 0.1);
+  border-radius: 4px;
+  color: rgba(255, 193, 7, 0.9);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Verification Submission Form */
+.verification-submission {
+  padding: 20px;
+}
+
+.verification-submission h4 {
+  color: var(--color-white);
+  margin: 0 0 8px 0;
+  font-size: 18px;
+}
+
+.verification-submission p {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 20px 0;
+  font-size: 14px;
+}
+
+.verification-submission .form-group {
+  margin-bottom: 16px;
+}
+
+.verification-submission label {
+  display: block;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.verification-submission input[type="file"],
+.verification-submission textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-white);
+  font-size: 14px;
+}
+
+.verification-submission input[type="file"] {
+  cursor: pointer;
+}
+
+.verification-submission .form-text {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.verification-submission textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* File Link Styling */
+.file-link {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s;
+}
+
+.file-link:hover {
+  color: var(--color-white);
+}
+
+.file-link i {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Refresh Button */
+.btn-icon {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-white);
+}
+
+.btn-icon:active {
+  transform: rotate(180deg);
+}

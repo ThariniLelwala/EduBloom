@@ -863,4 +863,155 @@ const adminApi = {
       throw error;
     }
   },
+
+  /**
+   * Get all pending teacher verifications
+   * @returns {Promise<Array>} List of pending verifications
+   */
+  async getPendingVerifications() {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/admin/teacher-verifications", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to fetch verifications");
+
+      return data.verifications || [];
+    } catch (error) {
+      console.error("Error fetching verifications:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Approve teacher verification
+   * @param {number} verificationId
+   * @returns {Promise<Object>} Result
+   */
+  async approveVerification(verificationId) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/admin/approve-verification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ verificationId }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to approve verification");
+
+      return data;
+    } catch (error) {
+      console.error("Error approving verification:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Reject teacher verification with reason
+   * @param {number} verificationId
+   * @param {string} rejectionReason
+   * @returns {Promise<Object>} Result
+   */
+  async rejectVerification(verificationId, rejectionReason) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/admin/reject-verification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ verificationId, rejectionReason }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to reject verification");
+
+      return data;
+    } catch (error) {
+      console.error("Error rejecting verification:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get verification details
+   * @param {number} verificationId
+   * @returns {Promise<Object>} Verification details
+   */
+  async getVerificationDetails(verificationId) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/admin/verification-details/${verificationId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to fetch verification details");
+
+      return data.verification;
+    } catch (error) {
+      console.error("Error fetching verification details:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Download verification file
+   * @param {number} verificationId
+   * @returns {Promise<Object>} Result
+   */
+  async downloadVerificationFile(verificationId) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/admin/download-verification/${verificationId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to download file");
+      }
+
+      // Get filename from response headers
+      const contentDisposition = response.headers.get('Content-Disposition');
+      const fileName = contentDisposition 
+        ? contentDisposition.split('filename=')[1]?.replace(/"/g, '') 
+        : 'verification.pdf';
+
+      // Create blob and download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      return { success: true };
+    } catch (error) {
+      console.error("Error downloading verification file:", error);
+      throw error;
+    }
+  },
 };
