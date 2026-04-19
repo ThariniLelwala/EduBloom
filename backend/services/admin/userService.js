@@ -11,7 +11,7 @@ class UserService {
    */
   async getAllUsers(filters = {}) {
     let query = `
-      SELECT id, username, email, role, firstname, lastname, student_type, created_at
+      SELECT id, username, email, role, firstname, lastname, student_type, birthday, gender, created_at
       FROM users
     `;
     const params = [];
@@ -271,7 +271,7 @@ class UserService {
       throw new Error("User ID is required");
     }
 
-    const allowedFields = ["firstname", "lastname", "email", "username", "role", "student_type"];
+    const allowedFields = ["firstname", "lastname", "email", "username", "role", "student_type", "birthday", "gender"];
     const updates = [];
     const params = [];
     let paramIndex = 1;

@@ -51,8 +51,8 @@ async function initializeUserGrowthChart() {
   } catch (error) {
     console.warn("Using demo user growth data");
     data = {
-      labels: ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"],
-      data: [12, 19, 8, 15, 22, 10]
+      labels: ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8"],
+      data: [12, 19, 8, 15, 22, 10, 18, 25]
     };
   }
 
@@ -60,10 +60,10 @@ async function initializeUserGrowthChart() {
     new Chart(ctx, {
       type: "line",
       data: {
-        labels: data.labels || ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"],
+        labels: data.labels || ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8"],
         datasets: [{
           label: "New Users",
-          data: data.data || [0, 0, 0, 0, 0, 0],
+          data: data.data || [0, 0, 0, 0, 0, 0, 0, 0],
           borderColor: "rgba(255, 255, 255, 0.8)",
           backgroundColor: "rgba(255, 255, 255, 0.1)",
           borderWidth: 2,
@@ -90,17 +90,17 @@ async function initializeDailyLoginsChart() {
     console.warn("Using demo daily logins data");
     data = {
       labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-      data: [45, 52, 38, 65, 42, 28, 22]
+      data: [45, 52, 38, 65, 42, 28, 35]
     };
   }
 
   new Chart(ctx, {
     type: "bar",
     data: {
-      labels: data.labels || ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      labels: data.labels || [],
       datasets: [{
-        label: "Daily Activity",
-        data: data.data || [0, 0, 0, 0, 0, 0, 0],
+        label: "Daily Logins",
+        data: data.data || [],
         backgroundColor: "rgba(255, 255, 255, 0.2)",
         borderColor: "rgba(255, 255, 255, 0.8)",
         borderWidth: 1.5,

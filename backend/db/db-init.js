@@ -19,6 +19,7 @@ async function initializeDatabase() {
         firstname VARCHAR(100),
         lastname VARCHAR(100),
         birthday DATE,
+        gender VARCHAR(10) CHECK (gender IN ('male', 'female', 'other') OR gender IS NULL),
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
@@ -40,6 +41,24 @@ async function initializeDatabase() {
       await db.query(`ALTER TABLE users ADD COLUMN birthday DATE;`);
     } catch (err) {
       // Column already exists, ignore error
+    }
+
+    try {
+      await db.query(`ALTER TABLE users ADD COLUMN gender VARCHAR(10) CHECK (gender IN ('male', 'female', 'other') OR gender IS NULL);`);
+      } catch (err) {
+        // Column already exists, ignore error
+    }
+
+    try {
+      await db.query(`ALTER TABLE users ADD COLUMN last_login TIMESTAMP;`);
+    } catch (err) {
+      // Column already exists, ignore error
+    }
+
+    try {
+      await db.query(`CREATE INDEX IF NOT EXISTS idx_users_last_login ON users(last_login);`);
+    } catch (err) {
+      // Index might already exist, ignore error
     }
 
     // Drop status column (not needed with separate table)

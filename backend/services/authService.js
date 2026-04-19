@@ -168,9 +168,9 @@ class AuthService {
       throw new Error("Invalid password");
     }
 
-    // Generate and save token
+    // Generate and save token, update last login
     const token = generateToken();
-    await db.query("UPDATE users SET token = $1 WHERE id = $2", [
+    await db.query("UPDATE users SET token = $1, last_login = NOW() WHERE id = $2", [
       token,
       user.id,
     ]);

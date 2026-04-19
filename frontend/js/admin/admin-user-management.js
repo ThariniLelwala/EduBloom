@@ -97,6 +97,9 @@ function renderUsersTable() {
           <i class="fas fa-edit"></i>
         </button>`;
 
+    const birthday = user.birthday ? new Date(user.birthday).toLocaleDateString() : '-';
+    const gender = user.gender ? user.gender : '-';
+
     tr.innerHTML = `
       <td>
         <input type="checkbox" class="user-checkbox admin-table-checkbox" data-user-id="${user.id}" ${isSelected ? "checked" : ""} />
@@ -105,6 +108,8 @@ function renderUsersTable() {
       <td class="text-muted">${user.username}</td>
       <td class="text-muted">${user.email}</td>
       <td class="text-muted text-capitalize">${user.role}</td>
+      <td class="text-muted">${birthday}</td>
+      <td class="text-muted text-capitalize">${gender}</td>
       <td style="text-align: center;">
         ${editButton}
         <button class="delete-user-btn admin-table-action" data-user-id="${user.id}" title="Suspend">
@@ -348,6 +353,7 @@ function openEditUserModal(userId) {
     document.getElementById("edit-username").value = user.username || "";
     document.getElementById("edit-email").value = user.email || "";
     document.getElementById("edit-role").value = user.role || "student";
+    document.getElementById("edit-birthday").value = user.birthday ? user.birthday.split('T')[0] : "";
 
     const studentTypeGroup = document.getElementById("edit-student-type-group");
     const studentTypeSelect = document.getElementById("edit-student-type");
@@ -392,6 +398,7 @@ async function handleEditUserSubmit(e) {
     return;
   }
 
+  const birthday = document.getElementById("edit-birthday").value;
   const userData = {};
   if (firstname) userData.firstname = firstname;
   if (lastname) userData.lastname = lastname;
@@ -399,6 +406,7 @@ async function handleEditUserSubmit(e) {
   if (email) userData.email = email;
   if (role) userData.role = role;
   if (student_type) userData.student_type = student_type;
+  if (birthday) userData.birthday = birthday;
 
   try {
     await adminApi.updateUser(pendingEditUserId, userData);

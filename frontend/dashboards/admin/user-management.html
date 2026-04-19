@@ -118,10 +118,12 @@
                         class="admin-table-checkbox"
                       />
                     </th>
-                    <th>Name</th>
+<th>Name</th>
                     <th>Username</th>
                     <th>Email</th>
                     <th>Role</th>
+                    <th>Birthday</th>
+                    <th>Gender</th>
                     <th class="text-center">Action</th>
                   </tr>
                 </thead>
@@ -423,6 +425,11 @@
               <option value="teacher">Teacher</option>
               <option value="parent">Parent</option>
             </select>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-birthday">Birthday</label>
+            <input type="date" id="edit-birthday" name="birthday" />
           </div>
 
           <div class="form-group" id="edit-student-type-group" style="display: none;">
