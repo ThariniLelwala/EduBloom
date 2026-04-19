@@ -47,7 +47,6 @@ class PomodoroService {
    * Finish a session
    */
   async finishSession(sessionId, studentId, durationMinutes = null) {
-    console.log(`[Service] Finishing session ID: ${sessionId} with duration: ${durationMinutes}`);
     // Get start time to calculate duration
     const sessionResult = await db.query(
       `SELECT start_time FROM pomodoro_sessions WHERE id = $1 AND student_id = $2`,
@@ -55,7 +54,6 @@ class PomodoroService {
     );
 
     if (sessionResult.rows.length === 0) {
-      console.log(`[Service] Session not found or mismatch: ${sessionId}`);
       throw new Error("Session not found");
     }
 
@@ -74,8 +72,6 @@ class PomodoroService {
        RETURNING *`,
       [finalDuration, sessionId, studentId]
     );
-    
-    console.log(`[Service] Session update result:`, result.rows[0]);
 
     return result.rows[0];
   }

@@ -162,7 +162,6 @@ function handleTokenResponse(resp) {
   }
 
   currentAccessToken = resp.access_token;
-  console.log("Access token obtained successfully");
   setGoogleDriveConnected(true);
   showNotification("Google Drive connected successfully!", "success");
 }

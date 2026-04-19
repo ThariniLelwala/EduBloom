@@ -130,8 +130,6 @@ async function loadParentChildren() {
     const result = await res.json();
 
     if (res.ok && result.children && result.children.length > 0) {
-      console.log("Parent children found:", result.children);
-
       // Sort children by creation date (oldest first)
       result.children.sort(
         (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0)
@@ -224,8 +222,6 @@ async function loadParentChildren() {
       `;
 
       profileInfo.parentElement.appendChild(noChildrenSection);
-    } else {
-      console.log("No children found or response not ok");
     }
   } catch (err) {
     console.error("Error loading parent children:", err);
@@ -260,7 +256,6 @@ function updateSelectedChildInfo(child) {
 }
 async function loadPendingParentRequests() {
   const token = localStorage.getItem("authToken");
-  console.log("loadPendingParentRequests called, token exists:", !!token);
 
   try {
     const res = await fetch("/api/student/pending-parent-requests", {
@@ -271,16 +266,9 @@ async function loadPendingParentRequests() {
       },
     });
 
-    console.log(
-      "Pending requests response status:",
-      res.status,
-      res.statusText
-    );
     const result = await res.json();
-    console.log("Pending requests response data:", result);
 
     if (res.ok && result.pendingRequests && result.pendingRequests.length > 0) {
-      console.log("Pending requests found:", result.pendingRequests);
       // Create a section to display pending parent requests
       const profileInfo = document.getElementById("profile-info");
       const pendingSection = document.createElement("div");
@@ -356,8 +344,6 @@ async function loadPendingParentRequests() {
           btn.style.opacity = "1";
         });
       });
-    } else {
-      console.log("No pending requests found or response not ok");
     }
   } catch (err) {
     console.error("Error loading pending parent requests:", err);
@@ -435,7 +421,6 @@ async function rejectParentLink(linkId) {
 // Function to load and display linked parents (for students only)
 async function loadLinkedParents() {
   const token = localStorage.getItem("authToken");
-  console.log("loadLinkedParents called, token exists:", !!token);
 
   try {
     const res = await fetch("/api/student/linked-parents", {
@@ -446,12 +431,9 @@ async function loadLinkedParents() {
       },
     });
 
-    console.log("Fetch response status:", res.status, res.statusText);
     const result = await res.json();
-    console.log("Response data:", result);
 
     if (res.ok && result.parents && result.parents.length > 0) {
-      console.log("Parents found:", result.parents);
       // Create a section to display linked parents
       const profileInfo = document.getElementById("profile-info");
       const parentsSection = document.createElement("div");
@@ -506,11 +488,6 @@ async function loadLinkedParents() {
         btn.addEventListener("mouseout", () => {
           btn.style.opacity = "1";
         });
-      });
-    } else {
-      console.log("No parents found or response not ok:", {
-        ok: res.ok,
-        parents: result.parents,
       });
     }
   } catch (err) {

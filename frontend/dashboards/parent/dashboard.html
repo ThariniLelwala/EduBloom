@@ -4,12 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Parent Dashboard</title>
+    <script src="../../js/custom-select.js"></script>
     <script src="../../js/sidebar.js"></script>
 
     <!-- CSS -->
     <link rel="stylesheet" href="../../css/style.css" />
     <link rel="stylesheet" href="../../css/topbar.css" />
     <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/custom-select.css" />
     <link rel="stylesheet" href="../../css/cards.css" />
     <link rel="stylesheet" href="../../css/dashboard/task.css" />
     <link rel="stylesheet" href="../../css/dashboard/progress.css" />
@@ -156,8 +158,6 @@
     <script src="../../js/topbar.js"></script>
     <script src="../../js/bg-manager.js"></script>
     <script>
-      console.log("Script started executing");
-
       // Load and display child's todo tasks on dashboard
       let dashboardTasks = {
         todo: [],
@@ -168,22 +168,95 @@
       let currentEditingIndex = -1;
       let currentEditingType = "";
 
-      console.log("About to add DOMContentLoaded listener");
       document.addEventListener("DOMContentLoaded", () => {
-        console.log("DOMContentLoaded fired!");
-        loadChildTasks();
-        setupModalListeners();
+        initializeDashboard();
       });
 
-      // Also try calling it immediately in case DOM is already loaded
-      if (document.readyState === "loading") {
-        console.log("Document still loading");
-      } else {
-        console.log(
-          "Document already loaded, calling loadChildTasks immediately"
-        );
+      async function initializeDashboard() {
+        await ChildSelector.init();
         loadChildTasks();
         setupModalListeners();
+        
+        ChildSelector.onChildChanged(() => {
+          loadChildTasks();
+        });
+      }
+
+      async function loadChildTasks() {
+        const selectedChild = ChildSelector.getSelectedChild();
+        if (!selectedChild) {
+          dashboardTasks = { todo: [], weekly: [], monthly: [] };
+          displayTasks();
+          return;
+        }
+
+        const token = localStorage.getItem("authToken");
+        if (!token) return;
+
+        try {
+          const res = await fetch(`/api/parent/students/${selectedChild.id}/todos`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (res.ok) {
+            const result = await res.json();
+            dashboardTasks = {
+              todo: result.todos.filter(t => t.type === 'todo'),
+              weekly: result.todos.filter(t => t.type === 'weekly'),
+              monthly: result.todos.filter(t => t.type === 'monthly'),
+            };
+          } else {
+            const savedTasks = localStorage.getItem(`parentTasks_${selectedChild.id}`);
+            if (savedTasks) {
+              dashboardTasks = JSON.parse(savedTasks);
+            }
+          }
+        } catch (err) {
+          const savedTasks = localStorage.getItem(`parentTasks_${selectedChild.id}`);
+          if (savedTasks) {
+            dashboardTasks = JSON.parse(savedTasks);
+          }
+        }
+
+        localStorage.setItem(`parentTasks_${selectedChild.id}`, JSON.stringify(dashboardTasks));
+        displayTasks();
+      }
+
+      function displayTasks() {
+        const tasksList = document.getElementById("child-tasks-list");
+        tasksList.innerHTML = "";
+
+        const todoTasks = dashboardTasks.todo;
+
+        if (todoTasks.length === 0) {
+          tasksList.innerHTML =
+            "<li style='color: rgba(255, 255, 255, 0.6); text-align: center; padding: 20px;'>No tasks assigned yet</li>";
+          return;
+        }
+
+        todoTasks.forEach((task, index) => {
+          const li = document.createElement("li");
+          li.className = "task-item";
+
+          if (task.completed) {
+            li.classList.add("completed");
+          }
+
+          li.innerHTML = `
+            <span class="task-text">${task.text}</span>
+            <div class="task-actions">
+              <button class="edit-btn" onclick="editTaskFromDashboard('todo', ${index})" title="Edit task">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="delete-btn" onclick="deleteTaskFromDashboard('todo', ${index})" title="Delete task">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          `;
+          tasksList.appendChild(li);
+        });
       }
 
       function setupModalListeners() {
@@ -217,76 +290,6 @@
           });
       }
 
-      function loadChildTasks() {
-        const savedTasks = localStorage.getItem("parentTasks");
-        console.log("Saved tasks from localStorage:", savedTasks);
-
-        if (savedTasks) {
-          dashboardTasks = JSON.parse(savedTasks);
-        } else {
-          // Default sample tasks with some marked as completed
-          dashboardTasks = {
-            todo: [
-              { id: 1, text: "Complete Mathematics homework", completed: true },
-              { id: 2, text: "Read Chapter 5 of History", completed: false },
-            ],
-            weekly: [
-              { id: 3, text: "Finish Science project", completed: true },
-              {
-                id: 4,
-                text: "Practice piano for 30 minutes daily",
-                completed: false,
-              },
-            ],
-            monthly: [
-              { id: 5, text: "Complete all assignments", completed: false },
-              { id: 6, text: "Improve grades in Math", completed: false },
-            ],
-          };
-          console.log("Using default tasks", dashboardTasks);
-          localStorage.setItem("parentTasks", JSON.stringify(dashboardTasks));
-        }
-        console.log("Dashboard tasks:", dashboardTasks);
-
-        // Display all todo tasks on dashboard with edit/delete buttons
-        const tasksList = document.getElementById("child-tasks-list");
-        console.log("Task list element:", tasksList);
-        tasksList.innerHTML = "";
-
-        const todoTasks = dashboardTasks.todo;
-        console.log("Todo tasks:", todoTasks);
-
-        if (todoTasks.length === 0) {
-          console.log("No tasks found");
-          tasksList.innerHTML =
-            "<li style='color: rgba(255, 255, 255, 0.6); text-align: center; padding: 20px;'>No tasks assigned yet</li>";
-          return;
-        }
-
-        todoTasks.forEach((task, index) => {
-          const li = document.createElement("li");
-          li.className = "task-item";
-
-          // Add completed class if task is marked as completed
-          if (task.completed) {
-            li.classList.add("completed");
-          }
-
-          li.innerHTML = `
-            <span class="task-text">${task.text}</span>
-            <div class="task-actions">
-              <button class="edit-btn" onclick="editTaskFromDashboard('todo', ${index})" title="Edit task">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button class="delete-btn" onclick="deleteTaskFromDashboard('todo', ${index})" title="Delete task">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          `;
-          tasksList.appendChild(li);
-        });
-      }
-
       function editTaskFromDashboard(type, index) {
         currentEditingType = type;
         currentEditingIndex = index;
@@ -304,7 +307,7 @@
         document.getElementById("delete-modal").classList.add("show");
       }
 
-      function saveEditedTask() {
+      async function saveEditedTask() {
         const input = document.getElementById("edit-input");
         const text = input.value.trim();
 
@@ -313,15 +316,27 @@
           return;
         }
 
+        const selectedChild = ChildSelector.getSelectedChild();
+        if (!selectedChild) {
+          alert("No child selected");
+          return;
+        }
+
         dashboardTasks[currentEditingType][currentEditingIndex].text = text;
-        localStorage.setItem("parentTasks", JSON.stringify(dashboardTasks));
+        localStorage.setItem(`parentTasks_${selectedChild.id}`, JSON.stringify(dashboardTasks));
         loadChildTasks();
         closeEditModal();
       }
 
-      function confirmDelete() {
+      async function confirmDelete() {
+        const selectedChild = ChildSelector.getSelectedChild();
+        if (!selectedChild) {
+          alert("No child selected");
+          return;
+        }
+
         dashboardTasks[currentEditingType].splice(currentEditingIndex, 1);
-        localStorage.setItem("parentTasks", JSON.stringify(dashboardTasks));
+        localStorage.setItem(`parentTasks_${selectedChild.id}`, JSON.stringify(dashboardTasks));
         loadChildTasks();
         closeDeleteModal();
       }
@@ -400,7 +415,6 @@
       }
 
       document.addEventListener("DOMContentLoaded", () => {
-        console.log("DOMContentLoaded fired!");
         loadChildTasks();
         setupModalListeners();
         initializeAverageScoreCard();

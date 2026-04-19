@@ -37,18 +37,13 @@ class VerificationController {
   // Request verification
   async requestVerification(req, res) {
     try {
-      console.log("🔍 Request verification received");
-
       if (!req.user) {
-        console.log("❌ No user in request - authentication failed");
         res.writeHead(401, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ error: "Not authenticated" }));
       }
 
       const userId = req.user.id;
       const db = require("../../db/db");
-
-      console.log("   User ID:", userId);
 
       // Collect request body
       let bodyBuffer = Buffer.alloc(0);
@@ -64,36 +59,24 @@ class VerificationController {
         req.on("error", reject);
       });
 
-      console.log("   Total buffer size:", bodyBuffer.length);
-
       // Parse JSON body
       const data = JSON.parse(bodyBuffer.toString());
-      console.log(
-        "   Parsed JSON - Message length:",
-        data.verificationMessage?.length || 0
-      );
-      console.log("   Has file:", !!data.appointmentLetter);
 
       let fileBuffer = null;
       let fileName = null;
 
       if (data.appointmentLetter && data.appointmentLetter.data) {
-        // Convert base64 to buffer
         fileName = data.appointmentLetter.filename;
         fileBuffer = Buffer.from(data.appointmentLetter.data, "base64");
-        console.log("   File name:", fileName);
-        console.log("   File size:", fileBuffer.length, "bytes");
       }
 
       // Check if there's already a pending verification request
-      console.log("   Checking for existing pending requests...");
       const pendingCheck = await db.query(
         `SELECT id FROM teacher_verifications WHERE user_id = $1 AND status = 'pending'`,
         [userId]
       );
 
       if (pendingCheck.rows.length > 0) {
-        console.log("   ⚠️  Pending request already exists");
         res.writeHead(400, { "Content-Type": "application/json" });
         return res.end(
           JSON.stringify({
@@ -103,7 +86,6 @@ class VerificationController {
       }
 
       // Insert verification request
-      console.log("   Inserting verification request...");
       const result = await db.query(
         `INSERT INTO teacher_verifications (user_id, status, submitted_at, message, appointment_letter, file_name)
          VALUES ($1, $2, NOW(), $3, $4, $5)
@@ -117,11 +99,6 @@ class VerificationController {
         ]
       );
 
-      console.log(
-        "   ✅ Verification request created - ID:",
-        result.rows[0].id
-      );
-
       res.writeHead(201, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({
@@ -130,9 +107,6 @@ class VerificationController {
         })
       );
     } catch (err) {
-      console.error("❌ Error submitting verification request:");
-      console.error("   Message:", err.message);
-      console.error("   Stack:", err.stack);
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({

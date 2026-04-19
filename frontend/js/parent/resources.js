@@ -1,227 +1,171 @@
 // Parent Resource Recommendation System
-
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
+  await ChildSelector.init();
   initializeParentResources();
+
+  ChildSelector.onChildChanged(() => {
+    loadResources();
+    loadRecommendations();
+    updateStatistics();
+  });
 });
 
-// Sample resource data from teachers
-const resourceData = {
-  forums: [
-    {
-      id: "forum-1",
-      title: "Math Homework Help",
-      description: "General mathematics discussion and homework assistance",
-      replies: 12,
-      content: `
-Welcome to Math Homework Help! This forum is dedicated to helping students understand and solve mathematical problems.
-
-RECENT DISCUSSION THREADS:
-
-1. "Quadratic Equations - Need Help with Word Problems"
-   Posted by: Ms. Sarah Johnson
-   Started: 2 days ago
-   Replies: 8
-   Latest: "Try to identify what you're solving for first..."
-
-2. "Geometry Proofs - Step by Step Guide"
-   Posted by: Mr. David Chen
-   Started: 1 week ago
-   Replies: 15
-   Latest: "Don't forget to include all the axioms..."
-
-3. "Calculus Derivatives - Chain Rule Confusion"
-   Posted by: Emma Thompson
-   Started: 3 days ago
-   Replies: 5
-   Latest: "The chain rule helps us differentiate composite functions..."
-
-FORUM RULES:
-- Be respectful to all members
-- Show your work when asking for help
-- Use clear formatting for readability
-- No copying homework directly
-      `,
-    },
-    {
-      id: "forum-2",
-      title: "Science Project Ideas",
-      description: "Science project discussions and ideas",
-      replies: 8,
-    },
-    {
-      id: "forum-3",
-      title: "English Literature Discussion",
-      description: "Literature analysis and book discussions",
-      replies: 15,
-    },
-    {
-      id: "forum-4",
-      title: "Coding Club",
-      description: "Programming and coding projects",
-      replies: 20,
-    },
-    {
-      id: "forum-5",
-      title: "History Discussion",
-      description: "Historical events and research",
-      replies: 10,
-    },
-  ],
-  notes: [
-    {
-      id: "notes-1",
-      title: "Algebra Chapter 3",
-      subject: "Mathematics",
-      teacher: "Dr. Sarah Johnson",
-      pages: 8,
-    },
-    {
-      id: "notes-2",
-      title: "Physics Fundamentals",
-      subject: "Science",
-      teacher: "Prof. Michael Chen",
-      pages: 12,
-    },
-    {
-      id: "notes-3",
-      title: "Shakespeare's Works",
-      subject: "English",
-      teacher: "Ms. Emily Davis",
-      pages: 10,
-    },
-    {
-      id: "notes-4",
-      title: "Biology Basics",
-      subject: "Science",
-      teacher: "Prof. Michael Chen",
-      pages: 15,
-    },
-    {
-      id: "notes-5",
-      title: "Calculus Foundations",
-      subject: "Mathematics",
-      teacher: "Dr. Sarah Johnson",
-      pages: 20,
-    },
-  ],
-  quizzes: [
-    {
-      id: "quiz-1",
-      title: "Algebra Quiz 1",
-      subject: "Mathematics",
-      difficulty: "Medium",
-      questions: 20,
-    },
-    {
-      id: "quiz-2",
-      title: "Physics Quiz",
-      subject: "Science",
-      difficulty: "Hard",
-      questions: 15,
-    },
-    {
-      id: "quiz-3",
-      title: "English Comprehension",
-      subject: "English",
-      difficulty: "Medium",
-      questions: 25,
-    },
-    {
-      id: "quiz-4",
-      title: "Advanced Math Challenge",
-      subject: "Mathematics",
-      difficulty: "Hard",
-      questions: 30,
-    },
-    {
-      id: "quiz-5",
-      title: "Chemistry Basics",
-      subject: "Science",
-      difficulty: "Medium",
-      questions: 18,
-    },
-  ],
-  teachers: [
-    {
-      id: "teacher-1",
-      name: "Dr. Sarah Johnson",
-      subject: "Mathematics",
-      rating: 4.5,
-      verified: true,
-    },
-    {
-      id: "teacher-2",
-      name: "Prof. Michael Chen",
-      subject: "Science",
-      rating: 4.7,
-      verified: true,
-    },
-    {
-      id: "teacher-3",
-      name: "Ms. Emily Davis",
-      subject: "English",
-      rating: 4.3,
-      verified: true,
-    },
-    {
-      id: "teacher-4",
-      name: "Mr. James Wilson",
-      subject: "History",
-      rating: 4.2,
-      verified: false,
-    },
-    {
-      id: "teacher-5",
-      name: "Dr. Lisa Anderson",
-      subject: "Art",
-      rating: 3.8,
-      verified: false,
-    },
-  ],
+let resourceData = {
+  forums: [],
+  notes: [],
+  quizzes: [],
+  teachers: [],
 };
 
 let parentRecommendations = {};
+let resourceIdMap = {};
 
-function initializeParentResources() {
-  loadRecommendations();
-  renderAllResources();
+async function initializeParentResources() {
+  await loadResources();
+  await loadRecommendations();
   updateStatistics();
 }
 
-// Load recommendations from localStorage
-function loadRecommendations() {
-  const saved = localStorage.getItem("parentResourceRecommendations");
-  if (saved) {
-    parentRecommendations = JSON.parse(saved);
+async function loadResources() {
+  try {
+    const [forums, notes, quizzes, teachers] = await Promise.all([
+      parentResourcesApi.getAllPublishedForums(),
+      parentResourcesApi.getAllPublicNotes(),
+      parentResourcesApi.getAllPublishedQuizzes(),
+      parentResourcesApi.getAllTeachers(),
+    ]);
+
+    resourceData.forums = forums || [];
+    resourceData.notes = notes || [];
+    resourceData.quizzes = quizzes || [];
+    resourceData.teachers = teachers || [];
+
+    resourceIdMap = {};
+    resourceData.forums.forEach(item => { resourceIdMap[`forum-${item.id}`] = { type: 'forums', id: item.id }; });
+    resourceData.notes.forEach(item => { resourceIdMap[`note-${item.id}`] = { type: 'notes', id: item.id }; });
+    resourceData.quizzes.forEach(item => { 
+      const quizId = item.id || item.quiz_set_id;
+      resourceIdMap[`quiz-${quizId}`] = { type: 'quizzes', id: quizId }; 
+    });
+    resourceData.teachers.forEach(item => { 
+      const teacherId = item.teacher_id || item.id;
+      resourceIdMap[`teacher-${teacherId}`] = { type: 'teachers', id: teacherId }; 
+    });
+
+    renderAllResources();
+  } catch (error) {
+    console.error("Error loading resources:", error);
+    showToast("Failed to load resources", "error");
   }
 }
 
-// Save recommendations to localStorage
-function saveRecommendations() {
-  localStorage.setItem(
-    "parentResourceRecommendations",
-    JSON.stringify(parentRecommendations)
-  );
+async function loadRecommendations() {
+  const selectedChild = ChildSelector.getSelectedChild();
+  const childId = selectedChild ? selectedChild.id : null;
+
+  if (!childId) {
+    parentRecommendations = {};
+    return;
+  }
+
+  try {
+    const recommendations = await parentResourcesApi.getRecommendations(childId);
+    parentRecommendations = recommendations || {};
+  } catch (error) {
+    console.error("Error loading recommendations:", error);
+    parentRecommendations = {};
+  }
 }
 
-// Update statistics
 function updateStatistics() {
-  const recommendedCount = Object.values(parentRecommendations).filter(
-    (v) => v === true
-  ).length;
+  document.getElementById("total-forums").textContent = resourceData.forums.length;
+  document.getElementById("total-notes").textContent = resourceData.notes.length;
+  document.getElementById("total-quizzes").textContent = resourceData.quizzes.length;
+  document.getElementById("total-teachers").textContent = resourceData.teachers.length;
+  
+  // Update card-specific counts
+  const activeForumsEl = document.getElementById("active-forums");
+  const notesCountEl = document.getElementById("notes-count");
+  const quizCountEl = document.getElementById("quiz-count");
+  const teachersCountEl = document.getElementById("teachers-count");
+  if (activeForumsEl) activeForumsEl.textContent = resourceData.forums.length;
+  if (notesCountEl) notesCountEl.textContent = resourceData.notes.length;
+  if (quizCountEl) quizCountEl.textContent = resourceData.quizzes.length;
+  if (teachersCountEl) teachersCountEl.textContent = resourceData.teachers.length;
+  
+  // Update quiz questions count
+  const totalQuestions = resourceData.quizzes.reduce((sum, q) => sum + (parseInt(q.question_count) || 0), 0);
+  const quizQuestionsEl = document.getElementById("quiz-questions");
+  if (quizQuestionsEl) {
+    quizQuestionsEl.innerHTML = `<i class="fas fa-list"></i> ${totalQuestions} questions`;
+  }
+  
+  // Update verified teachers count
+  const verifiedCount = resourceData.teachers.filter(t => t.verified === true).length;
+  const verifiedEl = document.getElementById("verified-teachers");
+  if (verifiedEl) {
+    verifiedEl.innerHTML = `<i class="fas fa-check-circle"></i> ${verifiedCount}/${resourceData.teachers.length}`;
+  }
+  
+  // Update last activity timestamps
+  updateLastActivity();
 
-  document.getElementById("total-forums").textContent =
-    resourceData.forums.length;
-  document.getElementById("total-notes").textContent =
-    resourceData.notes.length;
-  document.getElementById("total-quizzes").textContent =
-    resourceData.quizzes.length;
-  document.getElementById("total-teachers").textContent =
-    resourceData.teachers.length;
+  const recommendedCount = Object.values(parentRecommendations).filter(v => v === true).length;
   document.getElementById("recommended-count").textContent = recommendedCount;
 }
 
-// Render all resources
+function updateLastActivity() {
+  // Forum last activity
+  const forumEl = document.getElementById("forum-last-activity");
+  if (resourceData.forums.length > 0) {
+    const latestForum = resourceData.forums.reduce((a, b) => {
+      const dateA = new Date(a.created_at || a.updated_at || 0);
+      const dateB = new Date(b.created_at || b.updated_at || 0);
+      return dateA > dateB ? a : b;
+    });
+    const forumDate = new Date(latestForum.created_at || latestForum.updated_at);
+    if (forumEl && forumDate && !isNaN(forumDate.getTime())) {
+      forumEl.innerHTML = `<i class="fas fa-clock"></i> ${formatTimeAgo(forumDate)}`;
+    } else if (forumEl) {
+      forumEl.innerHTML = `<i class="fas fa-clock"></i> N/A`;
+    }
+  } else if (forumEl) {
+    forumEl.innerHTML = `<i class="fas fa-clock"></i> No forums`;
+  }
+  
+  // Notes last activity
+  const notesEl = document.getElementById("notes-last-activity");
+  if (resourceData.notes.length > 0) {
+    const latestNote = resourceData.notes.reduce((a, b) => {
+      const dateA = new Date(a.created_at || a.updated_at || 0);
+      const dateB = new Date(b.created_at || b.updated_at || 0);
+      return dateA > dateB ? a : b;
+    });
+    const noteDate = new Date(latestNote.created_at || latestNote.updated_at);
+    if (notesEl && noteDate && !isNaN(noteDate.getTime())) {
+      notesEl.innerHTML = `<i class="fas fa-calendar"></i> ${formatTimeAgo(noteDate)}`;
+    } else if (notesEl) {
+      notesEl.innerHTML = `<i class="fas fa-calendar"></i> N/A`;
+    }
+  } else if (notesEl) {
+    notesEl.innerHTML = `<i class="fas fa-calendar"></i> No notes`;
+  }
+}
+
+function formatTimeAgo(date) {
+  const now = new Date();
+  const diff = now - date;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
+  return date.toLocaleDateString();
+}
+
 function renderAllResources() {
   renderForums();
   renderNotes();
@@ -230,41 +174,81 @@ function renderAllResources() {
   renderRecentRecommendations();
 }
 
-// Render forums
 function renderForums() {
   const container = document.getElementById("forums-list");
   container.innerHTML = "";
 
+  if (resourceData.forums.length === 0) {
+    container.innerHTML = '<p style="color: rgba(255,255,255,0.6);">No forums available</p>';
+    return;
+  }
+
   resourceData.forums.forEach((forum) => {
-    const isRecommended = parentRecommendations[forum.id] === true;
+    const forumId = forum.id;
+    const isRecommended = parentRecommendations[forumId] === true;
+    const forumTitle = forum.title || forum.name || 'Untitled Forum';
+    const forumDescription = forum.description || '';
+    const forumAuthor = forum.author || 'Unknown';
+    let forumGrade = forum.target_grade ? parseInt(forum.target_grade) : null;
+    const rawTags = forum.tags ? (Array.isArray(forum.tags) ? forum.tags : JSON.parse(forum.tags)) : [];
+    
+    // Extract grade from tags if target_grade is null
+    if (!forumGrade && rawTags.length > 0) {
+      for (const tag of rawTags) {
+        const tagStr = String(tag).toLowerCase().replace(/\s/g, '');
+        
+        // Match "grade9", "grade10", etc.
+        const numMatch = tagStr.match(/^grade(\d+)$/);
+        if (numMatch) {
+          forumGrade = parseInt(numMatch[1]);
+          break;
+        }
+        
+        // Match "gradenine", "gradeeight", etc.
+        const wordMap = {
+          'gradefive': 5, 'gradesix': 6, 'gradeseven': 7, 'gradeeight': 8,
+          'gradenine': 9, 'gradeten': 10, 'gradeeleven': 11, 'gradetwelve': 12, 'gradethirteen': 13
+        };
+        if (wordMap[tagStr]) {
+          forumGrade = wordMap[tagStr];
+          break;
+        }
+      }
+    }
+    
+    const forumTags = rawTags.filter(t => {
+      if (!t) return false;
+      const tagStr = String(t).toLowerCase().replace(/\s/g, '');
+      // Filter out any tag containing grade
+      if (tagStr.includes('grade')) return false;
+      // Filter out exact grade number (9, 10, 11, etc.)
+      if (forumGrade && tagStr === String(forumGrade)) return false;
+      return true;
+    });
+    const replyCount = parseInt(forum.reply_count) || 0;
 
     const item = document.createElement("div");
     item.className = "resource-item-parent";
     item.innerHTML = `
       <div class="resource-header">
         <div>
-          <div class="resource-name">${forum.title}</div>
-          <div class="resource-description">${forum.description}</div>
-          ${
-            isRecommended
-              ? '<span class="recommendation-badge"><i class="fas fa-check-circle"></i> Recommended</span>'
-              : ""
-          }
-        </div>
-        <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6);">
-          ${forum.replies} replies
+          <div class="resource-name">${forumTitle}${forumGrade ? `<span class="grade-badge">Grade ${forumGrade}</span>` : ''}</div>
+          <div class="resource-meta">
+            <span><i class="fas fa-user"></i> ${forumAuthor}</span>
+            <span><i class="fas fa-comment"></i> ${replyCount} replies</span>
+          </div>
+          <div class="resource-description">${forumDescription}</div>
+          ${forumTags.length ? `<div class="resource-tags">${forumTags.map(t => `<span class="tag">${t}</span>`).join('')}</div>` : ''}
+          ${isRecommended ? '<span class="recommendation-badge"><i class="fas fa-check-circle"></i> Recommended</span>' : ''}
         </div>
       </div>
       <div class="resource-actions">
-        <button class="btn-secondary" onclick="viewResource('forum-${
-          forum.id
-        }')">
+        <button class="btn-secondary" onclick="viewResource('forum-${forumId}')">
           <i class="fas fa-eye"></i> View
         </button>
-        ${
-          isRecommended
-            ? `<button class="btn-primary" onclick="toggleRecommendation('${forum.id}', false)"><i class="fas fa-times"></i> Unrecommend</button>`
-            : `<button class="btn-primary" onclick="toggleRecommendation('${forum.id}', true)"><i class="fas fa-thumbs-up"></i> Recommend</button>`
+        ${isRecommended 
+          ? `<button class="btn-primary" onclick="toggleRecommendation('${forumId}', 'forums', false)"><i class="fas fa-times"></i> Unrecommend</button>`
+          : `<button class="btn-primary" onclick="toggleRecommendation('${forumId}', 'forums', true)"><i class="fas fa-thumbs-up"></i> Recommend</button>`
         }
       </div>
     `;
@@ -272,41 +256,43 @@ function renderForums() {
   });
 }
 
-// Render notes
 function renderNotes() {
   const container = document.getElementById("notes-list");
   container.innerHTML = "";
 
+  if (resourceData.notes.length === 0) {
+    container.innerHTML = '<p style="color: rgba(255,255,255,0.6);">No notes available</p>';
+    return;
+  }
+
   resourceData.notes.forEach((note) => {
-    const isRecommended = parentRecommendations[note.id] === true;
+    const noteId = note.id;
+    const isRecommended = parentRecommendations[noteId] === true;
+    const noteTitle = note.title || note.name || 'Untitled Note';
+    const noteSubject = note.subject_name || note.subject || '';
+    const noteTeacher = note.teacher_name || note.teacher || '';
+    const notePages = note.pages || note.page_count || note.file_pages || 1;
 
     const item = document.createElement("div");
     item.className = "resource-item-parent";
     item.innerHTML = `
       <div class="resource-header">
         <div>
-          <div class="resource-name">${note.title}</div>
-          <div class="resource-description">${note.subject} by ${
-      note.teacher
-    }</div>
-          ${
-            isRecommended
-              ? '<span class="recommendation-badge"><i class="fas fa-check-circle"></i> Recommended</span>'
-              : ""
-          }
+          <div class="resource-name">${noteTitle}</div>
+          <div class="resource-description">${noteSubject} by ${noteTeacher}</div>
+          ${isRecommended ? '<span class="recommendation-badge"><i class="fas fa-check-circle"></i> Recommended</span>' : ''}
         </div>
         <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6);">
-          ${note.pages} pages
+          ${notePages} pages
         </div>
       </div>
       <div class="resource-actions">
-        <button class="btn-secondary" onclick="viewResource('note-${note.id}')">
+        <button class="btn-secondary" onclick="viewResource('note-${noteId}')">
           <i class="fas fa-eye"></i> View
         </button>
-        ${
-          isRecommended
-            ? `<button class="btn-primary" onclick="toggleRecommendation('${note.id}', false)"><i class="fas fa-times"></i> Unrecommend</button>`
-            : `<button class="btn-primary" onclick="toggleRecommendation('${note.id}', true)"><i class="fas fa-thumbs-up"></i> Recommend</button>`
+        ${isRecommended 
+          ? `<button class="btn-primary" onclick="toggleRecommendation('${noteId}', 'notes', false)"><i class="fas fa-times"></i> Unrecommend</button>`
+          : `<button class="btn-primary" onclick="toggleRecommendation('${noteId}', 'notes', true)"><i class="fas fa-thumbs-up"></i> Recommend</button>`
         }
       </div>
     `;
@@ -314,41 +300,42 @@ function renderNotes() {
   });
 }
 
-// Render quizzes
 function renderQuizzes() {
   const container = document.getElementById("quizzes-list");
   container.innerHTML = "";
 
+  if (resourceData.quizzes.length === 0) {
+    container.innerHTML = '<p style="color: rgba(255,255,255,0.6);">No quizzes available</p>';
+    return;
+  }
+
   resourceData.quizzes.forEach((quiz) => {
-    const isRecommended = parentRecommendations[quiz.id] === true;
+    const quizId = quiz.id || quiz.quiz_set_id;
+    const isRecommended = parentRecommendations[quizId] === true;
+    const quizTitle = quiz.title || quiz.name || 'Untitled Quiz';
+    const quizSubject = quiz.subject_name || quiz.subject || '';
+    const questionCount = parseInt(quiz.question_count) || 0;
 
     const item = document.createElement("div");
     item.className = "resource-item-parent";
     item.innerHTML = `
       <div class="resource-header">
         <div>
-          <div class="resource-name">${quiz.title}</div>
-          <div class="resource-description">${quiz.subject} • ${
-      quiz.difficulty
-    }</div>
-          ${
-            isRecommended
-              ? '<span class="recommendation-badge"><i class="fas fa-check-circle"></i> Recommended</span>'
-              : ""
-          }
+          <div class="resource-name">${quizTitle}</div>
+          <div class="resource-description">${quizSubject}</div>
+          ${isRecommended ? '<span class="recommendation-badge"><i class="fas fa-check-circle"></i> Recommended</span>' : ''}
         </div>
         <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6);">
-          ${quiz.questions} questions
+          ${questionCount} questions
         </div>
       </div>
       <div class="resource-actions">
-        <button class="btn-secondary" onclick="viewResource('quiz-${quiz.id}')">
+        <button class="btn-secondary" onclick="viewResource('quiz-${quizId}')">
           <i class="fas fa-eye"></i> View
         </button>
-        ${
-          isRecommended
-            ? `<button class="btn-primary" onclick="toggleRecommendation('${quiz.id}', false)"><i class="fas fa-times"></i> Unrecommend</button>`
-            : `<button class="btn-primary" onclick="toggleRecommendation('${quiz.id}', true)"><i class="fas fa-thumbs-up"></i> Recommend</button>`
+        ${isRecommended 
+          ? `<button class="btn-primary" onclick="toggleRecommendation('${quizId}', 'quizzes', false)"><i class="fas fa-times"></i> Unrecommend</button>`
+          : `<button class="btn-primary" onclick="toggleRecommendation('${quizId}', 'quizzes', true)"><i class="fas fa-thumbs-up"></i> Recommend</button>`
         }
       </div>
     `;
@@ -356,45 +343,47 @@ function renderQuizzes() {
   });
 }
 
-// Render teachers
 function renderTeachers() {
   const container = document.getElementById("teachers-list");
   container.innerHTML = "";
 
+  if (resourceData.teachers.length === 0) {
+    container.innerHTML = '<p style="color: rgba(255,255,255,0.6);">No teachers available</p>';
+    return;
+  }
+
   resourceData.teachers.forEach((teacher) => {
-    const isRecommended = parentRecommendations[teacher.id] === true;
+    const teacherId = teacher.teacher_id || teacher.id;
+    const isRecommended = parentRecommendations[teacherId] === true;
+    const teacherName = teacher.teacher_name || teacher.name || teacher.username || 'Unknown Teacher';
+    const teacherSubjects = teacher.subjects && teacher.subjects.length 
+      ? teacher.subjects.map(s => s.subject_name).filter(Boolean).join(', ')
+      : teacher.subject || teacher.expertise || '';
+    const teacherVerified = teacher.verified || false;
+    const teacherRating = teacher.rating || 0;
 
     const item = document.createElement("div");
     item.className = "resource-item-parent";
     item.innerHTML = `
       <div class="resource-header">
         <div>
-          <div class="resource-name">${teacher.name}</div>
-          <div class="resource-description">${teacher.subject} ${
-      teacher.verified
-        ? '<i class="fas fa-check-circle" style="color: #4caf50; font-size: 0.7rem;"></i>'
-        : ""
-    }</div>
-          ${
-            isRecommended
-              ? '<span class="recommendation-badge"><i class="fas fa-check-circle"></i> Recommended</span>'
-              : ""
-          }
+          <div class="resource-name">${teacherName}</div>
+          <div class="resource-description">${teacherSubjects} ${
+            teacherVerified ? '<i class="fas fa-check-circle" style="color: #4caf50; font-size: 0.7rem;"></i>' : ''
+          }</div>
+          ${isRecommended ? '<span class="recommendation-badge"><i class="fas fa-check-circle"></i> Recommended</span>' : ''}
         </div>
         <div style="font-size: 0.85rem; color: #ffd700;">
-          <i class="fas fa-star"></i> ${teacher.rating}
+          <i class="fas fa-star"></i> ${teacherRating > 0 ? teacherRating.toFixed(1) : 'N/A'}
         </div>
       </div>
       <div class="resource-actions">
-        <button class="btn-secondary" onclick="viewResource('teacher-${
-          teacher.id
-        }')">
+        <button class="btn-secondary" onclick="viewResource('teacher-${teacherId}')">
           <i class="fas fa-eye"></i> View
         </button>
-        ${
-          isRecommended
-            ? `<button class="btn-primary" onclick="toggleRecommendation('${teacher.id}', false)"><i class="fas fa-times"></i> Unrecommend</button>`
-            : `<button class="btn-primary" onclick="toggleRecommendation('${teacher.id}', true)"><i class="fas fa-thumbs-up"></i> Recommend</button>`
+        ${isRecommended 
+          ? `<button class="btn-primary" onclick="toggleRecommendation('${teacherId}', 'teachers', false)"><i class="fas fa-times"></i> Unrecommend</button>`
+          : `<button class="btn-primary" onclick="toggleRecommendation('${teacherId}', 'teachers', true)"><i class="fas fa-thumbs-up"></i> Recommend</button>`
         }
       </div>
     `;
@@ -402,81 +391,125 @@ function renderTeachers() {
   });
 }
 
-// Render recent recommendations
 function renderRecentRecommendations() {
   const container = document.getElementById("recent-recommendations");
   container.innerHTML = "";
 
-  const allItems = Object.values(resourceData).flat();
-  const recommended = Object.entries(parentRecommendations)
+  const recommendedIds = Object.entries(parentRecommendations)
     .filter(([_, isRecommended]) => isRecommended === true)
-    .reverse()
-    .slice(0, 5)
-    .map(([id, _]) => {
-      const item = allItems.find((i) => i.id === id);
-      return item;
-    })
-    .filter((item) => item);
+    .map(([id, _]) => parseInt(id))
+    .slice(0, 5);
 
-  if (recommended.length === 0) {
-    container.innerHTML =
-      '<p style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 20px;">No recommendations yet. Start by recommending resources to your child!</p>';
+  if (recommendedIds.length === 0) {
+    container.innerHTML = '<p style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 20px;">No recommendations yet. Start by recommending resources to your child!</p>';
     return;
   }
 
-  recommended.forEach((item) => {
-    const title = item.title || item.name || "";
-    const desc = item.description || item.subject || "";
+  const allItems = [
+    ...resourceData.forums.map(f => ({ ...f, type: 'forums', id: f.id })),
+    ...resourceData.notes.map(n => ({ ...n, type: 'notes', id: n.id })),
+    ...resourceData.quizzes.map(q => ({ ...q, type: 'quizzes', id: q.id || q.quiz_set_id })),
+    ...resourceData.teachers.map(t => ({ ...t, type: 'teachers', id: t.teacher_id || t.id })),
+  ];
 
-    const activityItem = document.createElement("div");
-    activityItem.className = "activity-item";
-    activityItem.innerHTML = `
-      <i class="fas fa-check-circle"></i>
-      <span>${title}</span>
-      <small>${desc}</small>
-    `;
-    container.appendChild(activityItem);
+  recommendedIds.forEach(id => {
+    const item = allItems.find(i => i.id === id);
+    if (item) {
+      const title = item.title || item.name || item.teacher_name || "";
+      const desc = item.subject_name || item.subject || item.description || "";
+
+      const activityItem = document.createElement("div");
+      activityItem.className = "activity-item";
+      activityItem.innerHTML = `
+        <i class="fas fa-check-circle"></i>
+        <span>${title}</span>
+        <small>${desc}</small>
+      `;
+      container.appendChild(activityItem);
+    }
   });
 }
 
-// Toggle recommendation (global function for onclick)
-window.toggleRecommendation = function (resourceId, recommend) {
-  parentRecommendations[resourceId] = recommend;
-  saveRecommendations();
-  renderAllResources();
-  updateStatistics();
-  if (recommend) {
-    showToast(`Resource recommended to your child!`);
-  } else {
-    showToast(`Recommendation removed`);
-  }
-};
+async function toggleRecommendation(resourceId, resourceType, recommend) {
+  const selectedChild = ChildSelector.getSelectedChild();
+  const childId = selectedChild ? selectedChild.id : null;
 
-// View resource (global function for onclick)
-window.viewResource = function (resourceId) {
-  if (resourceId.startsWith("forum-")) {
-    openForumModal(resourceId);
-  } else if (resourceId.startsWith("note-")) {
-    openNotesModal(resourceId);
-  } else if (resourceId.startsWith("quiz-")) {
-    openQuizModal(resourceId);
+  if (!childId) {
+    showToast("Please select a child first", "error");
+    return;
   }
-};
 
-// Forum Modal Functions
-function openForumModal(forumId) {
-  const forum = resourceData.forums.find(
-    (f) => f.id === forumId.replace("forum-", "")
-  );
-  if (forum) {
-    document.getElementById("forum-title").textContent = forum.title;
-    const contentElement = document.getElementById("forum-content");
-    if (forum.content) {
-      contentElement.textContent = forum.content;
+  try {
+    if (recommend) {
+      await parentResourcesApi.addRecommendation(childId, resourceType, parseInt(resourceId));
+      parentRecommendations[resourceId] = true;
+      showToast("Resource recommended to your child!");
     } else {
-      contentElement.textContent =
-        forum.description + "\n\nReplies: " + forum.replies;
+      await parentResourcesApi.removeRecommendationByResource(childId, resourceType, parseInt(resourceId));
+      delete parentRecommendations[resourceId];
+      showToast("Recommendation removed");
     }
+    renderAllResources();
+    updateStatistics();
+  } catch (error) {
+    console.error("Error toggling recommendation:", error);
+    showToast("Failed to update recommendation", "error");
+  }
+}
+
+window.toggleRecommendation = toggleRecommendation;
+
+function viewResource(resourceId) {
+  const mapping = resourceIdMap[resourceId];
+  if (!mapping) {
+    showToast("Resource not found", "error");
+    return;
+  }
+
+  const { type, id } = mapping;
+
+  if (type === 'forums') {
+    const forum = resourceData.forums.find(f => f.id === id);
+    openForumModal(forum);
+  } else if (type === 'notes') {
+    const note = resourceData.notes.find(n => n.id === id);
+    openNotesModal(note);
+  } else if (type === 'quizzes') {
+    const quiz = resourceData.quizzes.find(q => (q.id || q.quiz_set_id) === id);
+    openQuizModal(quiz);
+  } else if (type === 'teachers') {
+    const teacher = resourceData.teachers.find(t => (t.teacher_id || t.id) === id);
+    openTeacherModal(teacher);
+  }
+}
+
+window.viewResource = viewResource;
+
+function openForumModal(forum) {
+  if (forum) {
+    document.getElementById("forum-title").textContent = forum.title || forum.name || "Forum";
+    const contentElement = document.getElementById("forum-content");
+    
+    let content = forum.description || "No description available";
+    content += `\n\nAuthor: ${forum.author || 'Unknown'}`;
+    content += `\nReplies: ${forum.reply_count || 0}`;
+    content += `\nViews: ${forum.views || 0}`;
+    if (forum.target_grade) {
+      content += `\nGrade: ${forum.target_grade}`;
+    }
+    let tags = forum.tags;
+    if (tags && !Array.isArray(tags)) {
+      try { tags = JSON.parse(tags); } catch (e) { tags = []; }
+    }
+    if (tags && tags.length > 0) {
+      content += `\nTags: ${tags.join(', ')}`;
+    }
+    content += `\n\nCreated: ${new Date(forum.created_at).toLocaleString()}`;
+    if (forum.updated_at) {
+      content += `\nUpdated: ${new Date(forum.updated_at).toLocaleString()}`;
+    }
+    
+    contentElement.textContent = content;
   }
   document.getElementById("forum-modal").classList.add("show");
 }
@@ -485,21 +518,14 @@ function closeForum() {
   document.getElementById("forum-modal").classList.remove("show");
 }
 
-// Notes Modal Functions
-function openNotesModal(noteId) {
-  const note = resourceData.notes.find(
-    (n) => n.id === noteId.replace("note-", "")
-  );
+function openNotesModal(note) {
   if (note) {
-    document.getElementById("notes-title").textContent = note.title;
-    document.getElementById("notes-content").textContent =
-      "Subject: " +
-      note.subject +
-      "\nBy: " +
-      note.teacher +
-      "\nPages: " +
-      note.pages +
-      "\n\nDummy note content for demonstration purposes. This would contain the actual study material.";
+    document.getElementById("notes-title").textContent = note.title || note.name || "Note";
+    const noteSubject = note.subject_name || note.subject || 'N/A';
+    const noteTeacher = note.teacher_name || note.teacher || 'N/A';
+    const notePages = note.pages || note.page_count || 1;
+    document.getElementById("notes-content").textContent = 
+      `Subject: ${noteSubject}\nBy: ${noteTeacher}\nPages: ${notePages}`;
   }
   document.getElementById("notes-modal").classList.add("show");
 }
@@ -508,21 +534,14 @@ function closeNotes() {
   document.getElementById("notes-modal").classList.remove("show");
 }
 
-// Quiz Modal Functions
-function openQuizModal(quizId) {
-  const quiz = resourceData.quizzes.find(
-    (q) => q.id === quizId.replace("quiz-", "")
-  );
+function openQuizModal(quiz) {
   if (quiz) {
-    document.getElementById("quiz-title").textContent = quiz.title;
-    document.getElementById("quiz-content").textContent =
-      "Subject: " +
-      quiz.subject +
-      "\nDifficulty: " +
-      quiz.difficulty +
-      "\nQuestions: " +
-      quiz.questions +
-      "\n\nDummy quiz set for demonstration. This would contain the actual quiz questions and answers.";
+    const quizTitle = quiz.title || quiz.name || "Quiz";
+    const quizSubject = quiz.subject_name || quiz.subject || 'N/A';
+    const questionCount = parseInt(quiz.question_count) || 0;
+    document.getElementById("quiz-title").textContent = quizTitle;
+    document.getElementById("quiz-content").textContent = 
+      `Subject: ${quizSubject}\nQuestions: ${questionCount}`;
   }
   document.getElementById("quiz-modal").classList.add("show");
 }
@@ -531,14 +550,36 @@ function closeQuiz() {
   document.getElementById("quiz-modal").classList.remove("show");
 }
 
-// Show notification
-function showToast(message) {
+function openTeacherModal(teacher) {
+  if (teacher) {
+    const teacherName = teacher.teacher_name || teacher.name || teacher.username || 'Unknown Teacher';
+    const teacherSubjects = teacher.subjects && teacher.subjects.length 
+      ? teacher.subjects.map(s => s.subject_name).filter(Boolean).join(', ')
+      : teacher.subject || 'N/A';
+    const teacherVerified = teacher.verified ? 'Yes' : 'No';
+    const teacherRating = teacher.rating || 0;
+    const teacherStudents = teacher.students || 0;
+    const teacherQualifications = teacher.qualifications || {};
+    
+    document.getElementById("teacher-title").textContent = teacherName;
+    document.getElementById("teacher-content").textContent = 
+      `Subjects: ${teacherSubjects}\nVerified: ${teacherVerified}\nRating: ${teacherRating > 0 ? teacherRating.toFixed(1) : 'N/A'}\nStudents: ${teacherStudents}`;
+  }
+  document.getElementById("teacher-modal").classList.add("show");
+}
+
+function closeTeacher() {
+  document.getElementById("teacher-modal").classList.remove("show");
+}
+
+function showToast(message, type = "info") {
   const toast = document.getElementById("toast");
   if (toast) {
     toast.textContent = message;
-    toast.classList.add("show");
+    toast.className = `toast toast-${type}`;
+    toast.style.display = "block";
     setTimeout(() => {
-      toast.classList.remove("show");
+      toast.style.display = "none";
     }, 3000);
   }
 }

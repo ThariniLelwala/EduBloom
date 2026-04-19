@@ -1,5 +1,38 @@
 // Help Common Handler - Shared functionality for all help pages
 (function () {
+  const API_BASE = "/api/support";
+
+  function getToken() {
+    return localStorage.getItem("authToken");
+  }
+
+  async function apiRequest(endpoint, method = "GET", data = null) {
+    const token = getToken();
+    const options = {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+
+    if (token) {
+      options.headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    if (data) {
+      options.body = JSON.stringify(data);
+    }
+
+    const response = await fetch(`${API_BASE}${endpoint}`, options);
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || `API error: ${response.status}`);
+    }
+
+    return result;
+  }
+
   // Sample FAQs - Can be customized per role
   const roleFAQs = {
     teacher: [
@@ -164,36 +197,30 @@
     const form = document.getElementById("support-form");
     if (!form) return;
 
-    form.addEventListener("submit", function (e) {
+    form.addEventListener("submit", async function (e) {
       e.preventDefault();
 
       const topic = document.getElementById("support-topic").value.trim();
       const message = document.getElementById("support-message").value.trim();
+      const role = getUserRole();
 
       if (!topic || !message) {
         showToast("Please fill in all fields", "error");
         return;
       }
 
-      // Simulate saving support request
-      const request = {
-        id: Date.now(),
-        topic,
-        message,
-        status: "pending",
-        date: new Date().toLocaleDateString(),
-      };
+      try {
+        const result = await apiRequest("/tickets", "POST", { topic, message, role });
 
-      // Store in localStorage (would be sent to backend in production)
-      let requests = JSON.parse(localStorage.getItem("supportRequests")) || [];
-      requests.push(request);
-      localStorage.setItem("supportRequests", JSON.stringify(requests));
-
-      showToast(
-        "Support request sent successfully! We'll get back to you soon.",
-        "success"
-      );
-      form.reset();
+        showToast(
+          "Support request sent successfully! We'll get back to you soon.",
+          "success"
+        );
+        form.reset();
+      } catch (error) {
+        console.error("Error submitting support ticket:", error);
+        showToast("Failed to submit support request. Please try again.", "error");
+      }
     });
   }
 

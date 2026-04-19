@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EduBloom - Parent Resources</title>
-    <script src="../../js/sidebar.js"></script>
 
     <!-- CSS -->
     <link rel="stylesheet" href="../../css/style.css" />
     <link rel="stylesheet" href="../../css/topbar.css" />
     <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/custom-select.css" />
     <link rel="stylesheet" href="../../css/cards.css" />
     <link rel="stylesheet" href="../../css/dashboard/progress.css" />
     <link rel="stylesheet" href="../../css/student/resources.css" />
@@ -57,23 +57,23 @@
             <h3 class="section-mb">Resource Overview</h3>
             <div class="stats-row">
               <div class="stat-card">
-                <div class="stat-value" id="total-forums">5</div>
+                <div class="stat-value" id="total-forums">-</div>
                 <div class="stat-label">Active Forums</div>
               </div>
               <div class="stat-card">
-                <div class="stat-value" id="total-notes">24</div>
+                <div class="stat-value" id="total-notes">-</div>
                 <div class="stat-label">Teacher Notes</div>
               </div>
               <div class="stat-card">
-                <div class="stat-value" id="total-quizzes">18</div>
+                <div class="stat-value" id="total-quizzes">-</div>
                 <div class="stat-label">Available Quizzes</div>
               </div>
               <div class="stat-card">
-                <div class="stat-value" id="total-teachers">8</div>
+                <div class="stat-value" id="total-teachers">-</div>
                 <div class="stat-label">Teachers</div>
               </div>
               <div class="stat-card">
-                <div class="stat-value" id="recommended-count">0</div>
+                <div class="stat-value" id="recommended-count">-</div>
                 <div class="stat-label">Recommended</div>
               </div>
             </div>
@@ -87,13 +87,13 @@
             </div>
             <div class="card-content">
               <div class="stat-group">
-                <div class="stat-value" id="active-forums">5</div>
+                <div class="stat-value" id="active-forums">-</div>
                 <div class="stat-label">Active Discussions</div>
               </div>
               <div class="comparison">
                 <span class="comparison-label">Latest Activity:</span>
-                <span class="comparison-value increase">
-                  <i class="fas fa-clock"></i> 2 hours ago
+                <span class="comparison-value increase" id="forum-last-activity">
+                  <i class="fas fa-clock"></i> Loading...
                 </span>
               </div>
               <div id="forums-list" class="scrollable-list">
@@ -110,13 +110,13 @@
             </div>
             <div class="card-content">
               <div class="stat-group">
-                <div class="stat-value" id="notes-count">24</div>
+                <div class="stat-value" id="notes-count">-</div>
                 <div class="stat-label">Available Notes</div>
               </div>
               <div class="comparison">
                 <span class="comparison-label">Recently Updated:</span>
-                <span class="comparison-value increase">
-                  <i class="fas fa-calendar"></i> Today
+                <span class="comparison-value increase" id="notes-last-activity">
+                  <i class="fas fa-calendar"></i> Loading...
                 </span>
               </div>
               <div id="notes-list" class="scrollable-list">
@@ -133,13 +133,13 @@
             </div>
             <div class="card-content">
               <div class="stat-group">
-                <div class="stat-value" id="quiz-count">18</div>
+                <div class="stat-value" id="quiz-count">-</div>
                 <div class="stat-label">Available Quizzes</div>
               </div>
               <div class="comparison">
-                <span class="comparison-label">Difficulty Range:</span>
-                <span class="comparison-value increase">
-                  <i class="fas fa-star"></i> Easy to Hard
+                <span class="comparison-label">Total Questions:</span>
+                <span class="comparison-value increase" id="quiz-questions">
+                  <i class="fas fa-star"></i> Loading...
                 </span>
               </div>
               <div
@@ -159,13 +159,13 @@
             </div>
             <div class="card-content">
               <div class="stat-group">
-                <div class="stat-value" id="teachers-count">8</div>
+                <div class="stat-value" id="teachers-count">-</div>
                 <div class="stat-label">Active Teachers</div>
               </div>
               <div class="comparison">
-                <span class="comparison-label">Verified Teachers:</span>
-                <span class="comparison-value increase">
-                  <i class="fas fa-check-circle"></i> 6/8
+                <span class="comparison-label">Verified:</span>
+                <span class="comparison-value increase" id="verified-teachers">
+                  <i class="fas fa-check-circle"></i> Loading...
                 </span>
               </div>
               <div
@@ -291,9 +291,35 @@
       </div>
     </div>
 
+    <!-- Teacher Modal -->
+    <div class="modal" id="teacher-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="teacher-title">Teacher Profile</h2>
+          <button class="modal-close" onclick="closeTeacher()">×</button>
+        </div>
+        <div class="modal-body">
+          <p
+            id="teacher-content"
+            class="modal-content-text"
+          >
+            Teacher details will appear here
+          </p>
+          <div class="modal-preview-box">
+            <p class="modal-preview-text">
+              Subjects and qualifications will appear here...
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Scripts -->
     <script src="../../js/topbar.js"></script>
+    <script src="../../js/custom-select.js"></script>
+    <script src="../../js/sidebar.js"></script>
     <script src="../../js/bg-manager.js"></script>
+    <script src="../../js/api/parentResourcesApi.js"></script>
     <script src="../../js/parent/resources.js"></script>
   </body>
 </html>

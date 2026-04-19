@@ -4,6 +4,7 @@ const initCustomSelects = () => {
     if (select.parentElement.classList.contains("custom-select-wrapper"))
       return;
 
+    const useFlexLayout = select.classList.contains("flex-layout");
     const wrapper = document.createElement("div");
     wrapper.classList.add("custom-select-wrapper");
     select.parentNode.insertBefore(wrapper, select);
@@ -24,7 +25,19 @@ const initCustomSelects = () => {
     Array.from(select.options).forEach((option, idx) => {
       const optionDiv = document.createElement("div");
       optionDiv.classList.add("custom-select-option");
-      optionDiv.textContent = option.text;
+
+      if (useFlexLayout) {
+        optionDiv.classList.add("flex-option");
+        optionDiv.innerHTML = `
+          <div class="option-avatar"><i class="fas fa-user-graduate"></i></div>
+          <div class="option-info">
+            <span class="option-main">${option.text}</span>
+            <span class="option-sub">${option.dataset.type === "university" ? "University" : "School"}</span>
+          </div>
+        `;
+      } else {
+        optionDiv.textContent = option.text;
+      }
 
       if (option.disabled) optionDiv.classList.add("disabled");
       if (idx === select.selectedIndex) optionDiv.classList.add("selected");
@@ -80,16 +93,6 @@ const initCustomSelects = () => {
         optionsContainer.classList.remove("show");
       }
     });
-
-    // Handle external value changes (sync UI)
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === "attributes" && mutation.attributeName === "value") {
-          // This doesn't always trigger for .value changes, so we also listen for 'change'
-        }
-      });
-    });
-    observer.observe(select, { attributes: true });
 
     select.addEventListener("sync", () => {
       const selectedOption = select.options[select.selectedIndex];

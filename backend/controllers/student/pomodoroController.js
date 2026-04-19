@@ -77,8 +77,6 @@ const finishSession = async (req, res) => {
     const data = await parseRequestBody(req);
     const { sessionId, durationMinutes } = data;
     const studentId = req.user.id;
-    
-    console.log(`[DEBUG] Finishing session: ${sessionId} for student: ${studentId} with duration: ${durationMinutes}`);
 
     if (!sessionId) {
       res.writeHead(400, { "Content-Type": "application/json" });
@@ -86,7 +84,6 @@ const finishSession = async (req, res) => {
     }
 
     const session = await pomodoroService.finishSession(sessionId, studentId, durationMinutes);
-    console.log(`[DEBUG] Session finished result:`, session);
 
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(
@@ -107,8 +104,6 @@ const resumeSession = async (req, res) => {
     const data = await parseRequestBody(req);
     const { sessionId } = data;
     const studentId = req.user.id;
-    
-    console.log(`[DEBUG] Resuming session: ${sessionId}`);
 
     if (!sessionId) {
       res.writeHead(400, { "Content-Type": "application/json" });

@@ -30,13 +30,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Archive expired weekly and monthly goals
 async function archiveExpiredGoals() {
   try {
-    const result = await studentTodoApi.archiveExpiredGoals();
-    if (result.archivedCount > 0) {
-      console.log(`Archived ${result.archivedCount} expired goals`);
-    }
+    await studentTodoApi.archiveExpiredGoals();
   } catch (error) {
     // Silent fail - don't interrupt user experience
-    console.log("No expired goals to archive");
   }
 }
 

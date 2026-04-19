@@ -118,11 +118,9 @@ const refreshFlag = sessionStorage.getItem("pomodoro_refresh_flag");
 
 if (refreshFlag) {
     // This was a refresh — session is still active in DB, just continue
-    console.log("[Timer] Page refreshed. Resuming timer state. Session still active:", currentSessionId);
     sessionStorage.removeItem("pomodoro_refresh_flag"); // Clear flag
 } else if (currentSessionId) {
     // No flag means tab was closed and reopened — finish the stale session
-    console.log("[Timer] New tab detected with stale session. Finishing:", currentSessionId);
     const cycleTimeMinutes = (focusDuration + breakDuration) / 60;
     const durationMinutes = Math.round(completedSessions * cycleTimeMinutes);
     studentPomodoroApi.finishSession(currentSessionId, { durationMinutes })
@@ -207,7 +205,6 @@ async function startTimer() {
         try {
             const result = await studentPomodoroApi.createSession(mode);
             currentSessionId = result.session.id;
-            console.log("New session created:", currentSessionId);
         } catch (error) {
             console.error("Failed to create session:", error);
         }
@@ -229,8 +226,6 @@ async function startTimer() {
 }
 
 async function stopTimer() {
-  console.log("stopTimer called. currentSessionId:", currentSessionId);
-
   // Capture values before resetting state
   const sessionIdToFinish = currentSessionId;
   const cyclesAtFinish = completedSessions;
@@ -260,10 +255,8 @@ async function stopTimer() {
     try {
       const cycleTimeMinutes = (focusDuration + breakDuration) / 60;
       const durationMinutes = Math.round(cyclesAtFinish * cycleTimeMinutes);
-      console.log(`Finishing with duration: ${durationMinutes} mins (${cyclesAtFinish} cycles)`);
       await studentPomodoroApi.finishSession(sessionIdToFinish, { durationMinutes });
       sessionStorage.removeItem("pomodoro_refresh_flag");
-      console.log("Session finished successfully:", sessionIdToFinish);
     } catch (error) {
       console.error("Failed to finish session:", error);
     }
@@ -332,7 +325,6 @@ async function switchSession() {
 window.addEventListener("pagehide", () => {
   if (currentSessionId) {
     sessionStorage.setItem("pomodoro_refresh_flag", "true");
-    console.log("[PageHide] Set refresh flag. Session:", currentSessionId);
   }
 });
 

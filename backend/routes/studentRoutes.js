@@ -10,6 +10,7 @@ const todoController = require("../controllers/student/todoController");
 const pomodoroController = require("../controllers/student/pomodoroController");
 const diaryController = require("../controllers/student/diaryController");
 const studentForumController = require("../controllers/student/forumController");
+const authController = require("../controllers/authController");
 const {
   verifyToken,
   requireRole,
@@ -981,6 +982,47 @@ function handleStudentRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
         require("../controllers/teacher/viewController").incrementView
+      )(req, res);
+    }
+
+    // ========== PARENT LINK ROUTES ==========
+    // Get linked parents: GET /api/student/linked-parents
+    if (method === "GET" && pathname === "/api/student/linked-parents") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        authController.getLinkedParents
+      )(req, res);
+    }
+
+    // Get pending parent requests: GET /api/student/pending-parent-requests
+    if (method === "GET" && pathname === "/api/student/pending-parent-requests") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        authController.getPendingParentRequests
+      )(req, res);
+    }
+
+    // Accept parent link: POST /api/student/accept-parent-link
+    if (method === "POST" && pathname === "/api/student/accept-parent-link") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        authController.acceptParentLink
+      )(req, res);
+    }
+
+    // Reject parent link: POST /api/student/reject-parent-link
+    if (method === "POST" && pathname === "/api/student/reject-parent-link") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        authController.rejectParentLink
+      )(req, res);
+    }
+
+    // Remove parent link: POST /api/student/remove-parent-link
+    if (method === "POST" && pathname === "/api/student/remove-parent-link") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        authController.removeParentLink
       )(req, res);
     }
 

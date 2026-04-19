@@ -898,6 +898,90 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_forum_replies_post_id ON forum_replies(post_id);
     `);
 
+    // Parent Calendar Deadlines table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS parent_calendar_deadlines (
+        id SERIAL PRIMARY KEY,
+        parent_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        event_date DATE NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_calendar_deadlines_parent_id ON parent_calendar_deadlines(parent_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_calendar_deadlines_student_id ON parent_calendar_deadlines(student_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_calendar_deadlines_event_date ON parent_calendar_deadlines(event_date);
+    `);
+
+    // Parent Only Tasks table (tasks visible only to parent, not synced to child)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS parent_only_tasks (
+        id SERIAL PRIMARY KEY,
+        parent_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        text VARCHAR(500) NOT NULL,
+        completed BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_parent_only_tasks_parent_id ON parent_only_tasks(parent_id);
+    `);
+
+    // Parent resource recommendations table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS parent_resource_recommendations (
+        id SERIAL PRIMARY KEY,
+        parent_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        resource_type VARCHAR(50) NOT NULL,
+        resource_id INT NOT NULL,
+        recommended BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(parent_id, student_id, resource_type, resource_id)
+      );
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_parent_recs_parent_student ON parent_resource_recommendations(parent_id, student_id);
+    `);
+
+    // Support Tickets table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS support_tickets (
+        id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'teacher', 'student', 'parent')),
+        topic VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'resolved', 'closed')),
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_support_tickets_user_id ON support_tickets(user_id);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_support_tickets_status ON support_tickets(status);
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_support_tickets_created_at ON support_tickets(created_at DESC);
+    `);
+
     console.log("✅ Database tables and indexes created successfully");
 
     // Check if admin user exists, if not create one

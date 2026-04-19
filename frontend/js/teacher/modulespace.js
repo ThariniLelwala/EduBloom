@@ -50,7 +50,6 @@ async function loadClasses() {
   try {
     const authToken = getAuthToken();
     if (!authToken) {
-      console.log("User not authenticated");
       return;
     }
 

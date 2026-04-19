@@ -107,6 +107,8 @@ function logout() {
   localStorage.removeItem("userRole");
   localStorage.removeItem("userId");
   localStorage.removeItem("studentType");
+  localStorage.removeItem("selectedChildId");
+  localStorage.removeItem("linkedChildren");
   window.location.href = "/login.html";
 }
 

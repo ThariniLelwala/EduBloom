@@ -27,14 +27,9 @@ async function loadCards() {
   try {
     if (!checkAuth()) return;
 
-    console.log("Loading flashcards - subjectId:", subjectId, "setId:", setId);
-
     const data = await flashcardApi.getFlashcardSet(setId);
 
-    console.log("Fetched data:", data);
-
     currentCards = data.items || [];
-    console.log("Loaded cards:", currentCards);
     renderCards();
   } catch (error) {
     console.error("Error loading flashcards:", error);
@@ -46,8 +41,6 @@ async function loadCards() {
 
 function renderCards() {
   container.innerHTML = "";
-
-  console.log("renderCards called with", currentCards.length, "cards");
 
   if (currentCards.length === 0) {
     container.innerHTML = `

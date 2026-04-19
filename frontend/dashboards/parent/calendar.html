@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="../../css/cards.css" />
     <link rel="stylesheet" href="../../css/topbar.css" />
     <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/custom-select.css" />
     <link rel="stylesheet" href="../../css/student/calendar.css" />
     <link rel="stylesheet" href="../../css/dashboard/task.css" />
 
@@ -89,16 +90,6 @@
               + Add Task
             </button>
           </div>
-
-          <!-- Time Table Card (Child's School Schedule) -->
-          <div class="card w1">
-            <h3><i class="fas fa-clock"></i> Child's Time Table</h3>
-            <div id="timetable-container">
-              <p class="timetable-loading">
-                Loading timetable...
-              </p>
-            </div>
-          </div>
         </div>
       </main>
     </div>
@@ -167,9 +158,12 @@
     </div>
 
     <!-- Scripts -->
-    <script src="../../js/parent/calendar.js"></script>
     <script src="../../js/topbar.js"></script>
+    <script src="../../js/custom-select.js"></script>
     <script src="../../js/sidebar.js"></script>
     <script src="../../js/bg-manager.js"></script>
+    <script src="../../js/api/todoApi.js"></script>
+    <script src="../../js/api/calendarApi.js"></script>
+    <script src="../../js/parent/calendar.js"></script>
   </body>
 </html>

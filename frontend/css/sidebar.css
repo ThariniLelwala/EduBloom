@@ -61,7 +61,6 @@
     gap: 0;
   }
 
-  /* Only hide labels if desktop collapsed */
   #sidebar:not(.mobile) li span {
     display: none;
   }
@@ -89,8 +88,50 @@
     left: 0;
   }
 
-  /* Make labels visible on mobile */
   #sidebar li span {
     display: inline;
   }
+}
+
+/* Sidebar Child Selector */
+#sidebar-child-selector {
+  cursor: pointer;
+  user-select: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 8px;
+  padding-top: 12px;
+  padding: 8px;
+}
+
+#sidebar-child-selector .custom-select-wrapper {
+  width: 100%;
+}
+
+#sidebar-child-selector .custom-select-display {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+#sidebar-child-selector .custom-select-display::after {
+  content: "\f107";
+  font-family: "Font Awesome 7 Free";
+  font-weight: 900;
+}
+
+/* Collapsed sidebar - hide text */
+#sidebar.collapsed #sidebar-child-selector {
+  justify-content: center;
+  padding: 8px 0;
+}
+
+#sidebar.collapsed #sidebar-child-selector .custom-select-display {
+  padding: 8px;
+  width: 44px;
+  height: 44px;
+}
+
+#sidebar.collapsed #sidebar-child-selector .custom-select-display::after {
+  right: 12px;
 }
