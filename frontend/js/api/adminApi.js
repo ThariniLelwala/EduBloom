@@ -1005,4 +1005,112 @@ const adminApi = {
       throw error;
     }
   },
+
+  // ========== Admin Tasks (Todos) ==========
+
+  /**
+   * Get all admin tasks for the logged-in admin
+   * @returns {Promise<Array>} List of todos
+   */
+  async getTodos() {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/admin/todos", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to fetch tasks");
+
+      return data.todos || [];
+    } catch (error) {
+      console.error("Error fetching admin tasks:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Create a new admin task
+   * @param {string} text - Task description
+   * @returns {Promise<Object>} Created todo
+   */
+  async createTodo(text) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/admin/todos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to create task");
+
+      return data.todo;
+    } catch (error) {
+      console.error("Error creating admin task:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update an admin task (text and/or completed status)
+   * @param {number} id - Task ID
+   * @param {Object} updates - {text, completed}
+   * @returns {Promise<Object>} Updated todo
+   */
+  async updateTodo(id, updates) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/admin/todos/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updates),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to update task");
+
+      return data.todo;
+    } catch (error) {
+      console.error("Error updating admin task:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Delete an admin task
+   * @param {number} id - Task ID
+   * @returns {Promise<Object>} Result
+   */
+  async deleteTodo(id) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/admin/todos/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to delete task");
+
+      return data;
+    } catch (error) {
+      console.error("Error deleting admin task:", error);
+      throw error;
+    }
+  },
 };

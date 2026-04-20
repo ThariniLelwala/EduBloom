@@ -490,6 +490,23 @@ async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_teacher_todos_type ON teacher_todos(type);
     `);
 
+    // Admin Todo table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS admin_todos (
+        id SERIAL PRIMARY KEY,
+        admin_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        text VARCHAR(500) NOT NULL,
+        completed BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Create indexes for admin_todos
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_admin_todos_admin_id ON admin_todos(admin_id);
+    `);
+
     // Teacher Profiles table
     await db.query(`
       CREATE TABLE IF NOT EXISTS teacher_profiles (

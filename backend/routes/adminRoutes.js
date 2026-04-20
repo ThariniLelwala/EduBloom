@@ -4,6 +4,7 @@ const forumController = require("../controllers/admin/forumController");
 const contentModerationController = require("../controllers/admin/contentModerationController");
 const announcementsController = require("../controllers/admin/announcementsController");
 const helpController = require("../controllers/admin/helpController");
+const todoController = require("../controllers/admin/todoController");
 const verificationController = require("../controllers/teacher/verificationController");
 const { parseRequestBody } = require("../middleware/authMiddleware");
 const {
@@ -334,6 +335,42 @@ function handleAdminRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("admin")],
         verificationController.downloadVerificationFile
+      )(req, res);
+    }
+
+    // =========================================================================
+    // Admin Todo Routes - /api/admin/todos/*
+    // =========================================================================
+
+    // GET /api/admin/todos - Get all todos for logged-in admin
+    if (method === "GET" && pathname === "/api/admin/todos") {
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
+        todoController.getTodos
+      )(req, res);
+    }
+
+    // POST /api/admin/todos - Create a new todo
+    if (method === "POST" && pathname === "/api/admin/todos") {
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
+        todoController.createTodo
+      )(req, res);
+    }
+
+    // PUT /api/admin/todos/:id - Update a todo (text or completion)
+    if (method === "PUT" && pathname.match(/^\/api\/admin\/todos\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
+        todoController.updateTodo
+      )(req, res);
+    }
+
+    // DELETE /api/admin/todos/:id - Delete a todo
+    if (method === "DELETE" && pathname.match(/^\/api\/admin\/todos\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
+        todoController.deleteTodo
       )(req, res);
     }
 

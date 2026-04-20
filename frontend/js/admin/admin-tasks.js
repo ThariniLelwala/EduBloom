@@ -1,57 +1,71 @@
-// Admin Task Management Functions
+// Admin Task Management - Backend Connected
+// Replaces localStorage with /api/admin/todos CRUD endpoints via adminApi
 
-// Task state variables
-let currentType = "todo";
-let editContext = { type: null, index: null };
-let deleteContext = { type: null, index: null };
+// In-memory cache of tasks (synced from backend)
+let adminTasks = [];
 
+// Context for edit/delete modals
+let editContext = { id: null };
+let deleteContext = { id: null };
+
+// ─────────────────────────────────────────────
+// Initialise: load tasks from backend
+// ─────────────────────────────────────────────
 async function loadDashboardTasks() {
   try {
-    let tasks = JSON.parse(localStorage.getItem("adminTasks")) || {
-      todo: [
-        { task: "Review pending teacher verifications", done: false },
-        { task: "Check system health and backups", done: true },
-      ],
-    };
-    localStorage.setItem("adminTasks", JSON.stringify(tasks));
+    adminTasks = await adminApi.getTodos();
     renderDashboardTasks();
     bindDashboardEvents();
   } catch (err) {
     console.error("Error loading dashboard tasks:", err);
+    renderDashboardTasks(); // render empty list on error
+    bindDashboardEvents();
   }
 }
 
+// ─────────────────────────────────────────────
+// Render task list
+// ─────────────────────────────────────────────
 function renderDashboardTasks() {
-  const tasks = JSON.parse(localStorage.getItem("adminTasks"))?.todo || [];
   const list = document.getElementById("dashboard-tasks-list");
   if (!list) return;
 
   list.innerHTML = "";
 
-  if (tasks.length === 0) {
+  if (adminTasks.length === 0) {
     list.innerHTML = `<li>No pending tasks 🎉</li>`;
     return;
   }
 
-  tasks.forEach((task, index) => {
+  adminTasks.forEach((task) => {
     const li = document.createElement("li");
     li.className = "task-item";
-    if (task.done) li.classList.add("completed");
+    if (task.completed) li.classList.add("completed");
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.className = "task-checkbox";
-    checkbox.id = `dash-task-${index}`;
-    checkbox.checked = !!task.done;
+    checkbox.id = `dash-task-${task.id}`;
+    checkbox.checked = !!task.completed;
 
     const label = document.createElement("label");
     label.htmlFor = checkbox.id;
-    label.textContent = task.task;
+    label.textContent = task.text;
 
-    checkbox.addEventListener("change", () => {
-      task.done = checkbox.checked;
-      li.classList.toggle("completed", checkbox.checked);
-      saveTasks();
+    checkbox.addEventListener("change", async () => {
+      try {
+        const updated = await adminApi.updateTodo(task.id, {
+          completed: checkbox.checked,
+        });
+        // Update local cache
+        const idx = adminTasks.findIndex((t) => t.id === task.id);
+        if (idx !== -1) adminTasks[idx].completed = updated.completed;
+        li.classList.toggle("completed", updated.completed);
+      } catch (err) {
+        console.error("Error toggling task completion:", err);
+        // Revert checkbox on failure
+        checkbox.checked = !checkbox.checked;
+      }
     });
 
     const actions = document.createElement("div");
@@ -60,12 +74,12 @@ function renderDashboardTasks() {
     const editBtn = document.createElement("i");
     editBtn.className = "fa fa-pencil";
     editBtn.title = "Edit";
-    editBtn.addEventListener("click", () => openEditModal("todo", index));
+    editBtn.addEventListener("click", () => openEditModal(task.id, task.text));
 
     const deleteBtn = document.createElement("i");
     deleteBtn.className = "fa fa-trash";
     deleteBtn.title = "Delete";
-    deleteBtn.addEventListener("click", () => openDeleteModal("todo", index));
+    deleteBtn.addEventListener("click", () => openDeleteModal(task.id));
 
     actions.appendChild(editBtn);
     actions.appendChild(deleteBtn);
@@ -77,18 +91,15 @@ function renderDashboardTasks() {
   });
 }
 
-function saveTasks() {
-  const tasks = JSON.parse(localStorage.getItem("adminTasks"));
-  localStorage.setItem("adminTasks", JSON.stringify(tasks));
-}
-
+// ─────────────────────────────────────────────
+// Bind modal events (called once on init)
+// ─────────────────────────────────────────────
 function bindDashboardEvents() {
   const modal = document.getElementById("task-modal");
   const modalClose = document.getElementById("modal-close");
   const modalCancel = document.getElementById("modal-cancel");
   const modalSave = document.getElementById("modal-save");
   const modalInput = document.getElementById("task-input");
-  const modalTitle = document.getElementById("modal-title");
 
   const editModal = document.getElementById("edit-modal");
   const editInput = document.getElementById("edit-input");
@@ -101,21 +112,16 @@ function bindDashboardEvents() {
   const deleteCancel = document.getElementById("delete-cancel");
   const deleteClose = document.getElementById("delete-modal-close");
 
-  function openModal(m) {
-    m.classList.add("show");
-  }
-  function closeModal(m) {
-    m.classList.remove("show");
-  }
+  function openModal(m) { m.classList.add("show"); }
+  function closeModal(m) { m.classList.remove("show"); }
 
+  // ─── Add Task ───
   const addBtn = document.getElementById("dashboard-add-btn");
   if (addBtn) {
     addBtn.addEventListener("click", () => {
-      currentType = "todo";
-      modalTitle.textContent = "Add Task";
-      modalInput.value = "";
+      if (modalInput) modalInput.value = "";
       openModal(modal);
-      modalInput.focus();
+      if (modalInput) modalInput.focus();
     });
   }
 
@@ -123,68 +129,75 @@ function bindDashboardEvents() {
     btn?.addEventListener("click", () => closeModal(modal))
   );
 
-  modalSave.addEventListener("click", () => {
-    const text = modalInput.value.trim();
+  modalSave?.addEventListener("click", async () => {
+    const text = modalInput?.value.trim();
     if (!text) return;
-
-    let tasks = JSON.parse(localStorage.getItem("adminTasks")) || {
-      todo: [],
-    };
-    tasks.todo.push({ task: text, done: false });
-    localStorage.setItem("adminTasks", JSON.stringify(tasks));
-
-    renderDashboardTasks();
-    closeModal(modal);
+    try {
+      const newTodo = await adminApi.createTodo(text);
+      adminTasks.unshift(newTodo); // add to top of list
+      renderDashboardTasks();
+      closeModal(modal);
+    } catch (err) {
+      console.error("Error creating task:", err);
+    }
   });
 
+  // ─── Edit Task ───
   [editCancel, editClose].forEach((btn) =>
     btn?.addEventListener("click", () => closeModal(editModal))
   );
 
-  editSave.addEventListener("click", () => {
-    if (!editContext) return;
-
-    const { type, index } = editContext;
-    const tasks = JSON.parse(localStorage.getItem("adminTasks"));
-    const newText = editInput.value.trim();
-    if (!newText) return;
-
-    tasks[type][index].task = newText;
-    localStorage.setItem("adminTasks", JSON.stringify(tasks));
-
-    renderDashboardTasks();
-    closeModal(editModal);
-    editContext = { type: null, index: null };
+  editSave?.addEventListener("click", async () => {
+    const newText = editInput?.value.trim();
+    if (!newText || editContext.id === null) return;
+    try {
+      const updated = await adminApi.updateTodo(editContext.id, {
+        text: newText,
+      });
+      const idx = adminTasks.findIndex((t) => t.id === editContext.id);
+      if (idx !== -1) adminTasks[idx].text = updated.text;
+      renderDashboardTasks();
+      closeModal(editModal);
+      editContext = { id: null };
+    } catch (err) {
+      console.error("Error updating task:", err);
+    }
   });
 
+  // ─── Delete Task ───
   [deleteCancel, deleteClose].forEach((btn) =>
     btn?.addEventListener("click", () => closeModal(deleteModal))
   );
 
-  deleteConfirm.addEventListener("click", () => {
-    const { type, index } = deleteContext;
-    const tasks = JSON.parse(localStorage.getItem("adminTasks"));
-    tasks[type].splice(index, 1);
-    localStorage.setItem("adminTasks", JSON.stringify(tasks));
-    renderDashboardTasks();
-    closeModal(deleteModal);
+  deleteConfirm?.addEventListener("click", async () => {
+    if (deleteContext.id === null) return;
+    try {
+      await adminApi.deleteTodo(deleteContext.id);
+      adminTasks = adminTasks.filter((t) => t.id !== deleteContext.id);
+      renderDashboardTasks();
+      closeModal(deleteModal);
+      deleteContext = { id: null };
+    } catch (err) {
+      console.error("Error deleting task:", err);
+    }
   });
 }
 
-function openEditModal(type, index) {
+// ─────────────────────────────────────────────
+// Modal helpers
+// ─────────────────────────────────────────────
+function openEditModal(id, currentText) {
+  editContext = { id };
   const editModal = document.getElementById("edit-modal");
   const editInput = document.getElementById("edit-input");
-  editContext = { type, index };
-
-  const tasks = JSON.parse(localStorage.getItem("adminTasks"));
-  editInput.value = tasks[type][index].task;
-  document.querySelector("#edit-modal .modal-header h2").textContent =
-    "Edit Task";
-  editModal.classList.add("show");
+  if (editInput) editInput.value = currentText;
+  const heading = document.querySelector("#edit-modal .modal-header h2");
+  if (heading) heading.textContent = "Edit Task";
+  editModal?.classList.add("show");
 }
 
-function openDeleteModal(type, index) {
-  deleteContext = { type, index };
+function openDeleteModal(id) {
+  deleteContext = { id };
   const deleteModal = document.getElementById("delete-modal");
-  deleteModal.classList.add("show");
+  deleteModal?.classList.add("show");
 }
