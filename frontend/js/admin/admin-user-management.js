@@ -98,7 +98,6 @@ function renderUsersTable() {
         </button>`;
 
     const birthday = user.birthday ? new Date(user.birthday).toLocaleDateString() : '-';
-    const gender = user.gender ? user.gender : '-';
 
     tr.innerHTML = `
       <td>
@@ -109,7 +108,6 @@ function renderUsersTable() {
       <td class="text-muted">${user.email}</td>
       <td class="text-muted text-capitalize">${user.role}</td>
       <td class="text-muted">${birthday}</td>
-      <td class="text-muted text-capitalize">${gender}</td>
       <td style="text-align: center;">
         ${editButton}
         <button class="delete-user-btn admin-table-action" data-user-id="${user.id}" title="Suspend">

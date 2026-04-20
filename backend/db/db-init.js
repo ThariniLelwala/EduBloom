@@ -19,10 +19,11 @@ async function initializeDatabase() {
         firstname VARCHAR(100),
         lastname VARCHAR(100),
         birthday DATE,
-        gender VARCHAR(10) CHECK (gender IN ('male', 'female', 'other') OR gender IS NULL),
+        gender VARCHAR(20),
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
+    
 
     // Add missing columns to users table if they don't exist (for existing databases)
     try {
@@ -41,12 +42,6 @@ async function initializeDatabase() {
       await db.query(`ALTER TABLE users ADD COLUMN birthday DATE;`);
     } catch (err) {
       // Column already exists, ignore error
-    }
-
-    try {
-      await db.query(`ALTER TABLE users ADD COLUMN gender VARCHAR(10) CHECK (gender IN ('male', 'female', 'other') OR gender IS NULL);`);
-      } catch (err) {
-        // Column already exists, ignore error
     }
 
     try {
