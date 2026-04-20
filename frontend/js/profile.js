@@ -728,10 +728,28 @@ async function handlePasswordChange(e) {
     hasError = true;
   }
 
-  if (newPassword.length < 6) {
+  if (newPassword.length < 8) {
     showPasswordError(
       "newPasswordError",
-      "New password must be at least 6 characters"
+      "New password must be at least 8 characters"
+    );
+    hasError = true;
+  } else if (!/[A-Z]/.test(newPassword)) {
+    showPasswordError(
+      "newPasswordError",
+      "New password must contain at least one uppercase letter"
+    );
+    hasError = true;
+  } else if (!/\\d/.test(newPassword)) {
+    showPasswordError(
+      "newPasswordError",
+      "New password must contain at least one number"
+    );
+    hasError = true;
+  } else if (!/[^A-Za-z0-9]/.test(newPassword)) {
+    showPasswordError(
+      "newPasswordError",
+      "New password must contain at least one special character"
     );
     hasError = true;
   }

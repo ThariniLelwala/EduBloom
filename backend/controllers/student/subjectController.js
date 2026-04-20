@@ -19,9 +19,17 @@ class StudentSubjectController {
         return;
       }
 
+      if (name.length > 100) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Subject name must be 100 characters or less" }));
+        return;
+      }
+
+      const sanitizedName = name.replace(/<[^>]*>/g, "").trim();
+
       const subject = await subjectService.createSubject(
         studentId,
-        name,
+        sanitizedName,
         description || null
       );
 
@@ -111,6 +119,16 @@ class StudentSubjectController {
         return;
       }
 
+      if (data.name && data.name.length > 100) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Subject name must be 100 characters or less" }));
+        return;
+      }
+
+      if (data.name) {
+        data.name = data.name.replace(/<[^>]*>/g, "").trim();
+      }
+
       const subject = await subjectService.updateSubject(
         subjectId,
         studentId,
@@ -180,10 +198,18 @@ class StudentSubjectController {
         return;
       }
 
+      if (name.length > 100) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Topic name must be 100 characters or less" }));
+        return;
+      }
+
+      const sanitizedName = name.replace(/<[^>]*>/g, "").trim();
+
       const topic = await subjectService.createTopic(
         subjectId,
         studentId,
-        name,
+        sanitizedName,
         description || null
       );
 

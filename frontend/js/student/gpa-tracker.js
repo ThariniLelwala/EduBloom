@@ -273,7 +273,15 @@ function bindGlobalEvents() {
 
   semesterModalSave.addEventListener("click", async () => {
     const name = semesterNameInput.value.trim();
-    if (!name) return;
+    if (!name) {
+      alert("Please enter a semester name");
+      return;
+    }
+
+    if (name.length > 100) {
+      alert("Semester name must be 100 characters or less");
+      return;
+    }
 
     try {
       await gpaApi.createSemester(name);
@@ -324,7 +332,12 @@ function bindGlobalEvents() {
     const subjectRows =
       subjectsContainer.querySelectorAll(".subject-grade-row");
 
-    if (semesterIndex === "") return;
+    if (semesterIndex === "") {
+      alert("Please select a semester");
+      return;
+    }
+
+    const validGrades = ["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "F"];
 
     const semester = gpaData.semesters[semesterIndex];
     let hasNewSubjects = false;
@@ -336,6 +349,31 @@ function bindGlobalEvents() {
       const subjectName = subjectInput.value.trim();
       const credits = parseFloat(creditsInput.value) || 0;
       const grade = gradeSelect.value;
+
+      if (!subjectName) {
+        alert("Please enter a subject name");
+        return;
+      }
+
+      if (subjectName.length > 100) {
+        alert("Subject name must be 100 characters or less");
+        return;
+      }
+
+      if (!grade) {
+        alert("Please select a grade for all subjects");
+        return;
+      }
+
+      if (!validGrades.includes(grade)) {
+        alert("Invalid grade selected");
+        return;
+      }
+
+      if (credits < 0.5 || credits > 10) {
+        alert("Credits must be between 0.5 and 10");
+        return;
+      }
 
       if (subjectName && grade && credits > 0) {
         // Check if subject already exists

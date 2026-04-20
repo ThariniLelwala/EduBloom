@@ -26,6 +26,17 @@ const createTodo = async (req, res) => {
       );
     }
 
+    if (text.length > 500) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(
+        JSON.stringify({
+          error: "Text must be 500 characters or less",
+        })
+      );
+    }
+
+    const sanitizedText = text.replace(/<[^>]*>/g, "").trim();
+
     // Calculate expires_at based on type
     let expiresAt = null;
 
@@ -59,7 +70,7 @@ const createTodo = async (req, res) => {
       `INSERT INTO student_todos (student_id, type, text, completed, expires_at, created_at, updated_at)
        VALUES ($1, $2, $3, false, $4, NOW(), NOW())
        RETURNING id, student_id, type, text, completed, expires_at, created_at, updated_at`,
-      [studentId, type, text, expiresAt]
+      [studentId, type, sanitizedText, expiresAt]
     );
 
     res.writeHead(201, { "Content-Type": "application/json" });
@@ -110,6 +121,15 @@ const getTodosByType = async (req, res) => {
     const type = req.url.split("/")[4];
     const studentId = req.user.id;
 
+    if (!["todo", "weekly", "monthly"].includes(type)) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(
+        JSON.stringify({
+          error: "Invalid type. Must be 'todo', 'weekly', or 'monthly'",
+        })
+      );
+    }
+
     const todos = await todoService.getTodosByType(studentId, type);
 
     res.writeHead(200, { "Content-Type": "application/json" });
@@ -136,7 +156,36 @@ const updateTodo = async (req, res) => {
     const todoId = parseInt(req.url.split("/")[4]);
     const data = await parseRequestBody(req);
     const studentId = req.user.id;
-    const updates = data;
+
+    if (!todoId || isNaN(todoId)) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(
+        JSON.stringify({
+          error: "Invalid todo ID",
+        })
+      );
+    }
+
+    if (data.text !== undefined) {
+      if (data.text.length > 500) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(
+          JSON.stringify({
+            error: "Text must be 500 characters or less",
+          })
+        );
+      }
+      data.text = data.text.replace(/<[^>]*>/g, "").trim();
+    }
+
+    if (data.completed !== undefined && typeof data.completed !== "boolean") {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(
+        JSON.stringify({
+          error: "Completed must be a boolean",
+        })
+      );
+    }
 
     const updatedTodo = await todoService.updateTodo(
       studentId,
@@ -167,6 +216,15 @@ const deleteTodo = async (req, res) => {
   try {
     const todoId = parseInt(req.url.split("/")[4]);
     const studentId = req.user.id;
+
+    if (!todoId || isNaN(todoId)) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(
+        JSON.stringify({
+          error: "Invalid todo ID",
+        })
+      );
+    }
 
     // Verify ownership
     const db = require("../../db/db");
@@ -297,9 +355,36 @@ const updateParentTodoCompletion = async (req, res) => {
     const data = await parseRequestBody(req);
     let { completed } = data;
 
+    if (!todoId || isNaN(todoId)) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(
+        JSON.stringify({
+          error: "Invalid todo ID",
+        })
+      );
+    }
+
+    if (completed === undefined) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(
+        JSON.stringify({
+          error: "Completed field is required",
+        })
+      );
+    }
+
     // Convert string boolean to actual boolean
     if (typeof completed === "string") {
       completed = completed === "true";
+    }
+
+    if (typeof completed !== "boolean") {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(
+        JSON.stringify({
+          error: "Completed must be a boolean",
+        })
+      );
     }
 
     const studentId = req.user.id;

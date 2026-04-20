@@ -194,7 +194,15 @@ function bindGlobalEvents() {
 
   document.getElementById("subject-modal-save").addEventListener("click", async () => {
     const name = document.getElementById("subject-name-input").value.trim();
-    if (!name) return;
+    if (!name) {
+      alert("Please enter a term name");
+      return;
+    }
+
+    if (name.length > 100) {
+      alert("Term name must be 100 characters or less");
+      return;
+    }
 
     try {
         const result = await examApi.createTerm(name);
@@ -208,7 +216,17 @@ function bindGlobalEvents() {
   // Edit Subject
   document.getElementById("edit-subject-modal-save").addEventListener("click", async () => {
     const newName = document.getElementById("edit-subject-name-input").value.trim();
-    if (!newName || editSubjectContext === null) return;
+    if (!newName) {
+      alert("Please enter a term name");
+      return;
+    }
+
+    if (newName.length > 100) {
+      alert("Term name must be 100 characters or less");
+      return;
+    }
+
+    if (editSubjectContext === null) return;
 
     try {
         const subjId = subjectsData[editSubjectContext].id;
@@ -243,13 +261,29 @@ function bindGlobalEvents() {
     const testName = document.getElementById("test-name-input").value.trim();
     const testMark = document.getElementById("test-mark-input").value;
     
-    if(!testName || !testMark) {
-        alert("Please enter both subject name and mark.");
+    if(!testName) {
+        alert("Please enter a subject name.");
+        return;
+    }
+
+    if(testName.length > 100) {
+        alert("Subject name must be 100 characters or less");
+        return;
+    }
+    
+    if(!testMark) {
+        alert("Please enter a mark.");
+        return;
+    }
+
+    const markNum = parseFloat(testMark);
+    if(isNaN(markNum) || markNum < 0 || markNum > 100) {
+        alert("Mark must be between 0 and 100");
         return;
     }
     
     try {
-        await examApi.createSubject(subjId, testName, parseFloat(testMark));
+        await examApi.createSubject(subjId, testName, markNum);
         closeModal(testModal);
         currentSubjectIndex = null;
         await loadSubjectsData();
@@ -265,13 +299,29 @@ function bindGlobalEvents() {
     const testName = document.getElementById("test-name-input").value.trim();
     const testMark = document.getElementById("test-mark-input").value;
     
-    if(!testName || !testMark) {
-        alert("Please enter both subject name and mark.");
+    if(!testName) {
+        alert("Please enter a subject name.");
+        return;
+    }
+
+    if(testName.length > 100) {
+        alert("Subject name must be 100 characters or less");
+        return;
+    }
+    
+    if(!testMark) {
+        alert("Please enter a mark.");
+        return;
+    }
+
+    const markNum = parseFloat(testMark);
+    if(isNaN(markNum) || markNum < 0 || markNum > 100) {
+        alert("Mark must be between 0 and 100");
         return;
     }
     
     try {
-        await examApi.createSubject(subjId, testName, parseFloat(testMark));
+        await examApi.createSubject(subjId, testName, markNum);
         document.getElementById("test-name-input").value = "";
         document.getElementById("test-mark-input").value = "";
         document.getElementById("test-name-input").focus();
@@ -288,14 +338,27 @@ function bindGlobalEvents() {
       const testName = document.getElementById("edit-test-name-input").value.trim();
       const testMark = document.getElementById("edit-test-mark-input").value;
       
-      if(!testName || !testMark) {
-          alert("Please enter both subject name and mark.");
+      if(!testName) {
+          alert("Please enter a subject name.");
           return;
+      }
+
+      if(testName.length > 100) {
+          alert("Subject name must be 100 characters or less");
+          return;
+      }
+
+      if(testMark) {
+          const markNum = parseFloat(testMark);
+          if(isNaN(markNum) || markNum < 0 || markNum > 100) {
+              alert("Mark must be between 0 and 100");
+              return;
+          }
       }
 
       try {
           const testId = subjectsData[editSubjectContext].subjects[editTestContext].id;
-          await examApi.updateSubject(testId, testName, parseFloat(testMark));
+          await examApi.updateSubject(testId, testName, testMark ? parseFloat(testMark) : null);
           closeModal(editTestModal);
           editSubjectContext = null;
           editTestContext = null;

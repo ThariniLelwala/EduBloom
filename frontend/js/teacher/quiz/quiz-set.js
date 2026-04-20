@@ -158,10 +158,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    if (name.length > 100) {
+      showMessage("Quiz name must be 100 characters or less", "error");
+      return;
+    }
+
+    const sanitizedName = name.replace(/<[^>]*>/g, "").trim();
+
     try {
       if (editId) {
         const updated = await QuizAPI.updateQuizSet(editId, {
-          name,
+          name: sanitizedName,
           is_published: publishCheckbox.checked,
         });
         const index = quizzes.findIndex((q) => q.id === editId);
@@ -171,7 +178,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       } else {
         const newQuiz = await QuizAPI.createQuizSet(
           subjectId,
-          name,
+          sanitizedName,
           null,
           publishCheckbox.checked
         );

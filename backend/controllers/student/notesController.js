@@ -29,6 +29,18 @@ class StudentNotesController {
         return;
       }
 
+      if (title.length > 255) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Title must be 255 characters or less" }));
+        return;
+      }
+
+      if (file_url && !/^https?:\/\/.+/.test(file_url)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid URL format" }));
+        return;
+      }
+
       const note = await notesService.addModuleNote(
         topicId,
         subjectId,

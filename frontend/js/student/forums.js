@@ -18,6 +18,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadMyForums(),
     loadStats(),
   ]);
+
+  initTagsPreview();
 });
 
 function checkAuth() {
@@ -370,11 +372,15 @@ function createNewTopic() {
 function closeModal() {
   const modal = document.getElementById("create-topic-modal");
   modal.classList.remove("show");
+  const preview = document.getElementById("topic-tags-preview");
+  if(preview) preview.innerHTML = "";
 }
 
 function closeEditModal() {
   const modal = document.getElementById("edit-topic-modal");
   if (modal) modal.classList.remove("show");
+  const preview = document.getElementById("edit-topic-tags-preview");
+  if(preview) preview.innerHTML = "";
 }
 
 function closeDeleteModal() {
@@ -432,7 +438,9 @@ function openEditForum(forumId) {
   editingForumId = forumId;
   document.getElementById("edit-topic-title").value = forum.title;
   document.getElementById("edit-topic-content").value = forum.description;
-  document.getElementById("edit-topic-tags").value = forum.tags ? forum.tags.join(", ") : "";
+  const tagsInput = document.getElementById("edit-topic-tags");
+  tagsInput.value = forum.tags ? forum.tags.join(", ") : "";
+  tagsInput.dispatchEvent(new Event("input"));
   document.getElementById("edit-topic-modal").classList.add("show");
 }
 
@@ -610,6 +618,38 @@ document.addEventListener("keydown", (e) => {
     closeForumModal();
   }
 });
+
+// ========== TAG PREVIEW ==========
+
+function initTagsPreview() {
+  const createInput = document.getElementById("topic-tags");
+  const createPreview = document.getElementById("topic-tags-preview");
+  
+  const editInput = document.getElementById("edit-topic-tags");
+  const editPreview = document.getElementById("edit-topic-tags-preview");
+
+  function updatePreview(input, previewContainer) {
+    if (!input || !previewContainer) return;
+    const tags = input.value.split(',').map(t => t.trim()).filter(t => t);
+    
+    if (tags.length === 0) {
+      previewContainer.innerHTML = '';
+      return;
+    }
+    
+    previewContainer.innerHTML = tags.map(tag => 
+      `<span class="tag-badge"><i class="fas fa-tag"></i> ${tag}</span>`
+    ).join('');
+  }
+
+  if (createInput) {
+    createInput.addEventListener("input", () => updatePreview(createInput, createPreview));
+  }
+  
+  if (editInput) {
+    editInput.addEventListener("input", () => updatePreview(editInput, editPreview));
+  }
+}
 
 // ========== UTILITIES ==========
 

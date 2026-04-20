@@ -620,9 +620,20 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // Check password strength
-      if (newPassword && newPassword.length < 6) {
-        showError("newPassword", "Password must be at least 6 characters long");
-        isValid = false;
+      if (newPassword) {
+        if (newPassword.length < 8) {
+          showError("newPassword", "Password must be at least 8 characters long");
+          isValid = false;
+        } else if (!/[A-Z]/.test(newPassword)) {
+          showError("newPassword", "Password must contain at least one uppercase letter");
+          isValid = false;
+        } else if (!/\\d/.test(newPassword)) {
+          showError("newPassword", "Password must contain at least one number");
+          isValid = false;
+        } else if (!/[^A-Za-z0-9]/.test(newPassword)) {
+          showError("newPassword", "Password must contain at least one special character");
+          isValid = false;
+        }
       }
 
       submitBtn.disabled =
@@ -918,11 +929,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function addTag(type, array, input, tagsContainerId) {
     const value = input.value.trim();
-    if (value && value.length <= 250 && !array.includes(value)) {
-      array.push(value);
-      renderTags(array, tagsContainerId);
-      input.value = "";
+    if (!value) return;
+    
+    if (value.length > 250) return;
+
+    if (array.includes(value)) {
+      const index = array.indexOf(value);
+      const container = document.getElementById(tagsContainerId);
+      if (container) {
+        const tags = container.querySelectorAll('.tag');
+        if (tags[index]) {
+          tags[index].classList.add("shake-error");
+          tags[index].style.borderColor = "#ef4444";
+          tags[index].style.color = "#ef4444";
+          setTimeout(() => {
+            tags[index].classList.remove("shake-error");
+            tags[index].style.borderColor = "";
+            tags[index].style.color = "";
+          }, 600);
+        }
+      }
+      showToast(`${value} has already been added.`);
+      return;
     }
+
+    array.push(value);
+    renderTags(array, tagsContainerId);
+    input.value = "";
   }
 
   function removeTag(array, index, tagsContainerId) {

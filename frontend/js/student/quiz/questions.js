@@ -157,8 +157,16 @@ async function saveQuestion(closeAfter = true) {
     return;
   }
 
+  if (questionText.length > 1000) {
+    alert("Question text must be 1000 characters or less");
+    return;
+  }
+
+  const sanitizedQuestionText = questionText.replace(/<[^>]*>/g, "").trim();
+  const sanitizedAnswers = answerTexts.map(a => a.replace(/<[^>]*>/g, "").trim());
+
   // Build answers array in backend format
-  const answers = answerTexts.map((text, index) => ({
+  const answers = sanitizedAnswers.map((text, index) => ({
     text: text,
     is_correct: index === correctIndex,
   }));
@@ -167,13 +175,13 @@ async function saveQuestion(closeAfter = true) {
     if (editingId) {
       // Update existing question
       await studentQuizApi.updateQuestion(editingId, {
-        question_text: questionText,
+        question_text: sanitizedQuestionText,
         answers: answers,
       });
       editingId = null;
     } else {
       // Create new question
-      await studentQuizApi.createQuestion(quizId, questionText, answers);
+      await studentQuizApi.createQuestion(quizId, sanitizedQuestionText, answers);
     }
 
     loadQuestions(); // Reload from backend

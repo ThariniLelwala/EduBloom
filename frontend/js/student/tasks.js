@@ -365,6 +365,13 @@ async function saveTask() {
     return;
   }
 
+  if (text.length > 500) {
+    alert("Task text must be 500 characters or less");
+    return;
+  }
+
+  const sanitizedText = text.replace(/<[^>]*>/g, "").trim();
+
   if (currentAddingType === "event" && !dateValue) {
     alert("Please select a date for the event");
     return;
@@ -372,7 +379,7 @@ async function saveTask() {
 
   try {
     const apiType = currentAddingType === "event" ? "todo" : currentAddingType;
-    await studentTodoApi.createTodo(apiType, text, currentAddingType === "event" ? dateValue : null);
+    await studentTodoApi.createTodo(apiType, sanitizedText, currentAddingType === "event" ? dateValue : null);
     await loadTasks();
     renderTasks();
     closeAddModal();
@@ -432,6 +439,13 @@ async function saveEditedTask() {
     return;
   }
 
+  if (text.length > 500) {
+    alert("Task text must be 500 characters or less");
+    return;
+  }
+
+  const sanitizedText = text.replace(/<[^>]*>/g, "").trim();
+
   if (currentEditingType === "event" && !dateValue) {
     alert("Please select a date for the event");
     return;
@@ -439,7 +453,7 @@ async function saveEditedTask() {
 
   try {
     const task = tasks[currentEditingType][currentEditingIndex];
-    const updates = { text };
+    const updates = { text: sanitizedText };
     if (currentEditingType === "event") {
       updates.expiresAt = dateValue;
     }

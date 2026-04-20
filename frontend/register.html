@@ -233,6 +233,26 @@
           data.student_type = selectedRole.split("_")[1]; // "school" or "university"
         }
 
+        if (data.birthday) {
+          const bDate = new Date(data.birthday);
+          const today = new Date();
+          let age = today.getFullYear() - bDate.getFullYear();
+          const m = today.getMonth() - bDate.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < bDate.getDate())) {
+            age--;
+          }
+          if (bDate > today) {
+            messageDiv.textContent = "Birth date cannot be in the future.";
+            messageDiv.style.color = "red";
+            return;
+          }
+          if (age > 100) {
+            messageDiv.textContent = "Please enter a valid realistic birth year (maximum age is 100).";
+            messageDiv.style.color = "red";
+            return;
+          }
+        }
+
         // Remove empty fields
         Object.keys(data).forEach((key) => {
           if (data[key] === "") {

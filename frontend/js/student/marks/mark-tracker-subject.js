@@ -232,8 +232,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     const name = testNameInput.value.trim();
     const mark = parseFloat(testMarkInput.value);
 
-    if (!name || isNaN(mark) || mark < 0 || mark > 100) {
-      alert("Please enter a valid test name and mark (0-100)");
+    if (!name) {
+      alert("Please enter a test name");
+      return;
+    }
+
+    if (name.length > 100) {
+      alert("Test name must be 100 characters or less");
+      return;
+    }
+
+    if (isNaN(mark) || mark < 0 || mark > 100) {
+      alert("Please enter a valid mark (0-100)");
       return;
     }
 
