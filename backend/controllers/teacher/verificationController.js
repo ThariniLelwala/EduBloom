@@ -26,8 +26,6 @@ class VerificationController {
         return res.end(JSON.stringify({ verification: null }));
       }
 
-      verification = result.rows[0];
-      verification.has_file = verification.appointment_letter ? true : false;
       const verification = result.rows[0];
       verification.has_file = verification.appointment_letter ? true : false;
 
