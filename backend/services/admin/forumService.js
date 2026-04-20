@@ -27,56 +27,6 @@ class AdminForumService {
   }
 
   /**
-   * Get pending forum requests (unpublished)
-   */
-  async getPendingForums() {
-    const result = await db.query(
-      `SELECT fp.*, u.username as requested_by, u.role as requester_role,
-              (SELECT COALESCE(json_agg(tag_name), '[]') FROM forum_tags WHERE post_id = fp.id) as tags
-       FROM forum_posts fp
-       JOIN users u ON fp.author_id = u.id
-       WHERE fp.published = FALSE AND fp.archived = FALSE
-       ORDER BY fp.created_at DESC`
-    );
-    return result.rows.map(row => ({
-      id: row.id,
-      forumName: row.title,
-      requestedBy: row.requested_by,
-      category: row.author_role,
-      requestedDate: new Date(row.created_at).toISOString().split('T')[0],
-      description: row.description
-    }));
-  }
-
-  /**
-   * Approve a forum (publish it)
-   */
-  async approveForum(forumId) {
-    const result = await db.query(
-      "UPDATE forum_posts SET published = TRUE, updated_at = NOW() WHERE id = $1 RETURNING id, title",
-      [forumId]
-    );
-    if (result.rows.length === 0) {
-      throw new Error("Forum not found");
-    }
-    return { message: "Forum approved successfully", id: forumId, name: result.rows[0].title };
-  }
-
-  /**
-   * Reject a forum (archive it)
-   */
-  async rejectForum(forumId) {
-    const result = await db.query(
-      "UPDATE forum_posts SET archived = TRUE, updated_at = NOW() WHERE id = $1 RETURNING id, title",
-      [forumId]
-    );
-    if (result.rows.length === 0) {
-      throw new Error("Forum not found");
-    }
-    return { message: "Forum rejected", id: forumId, name: result.rows[0].title };
-  }
-
-  /**
    * Get forum statistics
    */
   async getStatistics() {

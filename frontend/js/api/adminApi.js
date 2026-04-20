@@ -257,31 +257,6 @@ const adminApi = {
   },
 
   /**
-   * Get pending forum requests
-   * @returns {Promise<Array>} List of pending forums
-   */
-  async getPendingForums() {
-    try {
-      const token = localStorage.getItem("authToken");
-      const response = await fetch("/api/admin/forums/pending", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to fetch pending forums");
-
-      return data.forums;
-    } catch (error) {
-      console.error("Error fetching pending forums:", error);
-      throw error;
-    }
-  },
-
-  /**
    * Get forum statistics
    * @returns {Promise<Object>} Forum statistics
    */
@@ -328,58 +303,6 @@ const adminApi = {
       return data.forum;
     } catch (error) {
       console.error("Error fetching forum:", error);
-      throw error;
-    }
-  },
-
-  /**
-   * Approve a forum request
-   * @param {number} forumId
-   * @returns {Promise<Object>} Approval result
-   */
-  async approveForum(forumId) {
-    try {
-      const token = localStorage.getItem("authToken");
-      const response = await fetch(`/api/admin/forums/${forumId}/approve`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to approve forum");
-
-      return data;
-    } catch (error) {
-      console.error("Error approving forum:", error);
-      throw error;
-    }
-  },
-
-  /**
-   * Reject a forum request
-   * @param {number} forumId
-   * @returns {Promise<Object>} Rejection result
-   */
-  async rejectForum(forumId) {
-    try {
-      const token = localStorage.getItem("authToken");
-      const response = await fetch(`/api/admin/forums/${forumId}/reject`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to reject forum");
-
-      return data;
-    } catch (error) {
-      console.error("Error rejecting forum:", error);
       throw error;
     }
   },

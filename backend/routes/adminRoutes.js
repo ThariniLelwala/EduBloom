@@ -100,14 +100,6 @@ function handleAdminRoutes(req, res) {
       )(req, res);
     }
 
-    // Get pending forums: GET /api/admin/forums/pending
-    if (method === "GET" && pathname === "/api/admin/forums/pending") {
-      return applyMiddleware(
-        [verifyToken, requireRole("admin")],
-        forumController.getPendingForums
-      )(req, res);
-    }
-
     // Get forum statistics: GET /api/admin/forums/statistics
     if (method === "GET" && pathname === "/api/admin/forums/statistics") {
       return applyMiddleware(
@@ -124,21 +116,6 @@ function handleAdminRoutes(req, res) {
       )(req, res);
     }
 
-    // Approve forum: POST /api/admin/forums/:id/approve
-    if (method === "POST" && pathname.match(/^\/api\/admin\/forums\/\d+\/approve$/)) {
-      return applyMiddleware(
-        [verifyToken, requireRole("admin")],
-        forumController.approveForum
-      )(req, res);
-    }
-
-    // Reject forum: POST /api/admin/forums/:id/reject
-    if (method === "POST" && pathname.match(/^\/api\/admin\/forums\/\d+\/reject$/)) {
-      return applyMiddleware(
-        [verifyToken, requireRole("admin")],
-        forumController.rejectForum
-      )(req, res);
-    }
 
     // Content moderation routes
     // Get flagged content: GET /api/admin/moderation/flagged

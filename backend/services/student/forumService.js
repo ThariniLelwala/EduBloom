@@ -3,15 +3,15 @@ const db = require("../../db/db");
 
 class StudentForumService {
   async getStudentForums(studentId) {
+    // Return ALL published forums (not just student's own) for the browse view
     const result = await db.query(
       `SELECT fp.*, u.username as author,
         (SELECT COALESCE(json_agg(tag_name), '[]') FROM forum_tags WHERE post_id = fp.id) as tags,
         (SELECT COUNT(*) FROM forum_replies WHERE post_id = fp.id) as reply_count
        FROM forum_posts fp
        JOIN users u ON fp.author_id = u.id
-       WHERE fp.author_id = $1 AND fp.published = TRUE AND fp.archived = FALSE
-       ORDER BY fp.created_at DESC`,
-      [studentId]
+       WHERE fp.published = TRUE AND fp.archived = FALSE AND u.role != 'teacher'
+       ORDER BY fp.created_at DESC`
     );
     return result.rows.map(row => ({
       ...row,
@@ -20,13 +20,14 @@ class StudentForumService {
   }
 
   async getStudentForumById(studentId, forumId) {
+    // Allow viewing any published forum, not just the student's own
     const forumResult = await db.query(
       `SELECT fp.*, u.username as author,
         (SELECT COALESCE(json_agg(tag_name), '[]') FROM forum_tags WHERE post_id = fp.id) as tags
        FROM forum_posts fp
        JOIN users u ON fp.author_id = u.id
-       WHERE fp.id = $1 AND fp.author_id = $2`,
-      [forumId, studentId]
+       WHERE fp.id = $1 AND fp.published = TRUE AND fp.archived = FALSE AND u.role != 'teacher'`,
+      [forumId]
     );
 
     if (forumResult.rows.length === 0) {
@@ -70,9 +71,10 @@ class StudentForumService {
   }
 
   async addReply(studentId, forumId, content) {
+    // Allow replying to any published forum, not just the student's own
     const forumCheck = await db.query(
-      `SELECT id FROM forum_posts WHERE id = $1 AND author_id = $2`,
-      [forumId, studentId]
+      `SELECT fp.id FROM forum_posts fp JOIN users u ON fp.author_id = u.id WHERE fp.id = $1 AND fp.published = TRUE AND fp.archived = FALSE AND u.role != 'teacher'`,
+      [forumId]
     );
 
     if (forumCheck.rows.length === 0) {
@@ -95,6 +97,30 @@ class StudentForumService {
     reply.author = userResult.rows[0].username;
 
     return reply;
+  }
+
+  async getStudentStats(studentId) {
+    const totalTopics = await db.query(
+      `SELECT COUNT(*) FROM forum_posts fp JOIN users u ON fp.author_id = u.id WHERE fp.published = TRUE AND fp.archived = FALSE AND u.role != 'teacher'`
+    );
+    const myTopics = await db.query(
+      `SELECT COUNT(*) FROM forum_posts WHERE author_id = $1 AND archived = FALSE`,
+      [studentId]
+    );
+    const myReplies = await db.query(
+      `SELECT COUNT(*) FROM forum_replies WHERE user_id = $1`,
+      [studentId]
+    );
+    const activeUsers = await db.query(
+      `SELECT COUNT(DISTINCT author_id) FROM forum_posts fp JOIN users u ON fp.author_id = u.id WHERE fp.published = TRUE AND fp.archived = FALSE AND u.role != 'teacher'`
+    );
+
+    return {
+      totalTopics: parseInt(totalTopics.rows[0].count),
+      myTopics: parseInt(myTopics.rows[0].count),
+      myReplies: parseInt(myReplies.rows[0].count),
+      activeUsers: parseInt(activeUsers.rows[0].count)
+    };
   }
 
   async deleteForum(studentId, forumId) {

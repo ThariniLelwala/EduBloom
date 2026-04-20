@@ -1,4 +1,5 @@
 // Forums Page JavaScript - University Students Only
+// Connected to backend: /api/student/forums/*
 
 let currentForumId = null;
 let forumsData = [];
@@ -10,8 +11,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   checkAuth();
-  loadForums();
-  loadStats();
+  await Promise.all([
+    loadForums(),
+    loadStats(),
+  ]);
 });
 
 function checkAuth() {
@@ -20,6 +23,8 @@ function checkAuth() {
     window.location.href = "../../login.html";
   }
 }
+
+// ========== DATA LOADING ==========
 
 async function loadForums() {
   const container = document.getElementById("available-forums");
@@ -43,6 +48,41 @@ async function loadForums() {
   }
 
   const forums = forumsData.filter(f => f.published);
+  renderForums(forums);
+  updateCategoryCounts(forums);
+}
+
+async function loadStats() {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch("/api/student/forums/stats", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) throw new Error("Failed to fetch stats");
+    const stats = await response.json();
+
+    document.getElementById("total-topics").textContent = stats.totalTopics || 0;
+    document.getElementById("active-users").textContent = stats.activeUsers || 0;
+    document.getElementById("user-topics").textContent = stats.myTopics || 0;
+    document.getElementById("user-posts").textContent = stats.myReplies || 0;
+  } catch (error) {
+    console.error("Error loading stats:", error);
+    document.getElementById("total-topics").textContent = "0";
+    document.getElementById("active-users").textContent = "0";
+    document.getElementById("user-topics").textContent = "0";
+    document.getElementById("user-posts").textContent = "0";
+  }
+}
+
+// ========== DISPLAY FUNCTIONS ==========
+
+function renderForums(forums) {
+  const container = document.getElementById("available-forums");
 
   if (forums.length === 0) {
     container.innerHTML = `
@@ -80,11 +120,31 @@ async function loadForums() {
   });
 }
 
-function loadStats() {
-  const forums = forumsData.filter(f => f.published);
-  document.getElementById("total-topics").textContent = forums.length;
-  document.getElementById("active-users").textContent = Math.min(forums.length * 2 + 5, 30);
+function updateCategoryCounts(forums) {
+  const categories = { resources: 0, general: 0, questions: 0 };
+
+  forums.forEach(forum => {
+    if (forum.tags && Array.isArray(forum.tags)) {
+      forum.tags.forEach(tag => {
+        const lower = tag.toLowerCase();
+        if (lower.includes("resource")) categories.resources++;
+        else if (lower.includes("question") || lower.includes("q&a")) categories.questions++;
+        else categories.general++;
+      });
+    } else {
+      categories.general++;
+    }
+  });
+
+  const counters = document.querySelectorAll(".category-count");
+  if (counters.length >= 3) {
+    counters[0].textContent = categories.resources;
+    counters[1].textContent = categories.general;
+    counters[2].textContent = categories.questions;
+  }
 }
+
+// ========== FORUM DETAIL ==========
 
 function openForumDetail(forumId) {
   const forum = forumsData.find(f => f.id === forumId);
@@ -153,6 +213,8 @@ function loadReplies(replies) {
   `).join("");
 }
 
+// ========== REPLY ==========
+
 async function addReply() {
   const content = document.getElementById("reply-content").value.trim();
   if (!content) {
@@ -176,12 +238,15 @@ async function addReply() {
     document.getElementById("reply-content").value = "";
     fetchReplies(currentForumId);
     loadForums();
+    loadStats();
     showNotification("Reply posted successfully!", "success");
   } catch (error) {
     console.error("Error posting reply:", error);
     showNotification("Failed to post reply", "error");
   }
 }
+
+// ========== CREATE TOPIC ==========
 
 function createNewTopic() {
   const modal = document.getElementById("create-topic-modal");
@@ -196,11 +261,16 @@ function closeModal() {
 async function submitTopic() {
   const title = document.getElementById("topic-title").value.trim();
   const content = document.getElementById("topic-content").value.trim();
+  const tagsInput = document.getElementById("topic-tags").value.trim();
 
   if (!title || !content) {
-    showNotification("Please fill in all fields", "error");
+    showNotification("Please fill in title and description", "error");
     return;
   }
+
+  const tags = tagsInput
+    ? tagsInput.split(",").map(t => t.trim()).filter(t => t)
+    : [];
 
   try {
     const token = localStorage.getItem("authToken");
@@ -210,15 +280,16 @@ async function submitTopic() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ title, description: content }),
+      body: JSON.stringify({ title, description: content, tags }),
     });
 
     if (!response.ok) throw new Error("Failed to create forum");
 
     document.getElementById("topic-title").value = "";
     document.getElementById("topic-content").value = "";
+    document.getElementById("topic-tags").value = "";
     closeModal();
-    loadForums();
+    await Promise.all([loadForums(), loadStats()]);
     showNotification("Forum created successfully!", "success");
   } catch (error) {
     console.error("Error creating forum:", error);
@@ -226,10 +297,34 @@ async function submitTopic() {
   }
 }
 
+// ========== CATEGORY FILTER ==========
+
+function filterByCategory(category) {
+  const forums = forumsData.filter(f => f.published);
+
+  if (!category) {
+    renderForums(forums);
+    return;
+  }
+
+  const filtered = forums.filter(forum => {
+    if (!forum.tags || !Array.isArray(forum.tags)) {
+      return category === "general";
+    }
+    return forum.tags.some(tag => tag.toLowerCase().includes(category.toLowerCase()));
+  });
+
+  renderForums(filtered);
+}
+
+// ========== MODAL CONTROLS ==========
+
 function closeForumModal() {
   document.getElementById("forum-detail-modal").classList.remove("show");
   currentForumId = null;
 }
+
+// ========== UTILITIES ==========
 
 function formatDate(dateString) {
   const date = new Date(dateString);

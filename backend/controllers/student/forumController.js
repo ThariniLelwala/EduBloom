@@ -15,6 +15,18 @@ class StudentForumController {
     }
   }
 
+  async getStats(req, res) {
+    try {
+      const studentId = req.user.id;
+      const stats = await studentForumService.getStudentStats(studentId);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(stats));
+    } catch (err) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
   async getStudentForum(req, res) {
     try {
       const studentId = req.user.id;

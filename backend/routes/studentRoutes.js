@@ -930,6 +930,14 @@ function handleStudentRoutes(req, res) {
 
     // ========== STUDENT FORUM ROUTES (University Students Only) ==========
 
+    // Get forum stats: GET /api/student/forums/stats
+    if (method === "GET" && pathname === "/api/student/forums/stats") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        studentForumController.getStats
+      )(req, res);
+    }
+
     // Get all forums created by student: GET /api/student/forums
     if (method === "GET" && (pathname === "/api/student/forums" || pathname === "/api/student/forums/")) {
       return applyMiddleware(
