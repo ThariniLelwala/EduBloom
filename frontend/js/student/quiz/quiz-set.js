@@ -177,11 +177,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    if (name.length > 100) {
+      alert("Quiz name must be 100 characters or less");
+      return;
+    }
+
+    const sanitizedName = name.replace(/<[^>]*>/g, "").trim();
+
     try {
       if (editId) {
-        await studentQuizApi.updateQuizSet(editId, { name });
+        await studentQuizApi.updateQuizSet(editId, { name: sanitizedName });
       } else {
-        await studentQuizApi.createQuizSet(subjectId, name);
+        await studentQuizApi.createQuizSet(subjectId, sanitizedName);
       }
 
       modal.style.display = "none";

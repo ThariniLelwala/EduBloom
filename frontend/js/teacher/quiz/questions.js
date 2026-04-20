@@ -165,12 +165,23 @@ function saveQuestion(closeAfter = true) {
     return;
   }
 
+  if (questionText.length > 1000) {
+    showMessage("Question text must be 1000 characters or less", "error");
+    return;
+  }
+
+  const sanitizedQuestionText = questionText.replace(/<[^>]*>/g, "").trim();
+  const sanitizedAnswers = answers.map(a => ({
+    text: a.text.replace(/<[^>]*>/g, "").trim(),
+    is_correct: a.is_correct
+  }));
+
   if (editingId) {
     // Update existing question
-    saveEditedQuestion(questionText, answers, closeAfter);
+    saveEditedQuestion(sanitizedQuestionText, sanitizedAnswers, closeAfter);
   } else {
     // Create new question
-    saveNewQuestion(questionText, answers, closeAfter);
+    saveNewQuestion(sanitizedQuestionText, sanitizedAnswers, closeAfter);
   }
 }
 

@@ -311,9 +311,20 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // Check password strength
-      if (newPassword && newPassword.length < 6) {
-        showError("newPassword", "Password must be at least 6 characters long");
-        isValid = false;
+      if (newPassword) {
+        if (newPassword.length < 8) {
+          showError("newPassword", "Password must be at least 8 characters long");
+          isValid = false;
+        } else if (!/[A-Z]/.test(newPassword)) {
+          showError("newPassword", "Password must contain at least one uppercase letter");
+          isValid = false;
+        } else if (!/\\d/.test(newPassword)) {
+          showError("newPassword", "Password must contain at least one number");
+          isValid = false;
+        } else if (!/[^A-Za-z0-9]/.test(newPassword)) {
+          showError("newPassword", "Password must contain at least one special character");
+          isValid = false;
+        }
       }
 
       submitBtn.disabled =

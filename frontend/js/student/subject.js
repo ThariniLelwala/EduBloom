@@ -480,6 +480,13 @@ async function handleSaveTopic() {
     return;
   }
 
+  if (topicName.length > 100) {
+    showNotification("Topic name must be 100 characters or less", "error");
+    return;
+  }
+
+  const sanitizedName = topicName.replace(/<[^>]*>/g, "").trim();
+
   try {
     const authToken = getAuthToken();
     if (!authToken) {
@@ -497,7 +504,7 @@ async function handleSaveTopic() {
             Authorization: `Bearer ${authToken}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ name: topicName }),
+          body: JSON.stringify({ name: sanitizedName }),
         }
       );
 
@@ -516,7 +523,7 @@ async function handleSaveTopic() {
             Authorization: `Bearer ${authToken}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ name: topicName }),
+          body: JSON.stringify({ name: sanitizedName }),
         }
       );
 
@@ -728,6 +735,17 @@ async function handleFiles(files) {
   }
 
   if (pdfFiles.length === 0) return;
+
+  // Check file size (10MB limit)
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  const oversizedFiles = pdfFiles.filter((file) => file.size > MAX_FILE_SIZE);
+  if (oversizedFiles.length > 0) {
+    showNotification(
+      `File(s) exceed 10MB limit: ${oversizedFiles.map((f) => f.name).join(", ")}`,
+      "error"
+    );
+    return;
+  }
 
   try {
     const authToken = getAuthToken();

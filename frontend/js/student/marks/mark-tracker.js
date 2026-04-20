@@ -101,7 +101,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   saveBtn.addEventListener("click", async () => {
     const name = input.value.trim();
-    if (!name) return;
+    if (!name) {
+      alert("Please enter a subject name");
+      return;
+    }
+
+    if (name.length > 100) {
+      alert("Subject name must be 100 characters or less");
+      return;
+    }
 
     try {
         if (editId) {

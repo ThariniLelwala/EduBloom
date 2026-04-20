@@ -298,8 +298,17 @@ class AuthService {
       throw new Error("New password must be different from old password");
     }
 
-    if (newPassword.length < 6) {
-      throw new Error("New password must be at least 6 characters long");
+    if (newPassword.length < 8) {
+      throw new Error("New password must be at least 8 characters long");
+    }
+    if (!/[A-Z]/.test(newPassword)) {
+      throw new Error("New password must contain at least one uppercase letter");
+    }
+    if (!/\\d/.test(newPassword)) {
+      throw new Error("New password must contain at least one number");
+    }
+    if (!/[^A-Za-z0-9]/.test(newPassword)) {
+      throw new Error("New password must contain at least one special character");
     }
 
     // Get user from database

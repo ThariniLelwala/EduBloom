@@ -31,6 +31,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function submitQuizResult(finalScore) {
     const quizSetIds = getUniqueQuizSetIds();
+
+    const answeredCount = Object.keys(userAnswers).filter(key => userAnswers[key] !== undefined).length;
+    if (answeredCount === 0) {
+      alert("Please answer at least one question before submitting");
+      return null;
+    }
     
     try {
       const result = await studentQuizApi.submitAttempt(
