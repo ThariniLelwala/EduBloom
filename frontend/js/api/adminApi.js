@@ -1113,4 +1113,31 @@ const adminApi = {
       throw error;
     }
   },
+
+  // ========== System Analytics ==========
+
+  /**
+   * Get system aggregated data for analytics dashboard
+   * @returns {Promise<Object>} System analytics payload
+   */
+  async getSystemAnalytics() {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/admin/system/analytics", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to fetch system analytics");
+
+      return data;
+    } catch (error) {
+      console.error("Error fetching system analytics:", error);
+      throw error;
+    }
+  },
 };

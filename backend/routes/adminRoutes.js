@@ -5,6 +5,7 @@ const contentModerationController = require("../controllers/admin/contentModerat
 const announcementsController = require("../controllers/admin/announcementsController");
 const helpController = require("../controllers/admin/helpController");
 const todoController = require("../controllers/admin/todoController");
+const analyticsController = require("../controllers/admin/analyticsController");
 const verificationController = require("../controllers/teacher/verificationController");
 const { parseRequestBody } = require("../middleware/authMiddleware");
 const {
@@ -371,6 +372,18 @@ function handleAdminRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("admin")],
         todoController.deleteTodo
+      )(req, res);
+    }
+
+    // =========================================================================
+    // System Analytics Routes
+    // =========================================================================
+
+    // GET /api/admin/system/analytics - Get system-wide aggregated data
+    if (method === "GET" && pathname === "/api/admin/system/analytics") {
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
+        analyticsController.getSystemAnalytics
       )(req, res);
     }
 
