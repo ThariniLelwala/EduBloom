@@ -48,6 +48,14 @@ class AuthService {
       age--;
     }
 
+    // Ensure realistic age limits
+    if (birthDate > today) {
+      throw new Error("Birth date cannot be in the future.");
+    }
+    if (age > 100) {
+      throw new Error("Please enter a valid realistic birth year (maximum age is 100).");
+    }
+
     // Validate age for restricted roles
     if (
       (role === "parent" ||

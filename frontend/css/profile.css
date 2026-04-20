@@ -728,6 +728,18 @@
   color: #ff6b6b;
 }
 
+@keyframes shakeTag {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-4px); }
+}
+
+.shake-error {
+  animation: shakeTag 0.4s ease-in-out !important;
+  transition: border-color 0.2s, color 0.2s;
+}
+
 /* Profile Actions */
 .profile-actions {
   margin-top: 24px;
