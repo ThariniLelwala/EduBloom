@@ -26,7 +26,8 @@ class VerificationController {
         return res.end(JSON.stringify({ verification: null }));
       }
 
-      // Include file existence info and resubmit availability
+      verification = result.rows[0];
+      verification.has_file = verification.appointment_letter ? true : false;
       const verification = result.rows[0];
       verification.has_file = verification.appointment_letter ? true : false;
 
@@ -54,20 +55,7 @@ class VerificationController {
     }
   }
 
-      // Include file existence info
-      const verification = result.rows[0];
-      verification.hasFile = verification.appointment_letter ? true : false;
-
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ verification }));
-    } catch (err) {
-      console.error("Error fetching verification status:", err);
-      res.writeHead(500, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Failed to fetch verification status" }));
-    }
-  }
-
-  // Request verification
+      // Request verification
   async requestVerification(req, res) {
     try {
       if (!req.user) {
@@ -100,7 +88,13 @@ class VerificationController {
 
       if (data.appointmentLetter && data.appointmentLetter.data) {
         fileName = data.appointmentLetter.filename;
-        fileBuffer = Buffer.from(data.appointmentLetter.data, "base64");
+        // Strip data URL prefix if present (e.g., "data:application/pdf;base64,")
+        let base64Data = data.appointmentLetter.data;
+        const commaIndex = base64Data.indexOf(",");
+        if (commaIndex !== -1) {
+          base64Data = base64Data.substring(commaIndex + 1);
+        }
+        fileBuffer = Buffer.from(base64Data, "base64");
       }
 
       // File size validation
@@ -195,7 +189,7 @@ class VerificationController {
       const db = require("../../db/db");
 
       const result = await db.query(
-        `SELECT v.id, v.user_id, u.username, u.email, v.status, v.submitted_at, v.message
+        `SELECT v.id, v.user_id, u.username, u.email, v.status, v.submitted_at, v.message, v.file_name
          FROM teacher_verifications v
          JOIN users u ON v.user_id = u.id
          WHERE v.status = 'pending'
@@ -256,8 +250,8 @@ class VerificationController {
   async approveVerification(req, res) {
     try {
       const db = require("../../db/db");
-      const data = await parseRequestBody(req);
-      const { verificationId } = data;
+      const data = req.body || {};
+      const verificationId = data.verificationId;
 
       if (!verificationId) {
         res.writeHead(400, { "Content-Type": "application/json" });
@@ -266,9 +260,8 @@ class VerificationController {
         );
       }
 
-      // Get the verification request
       const verification = await db.query(
-        `SELECT user_id FROM teacher_verifications WHERE id = $1`,
+        `SELECT user_id, status FROM teacher_verifications WHERE id = $1`,
         [verificationId]
       );
 
@@ -279,7 +272,6 @@ class VerificationController {
         );
       }
 
-      // Update verification status
       await db.query(
         `UPDATE teacher_verifications 
          SET status = 'verified', verified_at = NOW(), reviewed_at = NOW()
@@ -298,7 +290,7 @@ class VerificationController {
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({
-          error: "Failed to approve verification",
+          error: "Failed to approve verification: " + err.message,
         })
       );
     }
@@ -308,8 +300,9 @@ class VerificationController {
   async rejectVerification(req, res) {
     try {
       const db = require("../../db/db");
-      const data = await parseRequestBody(req);
-      const { verificationId, rejectionReason } = data;
+      const data = req.body || {};
+      const verificationId = data.verificationId;
+      const rejectionReason = data.rejectionReason;
 
       if (!verificationId) {
         res.writeHead(400, { "Content-Type": "application/json" });
@@ -485,70 +478,17 @@ class VerificationController {
       const fileBuffer = verification.appointment_letter;
       const fileName = verification.file_name || "verification.pdf";
 
-      // Set response headers
+      // Set response headers - force download only, no inline
       res.writeHead(200, {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${fileName}"`,
+        "Content-Type": "application/octet-stream",
+        "Content-Disposition": `attachment; filename="verification_${verificationId}.pdf"`,
         "Content-Length": fileBuffer.length,
-        "X-Content-Type-Options": "nosniff",
-        "X-Frame-Options": "DENY"
+        "Cache-Control": "private, no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
       });
 
-      res.end(fileBuffer);
-    } catch (err) {
-      console.error("Error downloading verification file:", err);
-      res.writeHead(500, { "Content-Type": "application/json" });
-      res.end(
-        JSON.stringify({
-          error: "Failed to download verification file",
-        })
-      );
-    }
-  }
-
-      const userId = req.user.id;
-      const db = require("../../db/db");
-
-      // Get the verification record with file
-      const result = await db.query(
-        `SELECT id, appointment_letter, file_name 
-         FROM teacher_verifications 
-         WHERE user_id = $1
-         ORDER BY submitted_at DESC
-         LIMIT 1`,
-        [userId]
-      );
-
-      if (result.rows.length === 0) {
-        res.writeHead(404, { "Content-Type": "application/json" });
-        return res.end(
-          JSON.stringify({ error: "No verification request found" })
-        );
-      }
-
-      const verification = result.rows[0];
-
-      if (!verification.appointment_letter) {
-        res.writeHead(404, { "Content-Type": "application/json" });
-        return res.end(
-          JSON.stringify({ error: "No file attached to verification request" })
-        );
-      }
-
-      // Get file buffer and determine content type
-      const fileBuffer = verification.appointment_letter;
-      const fileName = verification.file_name || "appointment_letter.pdf";
-
-      // Set response headers
-      res.writeHead(200, {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${fileName}"`,
-        "Content-Length": fileBuffer.length,
-        "X-Content-Type-Options": "nosniff",
-        "X-Frame-Options": "DENY"
-      });
-
-      res.end(fileBuffer);
+res.end(fileBuffer);
     } catch (err) {
       console.error("Error downloading verification file:", err);
       res.writeHead(500, { "Content-Type": "application/json" });

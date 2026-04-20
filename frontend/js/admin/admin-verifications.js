@@ -1,225 +1,173 @@
-// Teacher Verifications Management - Connected to Backend
-
+// Teacher Verifications Management
 let allVerifications = [];
 let filteredVerifications = [];
+let currentVerificationId = null;
 
-// Load verifications from API
 async function loadVerifications() {
   try {
     allVerifications = await adminApi.getPendingVerifications();
     filteredVerifications = [...allVerifications];
     renderVerificationsTable();
-    loadPendingVerificationsCount();
   } catch (error) {
-    console.error("Error loading verifications:", error);
     showToast("Failed to load verifications", "error");
     renderVerificationsTable();
   }
 }
 
-// Load pending verifications count
-function loadPendingVerificationsCount() {
-  const countElement = document.getElementById("pending-verifications-count");
-  if (countElement) {
-    countElement.textContent = allVerifications.length;
-  }
-}
-
-// Render verifications table
 function renderVerificationsTable() {
   const tbody = document.getElementById("verifications-table-body");
   if (!tbody) return;
 
   tbody.innerHTML = "";
+  const countEl = document.getElementById("pending-verifications-count");
+  if (countEl) countEl.textContent = filteredVerifications.length;
 
   if (filteredVerifications.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="6" class="admin-empty-state">
-          No pending verifications
-        </td>
-      </tr>
-    `;
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted" style="padding:40px;">No pending verifications</td></tr>';
     return;
   }
 
-  filteredVerifications.forEach((verification) => {
+  filteredVerifications.forEach((v) => {
     const tr = document.createElement("tr");
-
     tr.innerHTML = `
-      <td class="text-white">${verification.username}</td>
-      <td class="text-muted">${verification.email}</td>
-      <td class="text-muted">${formatDate(verification.submitted_at)}</td>
-      <td>
-        <a href="#" class="file-link" title="Download document" data-verification-id="${verification.id}">
-          <i class="fas fa-file-pdf"></i> ${verification.file_name || 'verification.pdf'}
-        </a>
-      </td>
-      <td class="text-muted" title="${verification.message}">
-        ${verification.message ? verification.message.substring(0, 40) + '...' : 'No message'}
-      </td>
-      <td style="text-align: center;">
-        <button class="approve-verification-btn admin-table-action" data-verification-id="${verification.id}" title="Approve">
-          <i class="fas fa-check"></i>
-        </button>
-        <button class="reject-verification-btn admin-table-action" data-verification-id="${verification.id}" title="Reject">
-          <i class="fas fa-times"></i>
-        </button>
-        <button class="view-details-btn admin-table-action" data-verification-id="${verification.id}" title="View Details">
-          <i class="fas fa-eye"></i>
+      <td class="text-white">${v.username}</td>
+      <td class="text-muted">${v.email}</td>
+      <td class="text-muted">${formatDate(v.submitted_at)}</td>
+      <td class="text-muted">${v.message ? (v.message.substring(0,30) + (v.message.length>30?'...':'')) : '-'}</td>
+      <td class="text-center">
+        <button class="btn btn-primary" onclick="openVerificationModal(${v.id})">
+          <i class="fas fa-eye"></i> Review
         </button>
       </td>
     `;
-
     tbody.appendChild(tr);
   });
-
-  bindVerificationEvents();
 }
 
-// Bind verification action events
-function bindVerificationEvents() {
-  document.addEventListener("click", (e) => {
-    // Approve verification
-    if (e.target.closest(".approve-verification-btn")) {
-      const verificationId = parseInt(
-        e.target.closest(".approve-verification-btn").dataset.verificationId
-      );
-      approveVerification(verificationId);
-    }
+async function openVerificationModal(verificationId) {
+  currentVerificationId = verificationId;
+  try {
+    const v = await adminApi.getVerificationDetails(verificationId);
+    const modal = document.getElementById("verification-modal");
+    const body = document.querySelector(".verification-modal-content");
+    if (!modal || !body) return;
 
-    // Reject verification
-    if (e.target.closest(".reject-verification-btn")) {
-      const verificationId = parseInt(
-        e.target.closest(".reject-verification-btn").dataset.verificationId
-      );
-      rejectVerification(verificationId);
-    }
-
-    // View details
-    if (e.target.closest(".view-details-btn")) {
-      const verificationId = parseInt(
-        e.target.closest(".view-details-btn").dataset.verificationId
-      );
-      viewVerificationDetails(verificationId);
-    }
-
-    // Download file
-    if (e.target.closest(".file-link")) {
-      e.preventDefault();
-      const verificationId = parseInt(
-        e.target.closest(".file-link").dataset.verificationId
-      );
-      downloadVerificationFile(verificationId);
-    }
-  });
+    body.innerHTML = `
+      <div class="modal-body" style="text-align: left;">
+        <div style="background:rgba(255,255,255,0.05);padding:16px;border-radius:8px;margin-bottom:16px;">
+          <div style="margin-bottom:10px"><strong style="color:var(--color-text-muted)">Teacher:</strong> <span style="color:var(--color-white)">${v.username}</span></div>
+          <div style="margin-bottom:10px"><strong style="color:var(--color-text-muted)">Email:</strong> <span style="color:var(--color-white)">${v.email}</span></div>
+          <div style="margin-bottom:10px"><strong style="color:var(--color-text-muted)">Submitted:</strong> <span style="color:var(--color-white)">${formatDate(v.submitted_at)}</span></div>
+          <div style="margin-bottom:10px"><strong style="color:var(--color-text-muted)">Document:</strong> <span style="color:var(--color-white)">${v.file_name || 'verification.pdf'}</span></div>
+          <div><strong style="color:var(--color-text-muted)">Message:</strong> <span style="color:var(--color-white)">${v.message || '-'}</span></div>
+        </div>
+        <button class="btn btn-primary" onclick="downloadVerificationFile(${v.id})">
+          <i class="fas fa-download"></i> Download Document
+        </button>
+        <div class="modal-actions">
+          <button class="btn btn-success" onclick="approveVerification(${v.id})">
+            <i class="fas fa-check"></i> Approve
+          </button>
+          <button class="btn btn-danger" onclick="rejectVerification(${v.id})">
+            <i class="fas fa-times"></i> Reject
+          </button>
+        </div>
+      </div>
+    `;
+    modal.classList.add("show");
+  } catch (error) {
+    showToast("Failed to load details", "error");
+  }
 }
 
-// Approve verification
+function closeVerificationModal() {
+  const modal = document.getElementById("verification-modal");
+  if (modal) modal.classList.remove("show");
+  currentVerificationId = null;
+}
+
 async function approveVerification(verificationId) {
-  const verification = allVerifications.find((v) => v.id === verificationId);
-  if (!verification) return;
-
-  if (
-    confirm(
-      `Approve verification for ${verification.username}? This will mark them as verified.`
-    )
-  ) {
+  const v = allVerifications.find(x => x.id === verificationId);
+  if (!v) return;
+  if (confirm(`Approve verification for ${v.username}?`)) {
     try {
       await adminApi.approveVerification(verificationId);
-      showToast(`${verification.username} has been verified!`, "success");
+      showToast(`${v.username} has been verified!`, "success");
+      closeVerificationModal();
       loadVerifications();
     } catch (error) {
-      showToast("Failed to approve verification: " + error.message, "error");
+      showToast("Failed: " + error.message, "error");
     }
   }
 }
 
-// Reject verification
 async function rejectVerification(verificationId) {
-  const verification = allVerifications.find((v) => v.id === verificationId);
-  if (!verification) return;
-
-  const reason = prompt(
-    "Please provide a reason for rejection:",
-    "Document quality issues"
-  );
-  if (reason === null) return;
-
+  const v = allVerifications.find(x => x.id === verificationId);
+  if (!v) return;
+  const reason = prompt("Reason for rejection:");
+  if (!reason) return;
   try {
     await adminApi.rejectVerification(verificationId, reason);
-    showToast(`Verification rejected for ${verification.username}`, "success");
+    showToast(`Rejected ${v.username}`, "success");
+    closeVerificationModal();
     loadVerifications();
   } catch (error) {
-    showToast("Failed to reject verification: " + error.message, "error");
+    showToast("Failed: " + error.message, "error");
   }
 }
 
-// View verification details
-async function viewVerificationDetails(verificationId) {
-  try {
-    const verification = await adminApi.getVerificationDetails(verificationId);
-    
-    const detailsText = `
-Teacher Name: ${verification.username}
-Email: ${verification.email}
-Submitted: ${formatDate(verification.submitted_at)}
-Document: ${verification.file_name || 'verification.pdf'}
-Message: ${verification.message || 'No message'}
-Status: ${verification.status}
-Has File: ${verification.has_file ? 'Yes' : 'No'}
-    `;
-
-    alert(detailsText);
-  } catch (error) {
-    showToast("Failed to load verification details", "error");
-  }
-}
-
-// Download verification file
 async function downloadVerificationFile(verificationId) {
   try {
-    await adminApi.downloadVerificationFile(verificationId);
-    showToast("File downloaded successfully", "success");
-  } catch (error) {
-    showToast("Failed to download file: " + error.message, "error");
-  }
-}
-
-// Format date helper
-function formatDate(dateString) {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-}
-
-// Show toast notification
-function showToast(message, type = "info") {
-  const toast = document.getElementById("toast");
-  if (toast) {
-    toast.textContent = message;
-    toast.className = `toast toast-${type}`;
-    toast.classList.add("show");
-    setTimeout(() => {
-      toast.classList.remove("show");
-    }, 3000);
-  }
-}
-
-// Initialize on page load
-document.addEventListener("DOMContentLoaded", () => {
-  loadVerifications();
-  
-  // Add refresh button functionality
-  const refreshBtn = document.getElementById("refresh-verifications-btn");
-  if (refreshBtn) {
-    refreshBtn.addEventListener("click", () => {
-      loadVerifications();
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(`/api/admin/download-verification/${verificationId}`, {
+      headers: { Authorization: `Bearer ${token}` }
     });
+    
+    if (!response.ok) throw new Error('Download failed');
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `verification_${verificationId}.pdf`;
+    a.click();
+    setTimeout(() => window.URL.revokeObjectURL(url), 100);
+  } catch (error) {
+    showToast("Failed: " + error.message, "error");
   }
+}
+
+function formatDate(ds) {
+  return new Date(ds).toLocaleDateString("en-US", {year:"numeric",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+}
+
+function showToast(msg, type="info") {
+  const t = document.getElementById("toast");
+  if (t) { 
+    t.textContent = msg; 
+    t.className = `toast toast-${type}`;
+    t.style.cssText = 'position:fixed;top:20px;right:20px;padding:12px 24px;background:#333;color:#fff;border-radius:8px;z-index:9999;';
+    if (type === 'success') t.style.background = '#28a745';
+    if (type === 'error') t.style.background = '#dc3545';
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 3000);
+  } else {
+    alert(msg);
+  }
+}
+
+// Close modal on clicking outside or close button
+document.addEventListener("click", function(e) {
+  const m = document.getElementById("verification-modal");
+  if (m && m.classList.contains("show")) {
+    if (e.target === m) closeVerificationModal();
+    if (e.target.closest(".modal-close")) closeVerificationModal();
+  }
+});
+
+// Init
+document.addEventListener("DOMContentLoaded", function() {
+  loadVerifications();
+  const rb = document.getElementById("refresh-verifications-btn");
+  if (rb) rb.onclick = loadVerifications;
 });

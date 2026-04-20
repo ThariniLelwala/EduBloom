@@ -105,6 +105,37 @@ a {
   flex-grow: 1;
   margin-top: 8px;
   margin-bottom: 8px;
+}
+
+.btn-success {
+  background: #28a745 !important;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 700;
+  padding: 12px 24px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.btn-success:hover {
+  background: #218838 !important;
+}
+
+.btn-danger {
+  background: #dc3545 !important;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 700;
+  padding: 12px 24px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.btn-danger:hover {
+  background: #c82333 !important;
+}
   text-wrap: nowrap;
 }
 

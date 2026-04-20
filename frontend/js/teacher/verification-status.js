@@ -35,7 +35,7 @@ async function apiRequest(endpoint, method, data = null) {
 // Load verification status
 async function loadVerificationStatus() {
   try {
-    const result = await apiRequest('/teacher/verification-status', 'GET');
+    const result = await apiRequest('/api/teacher/verification-status', 'GET');
     currentVerification = result.verification;
     displayVerificationStatus();
   } catch (error) {
@@ -58,6 +58,7 @@ function displayVerificationStatus() {
     case 'pending':
       displayPendingStatus(container);
       break;
+    case 'verified':
     case 'approved':
       displayApprovedStatus(container);
       break;
@@ -83,9 +84,13 @@ function displayPendingStatus(container) {
           <span><i class="fas fa-calendar"></i> Submitted: ${formatDate(currentVerification.submitted_at)}</span>
           ${currentVerification.file_name ? `<span><i class="fas fa-file-pdf"></i> ${currentVerification.file_name}</span>` : ''}
         </div>
+        <button id="delete-verification-btn" class="btn btn-danger" style="margin-top: 12px; padding: 8px 16px; font-size: 12px;">
+          <i class="fas fa-trash"></i> Delete Request
+        </button>
       </div>
     </div>
   `;
+  document.getElementById('delete-verification-btn').addEventListener('click', deleteVerificationRequest);
 }
 
 // Display approved status
@@ -258,7 +263,7 @@ async function handleVerificationSubmit(e) {
     const base64File = await fileToBase64(file);
 
     // Submit verification
-    const result = await apiRequest('/teacher/request-verification', 'POST', {
+    const result = await apiRequest('/api/teacher/request-verification', 'POST', {
       verificationMessage: message,
       appointmentLetter: {
         data: base64File,
@@ -297,7 +302,11 @@ function validateFile(file) {
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
+    reader.onload = () => {
+      // Strip the data URL prefix (e.g., "data:application/pdf;base64,")
+      const base64 = reader.result.includes(",") ? reader.result.split(",")[1] : reader.result;
+      resolve(base64);
+    };
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
@@ -336,6 +345,35 @@ function showToast(message, type = 'info') {
     setTimeout(() => {
       toast.classList.remove("show");
     }, 3000);
+  }
+}
+
+// Delete verification request
+async function deleteVerificationRequest() {
+  if (!confirm('Are you sure you want to delete your verification request? This cannot be undone.')) {
+    return;
+  }
+  
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch("/api/teacher/delete-verification", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok) {
+      showToast('Verification request deleted', 'success');
+      loadVerificationStatus();
+    } else {
+      showToast(result.error || 'Failed to delete', 'error');
+    }
+  } catch (error) {
+    showToast('Error deleting verification', 'error');
   }
 }
 

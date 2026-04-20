@@ -9,6 +9,7 @@ const forumController = require("../controllers/teacher/forumController");
 const publicController = require("../controllers/teacher/publicController");
 const viewController = require("../controllers/teacher/viewController");
 const profileController = require("../controllers/teacher/profileController");
+const verificationController = require("../controllers/teacher/verificationController");
 
 // Middleware imports
 const { verifyToken, requireRole, applyMiddleware } = require("../middleware/authMiddleware");
@@ -223,6 +224,31 @@ function handleTeacherRoutes(req, res) {
     if (method === "GET" && matches("/api/teacher/\\d+/profile")(pathname)) {
       req.params = { teacherId: getId(pathname, 3) };
       return applyMiddleware([verifyToken], profileController.getPublicProfile)(req, res);
+    }
+
+    // =========================================================================
+    // VERIFICATION MANAGEMENT - /api/teacher/verification-status
+    // =========================================================================
+
+    // GET /api/teacher/verification-status - Get verification status
+    if (method === "GET" && isPath(pathname, "/api/teacher/verification-status")) {
+      return applyMiddleware([verifyToken, requireRole("teacher")], verificationController.getVerificationStatus)(req, res);
+    }
+
+    // POST /api/teacher/request-verification - Request verification
+    if (method === "POST" && isPath(pathname, "/api/teacher/request-verification")) {
+      return applyMiddleware([verifyToken, requireRole("teacher")], verificationController.requestVerification)(req, res);
+    }
+
+    // DELETE /api/teacher/delete-verification - Delete verification request
+    if (method === "DELETE" && isPath(pathname, "/api/teacher/delete-verification")) {
+      return applyMiddleware([verifyToken, requireRole("teacher")], verificationController.deleteVerification)(req, res);
+    }
+
+    // GET /api/teacher/download-verification-file/:verificationId - Download verification file
+    if (method === "GET" && matches("/api/teacher/download-verification-file/\\d+")(pathname)) {
+      req.params = { verificationId: getId(pathname, 6) };
+      return applyMiddleware([verifyToken, requireRole("teacher")], verificationController.downloadVerificationFile)(req, res);
     }
 
     // =========================================================================

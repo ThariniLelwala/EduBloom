@@ -23,6 +23,7 @@
   </head>
 
   <body>
+    <div class="toast" id="toast"></div>
     <div class="bg-image"></div>
 
     <div class="container">
@@ -165,6 +166,19 @@
           </div>
         </div>
       </main>
+    </div>
+
+    <!-- Verification Modal -->
+    <div id="verification-modal" class="modal">
+      <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+          <h2>Teacher Verification</h2>
+          <button class="modal-close" data-modal="verification-modal">&times;</button>
+        </div>
+        <div class="modal-body verification-modal-content">
+          <!-- Content populated by JavaScript -->
+        </div>
+      </div>
     </div>
 
     <!-- Add Admin Modal -->

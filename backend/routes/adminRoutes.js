@@ -4,6 +4,7 @@ const forumController = require("../controllers/admin/forumController");
 const contentModerationController = require("../controllers/admin/contentModerationController");
 const announcementsController = require("../controllers/admin/announcementsController");
 const helpController = require("../controllers/admin/helpController");
+const verificationController = require("../controllers/teacher/verificationController");
 const { parseRequestBody } = require("../middleware/authMiddleware");
 const {
   verifyToken,
@@ -277,6 +278,62 @@ function handleAdminRoutes(req, res) {
           req.body = body;
           return helpController.updateHelpRequestStatus(req, res);
         }
+      )(req, res);
+    }
+
+    // =========================================================================
+    // Teacher Verification Routes - /api/admin/teacher-verifications/*
+    // =========================================================================
+
+    // GET /api/admin/teacher-verifications - Get all pending verifications
+    if (method === "GET" && pathname === "/api/admin/teacher-verifications") {
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
+        verificationController.getPendingVerifications
+      )(req, res);
+    }
+
+    // GET /api/admin/verification-details/:verificationId - Get verification details
+    if (method === "GET" && pathname.match(/^\/api\/admin\/verification-details\/\d+$/)) {
+      const verificationId = pathname.match(/^\/api\/admin\/verification-details\/(\d+)$/)[1];
+      req.params = { verificationId };
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
+        verificationController.getVerificationDetails
+      )(req, res);
+    }
+
+    // POST /api/admin/approve-verification - Approve verification
+    if (method === "POST" && pathname === "/api/admin/approve-verification") {
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
+        async (req, res) => {
+          const body = await parseRequestBody(req);
+          req.body = body;
+          return verificationController.approveVerification(req, res);
+        }
+      )(req, res);
+    }
+
+    // POST /api/admin/reject-verification - Reject verification
+    if (method === "POST" && pathname === "/api/admin/reject-verification") {
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
+        async (req, res) => {
+          const body = await parseRequestBody(req);
+          req.body = body;
+          return verificationController.rejectVerification(req, res);
+        }
+      )(req, res);
+    }
+
+    // GET /api/admin/download-verification/:verificationId - Download verification file
+    if (method === "GET" && pathname.match(/^\/api\/admin\/download-verification\/\d+$/)) {
+      const verificationId = pathname.match(/^\/api\/admin\/download-verification\/(\d+)$/)[1];
+      req.params = { verificationId };
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
+        verificationController.downloadVerificationFile
       )(req, res);
     }
 

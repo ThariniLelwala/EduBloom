@@ -86,7 +86,7 @@ function extractUserFromToken(req) {
 
 // Helper function to apply middleware chain
 function applyMiddleware(middlewares, handler) {
-  return async (req, res) => {
+  return (req, res) => {
     let index = 0;
 
     function next() {

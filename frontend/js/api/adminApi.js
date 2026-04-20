@@ -981,7 +981,6 @@ const adminApi = {
       const response = await fetch(`/api/admin/download-verification/${verificationId}`, {
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
@@ -991,22 +990,14 @@ const adminApi = {
         throw new Error(data.error || "Failed to download file");
       }
 
-      // Get filename from response headers
-      const contentDisposition = response.headers.get('Content-Disposition');
-      const fileName = contentDisposition 
-        ? contentDisposition.split('filename=')[1]?.replace(/"/g, '') 
-        : 'verification.pdf';
-
-      // Create blob and download
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      
+      // Open in new tab for viewing
+      window.open(url, '_blank');
+      
+      // Clean up after delay
+      setTimeout(() => window.URL.revokeObjectURL(url), 60000);
 
       return { success: true };
     } catch (error) {

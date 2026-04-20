@@ -272,7 +272,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   verification.file_name || "appointment_letter"
                 }
               </div>
-              <a href="/api/teacher/download-verification-file" 
+              <a href="/api/teacher/download-verification-file/${verification.id}" 
                  style="color: var(--color-primary); text-decoration: underline; cursor: pointer; font-weight: 500; display: inline-block;">
                 <i class="fas fa-download"></i> Download File
               </a>
