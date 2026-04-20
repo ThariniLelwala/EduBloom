@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   loadDashboardTasks();
   updateWelcomeMessage();
   loadOverviewStats();
+  loadLatestAnnouncement();
 });
 
 // Update welcome message with teacher's name
@@ -269,6 +270,31 @@ function loadOverviewStats() {
     });
 
   document.getElementById("reviews-count").textContent = "0";
+}
+
+async function loadLatestAnnouncement() {
+  try {
+    const token = localStorage.getItem("authToken");
+    const res = await fetch("/api/teacher/announcements/latest", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const container = document.getElementById("dashboard-announcement-content");
+    if (!container) return;
+
+    if (data.announcement) {
+      container.innerHTML = `
+        <h4 style="color: var(--color-white); margin: 0 0 8px 0;">${data.announcement.title}</h4>
+        <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 0 0 8px 0;">${data.announcement.message}</p>
+        <p style="color: rgba(255,255,255,0.5); font-size: 11px; margin: 0;">${data.announcement.date} at ${data.announcement.time}</p>
+      `;
+    } else {
+      container.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center;">No announcements yet.</p>';
+    }
+  } catch (err) {
+    const container = document.getElementById("dashboard-announcement-content");
+    if (container) container.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center;">Unable to load announcement.</p>';
+  }
 }
 
 

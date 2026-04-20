@@ -11,6 +11,7 @@ const pomodoroController = require("../controllers/student/pomodoroController");
 const diaryController = require("../controllers/student/diaryController");
 const studentForumController = require("../controllers/student/forumController");
 const authController = require("../controllers/authController");
+const announcementsService = require("../services/admin/announcementsService");
 const {
   verifyToken,
   requireRole,
@@ -1031,6 +1032,31 @@ function handleStudentRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("student")],
         authController.removeParentLink
+      )(req, res);
+    }
+
+    // Announcements routes
+    // Get announcements for student: GET /api/student/announcements
+    if (method === "GET" && pathname === "/api/student/announcements") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        async (req, res) => {
+          const announcements = await announcementsService.getAnnouncementsByRole("student");
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ announcements }));
+        }
+      )(req, res);
+    }
+
+    // Get latest announcement for student: GET /api/student/announcements/latest
+    if (method === "GET" && pathname === "/api/student/announcements/latest") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        async (req, res) => {
+          const announcement = await announcementsService.getLatestAnnouncementByRole("student");
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ announcement }));
+        }
       )(req, res);
     }
 

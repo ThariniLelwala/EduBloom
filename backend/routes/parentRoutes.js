@@ -4,6 +4,7 @@ const todoController = require("../controllers/parent/todoController");
 const calendarController = require("../controllers/parent/calendarController");
 const progressController = require("../controllers/parent/progressController");
 const resourceController = require("../controllers/parent/resourceController");
+const announcementsService = require("../services/admin/announcementsService");
 const {
   verifyToken,
   requireRole,
@@ -325,6 +326,34 @@ function handleParentRoutes(req, res) {
       return applyMiddleware(
         [verifyToken, requireRole("parent")],
         resourceController.removeRecommendationByResource
+      )(req, res);
+    }
+
+    // =========================================================================
+    // ANNOUNCEMENTS - /api/parent/announcements/*
+    // =========================================================================
+
+    // Get announcements for parent: GET /api/parent/announcements
+    if (method === "GET" && pathname === "/api/parent/announcements") {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        async (req, res) => {
+          const announcements = await announcementsService.getAnnouncementsByRole("parent");
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ announcements }));
+        }
+      )(req, res);
+    }
+
+    // Get latest announcement for parent: GET /api/parent/announcements/latest
+    if (method === "GET" && pathname === "/api/parent/announcements/latest") {
+      return applyMiddleware(
+        [verifyToken, requireRole("parent")],
+        async (req, res) => {
+          const announcement = await announcementsService.getLatestAnnouncementByRole("parent");
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ announcement }));
+        }
       )(req, res);
     }
 

@@ -121,6 +121,62 @@ class AnnouncementsService {
     }
     return { message: "Announcement deleted", id };
   }
+
+  /**
+   * Get announcements for a specific role (including 'all' announcements)
+   * @param {string} role - The role to filter by (student, teacher, parent)
+   */
+  async getAnnouncementsByRole(role) {
+    try {
+      const result = await db.query(`
+        SELECT a.*, 
+               COALESCE(u.username, 'System') as created_by_name,
+               COALESCE(u2.username, 'System') as author_name
+        FROM announcements a
+        LEFT JOIN users u ON a.created_by = u.id
+        LEFT JOIN users u2 ON a.author_id = u2.id
+        WHERE a.target_role = 'all' OR a.target_role = $1
+        ORDER BY a.created_at DESC
+      `, [role]);
+      return result.rows.map(row => ({
+        id: row.id,
+        title: row.title,
+        message: row.message,
+        targetRole: row.target_role,
+        createdBy: row.created_by_name || row.author_name || 'System',
+        createdAt: row.created_at,
+        date: row.created_at ? row.created_at.toISOString().split('T')[0] : '',
+        time: row.created_at ? row.created_at.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : ''
+      }));
+    } catch (err) {
+      console.error("Error in getAnnouncementsByRole:", err.message);
+      const result = await db.query(`
+        SELECT a.*
+        FROM announcements a
+        WHERE a.target_role = 'all' OR a.target_role = $1
+        ORDER BY a.created_at DESC
+      `, [role]);
+      return result.rows.map(row => ({
+        id: row.id,
+        title: row.title,
+        message: row.message,
+        targetRole: row.target_role,
+        createdBy: 'System',
+        createdAt: row.created_at,
+        date: row.created_at ? row.created_at.toISOString().split('T')[0] : '',
+        time: row.created_at ? row.created_at.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : ''
+      }));
+    }
+  }
+
+  /**
+   * Get the most recent announcement for a role
+   * @param {string} role - The role to filter by
+   */
+  async getLatestAnnouncementByRole(role) {
+    const announcements = await this.getAnnouncementsByRole(role);
+    return announcements.length > 0 ? announcements[0] : null;
+  }
 }
 
 module.exports = new AnnouncementsService();

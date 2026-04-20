@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Announcements</title>
+
+    <script src="../../js/custom-select.js"></script>
+    <script src="../../js/sidebar.js"></script>
+
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/topbar.css" />
+    <link rel="stylesheet" href="../../css/sidebar.css" />
+    <link rel="stylesheet" href="../../css/custom-select.css" />
+    <link rel="stylesheet" href="../../css/cards.css" />
+    <link rel="stylesheet" href="../../css/dashboard/progress.css" />
+    <link rel="stylesheet" href="../../css/custom-select.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+
+    <div class="container">
+      <div id="sidebar-container"></div>
+
+      <main id="content">
+        <div class="card-grid">
+          <div class="card welcome full">
+            <div class="welcome-content">
+              <h1 class="heading">
+                <i class="fas fa-bullhorn"></i> Announcements
+              </h1>
+              <div>View important updates from the administration.</div>
+            </div>
+            <div class="welcome-image"></div>
+          </div>
+
+          <div class="card full">
+            <div class="card-header">
+              <h3><i class="fas fa-bell"></i> System Announcements</h3>
+              <div style="margin-left: auto;">
+                <div class="custom-select-wrapper">
+                  <select id="filter-role">
+                    <option value="all">All</option>
+                    <option value="parent">For Parents</option>
+                  </select>
+                  <div class="custom-select-display">All</div>
+                  <div class="custom-select-options">
+                    <div class="custom-select-option selected" data-value="all">All</div>
+                    <div class="custom-select-option" data-value="parent">For Parents</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="announcements-container" class="announcements-list"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="../../js/topbar.js"></script>
+    <script src="../../js/custom-select.js"></script>
+    <script src="../../js/bg-manager.js"></script>
+    <script>
+      const ANNOUNCEMENTS_API = "/api/parent/announcements";
+      
+      let allAnnouncements = [];
+
+      async function loadAnnouncements() {
+        try {
+          const token = localStorage.getItem("authToken");
+          const res = await fetch(ANNOUNCEMENTS_API, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const data = await res.json();
+          allAnnouncements = data.announcements || [];
+          filterAndRenderAnnouncements();
+        } catch (err) {
+          console.error("Error loading announcements:", err);
+          renderAnnouncements([]);
+        }
+      }
+
+      function filterAndRenderAnnouncements() {
+        const filterRole = document.getElementById("filter-role").value;
+        let filtered = allAnnouncements;
+        
+        if (filterRole !== "all") {
+          filtered = allAnnouncements.filter(a => a.targetRole === filterRole || a.targetRole === "all");
+        }
+        
+        renderAnnouncements(filtered);
+      }
+
+      function renderAnnouncements(announcements) {
+        const container = document.getElementById("announcements-container");
+        if (!container) return;
+
+        container.innerHTML = "";
+
+        if (announcements.length === 0) {
+          container.innerHTML = '<div class="admin-empty-state"><p>No announcements found.</p></div>';
+          return;
+        }
+
+        const roleLabels = { all: "All Users", student: "Students", teacher: "Teachers", parent: "Parents" };
+
+        announcements.forEach(item => {
+          const el = document.createElement("div");
+          el.className = "announcement-item";
+          el.innerHTML = `
+            <div class="announcement-header">
+              <div style="flex: 1;">
+                <h4 style="color: var(--color-white); margin: 0 0 4px 0;">${item.title}</h4>
+                <p style="color: rgba(255, 255, 255, 0.6); font-size: 12px; margin: 0;">
+                  ${item.date} at ${item.time}
+                  <span style="margin-left: 8px; padding: 2px 8px; background: rgba(255,255,255,0.1); border-radius: 4px; font-size: 10px;">
+                    ${roleLabels[item.targetRole] || "All Users"}
+                  </span>
+                </p>
+              </div>
+            </div>
+            <p style="color: rgba(255, 255, 255, 0.8); margin: 12px 0 0 0;">${item.message}</p>
+          `;
+          container.appendChild(el);
+        });
+      }
+
+      document.getElementById("filter-role").addEventListener("change", filterAndRenderAnnouncements);
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const wrapper = document.querySelector("#filter-role").closest(".custom-select-wrapper");
+        const display = wrapper.querySelector(".custom-select-display");
+        const optionsContainer = wrapper.querySelector(".custom-select-options");
+        
+        display.addEventListener("click", () => {
+          document.querySelectorAll(".custom-select-options.show").forEach(el => el.classList.remove("show"));
+          optionsContainer.classList.toggle("show");
+        });
+        
+        optionsContainer.querySelectorAll(".custom-select-option").forEach((opt) => {
+          opt.addEventListener("click", () => {
+            const select = document.getElementById("filter-role");
+            select.value = opt.dataset.value;
+            display.textContent = opt.textContent;
+            optionsContainer.querySelectorAll(".custom-select-option").forEach(el => el.classList.remove("selected"));
+            opt.classList.add("selected");
+            optionsContainer.classList.remove("show");
+            select.dispatchEvent(new Event("change"));
+          });
+        });
+        
+        document.addEventListener("click", (e) => {
+          if (!wrapper.contains(e.target)) {
+            optionsContainer.classList.remove("show");
+          }
+        });
+        
+        loadAnnouncements();
+      });
+    </script>
+  </body>
+</html>

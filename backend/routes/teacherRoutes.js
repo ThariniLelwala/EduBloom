@@ -10,6 +10,7 @@ const publicController = require("../controllers/teacher/publicController");
 const viewController = require("../controllers/teacher/viewController");
 const profileController = require("../controllers/teacher/profileController");
 const verificationController = require("../controllers/teacher/verificationController");
+const announcementsService = require("../services/admin/announcementsService");
 
 // Middleware imports
 const { verifyToken, requireRole, applyMiddleware } = require("../middleware/authMiddleware");
@@ -312,6 +313,34 @@ function handleTeacherRoutes(req, res) {
     if (method === "POST" && matches("/api/public/forums/\\d+/view")(pathname)) {
       req.params = { id: getId(pathname, 4), type: "forums" };
       return applyMiddleware([verifyToken], viewController.incrementView)(req, res);
+    }
+
+    // =========================================================================
+    // ANNOUNCEMENTS - /api/teacher/announcements/*
+    // =========================================================================
+
+    // Get announcements for teacher: GET /api/teacher/announcements
+    if (method === "GET" && pathname === "/api/teacher/announcements") {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        async (req, res) => {
+          const announcements = await announcementsService.getAnnouncementsByRole("teacher");
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ announcements }));
+        }
+      )(req, res);
+    }
+
+    // Get latest announcement for teacher: GET /api/teacher/announcements/latest
+    if (method === "GET" && pathname === "/api/teacher/announcements/latest") {
+      return applyMiddleware(
+        [verifyToken, requireRole("teacher")],
+        async (req, res) => {
+          const announcement = await announcementsService.getLatestAnnouncementByRole("teacher");
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ announcement }));
+        }
+      )(req, res);
     }
 
     return null;
