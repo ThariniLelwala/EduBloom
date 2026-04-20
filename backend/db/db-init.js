@@ -1032,6 +1032,24 @@ await db.query(`
       `);
     } catch(e) {}
 
+    // Create default admin user if none exists
+    const adminCheck = await db.query(
+      "SELECT id FROM users WHERE role = 'admin' LIMIT 1"
+    );
+    if (adminCheck.rows.length === 0) {
+      const { hashPassword } = require("../utils/hash");
+      const { hashed, salt } = hashPassword("123");
+
+      await db.query(
+        `INSERT INTO users (username, email, password, salt, role, firstname, lastname)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        ["admin", "admin@edubloom.com", hashed, salt, "admin", "Admin", "User"]
+      );
+      console.log(
+        "Default admin user created (username: admin, password: 123)"
+      );
+    }
+
   } catch (err) {
     console.error("Database initialization error:", err);
     throw err;
