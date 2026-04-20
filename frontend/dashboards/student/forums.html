@@ -58,6 +58,17 @@
             </div>
           </div>
 
+          <!-- My Forums Card -->
+          <div class="card w2 h2">
+            <div class="card-title">
+              <i class="fas fa-user"></i>
+              <h3>My Forums</h3>
+            </div>
+            <div class="topics-list" id="my-forums-list">
+              <!-- My forums will be loaded here -->
+            </div>
+          </div>
+
           <!-- Available Forums Card -->
           <div class="card w2 h2">
             <div class="card-title">
@@ -66,6 +77,17 @@
             </div>
             <div class="topics-list" id="available-forums">
               <!-- Forums will be loaded here -->
+            </div>
+          </div>
+
+          <!-- Archived Forums Card -->
+          <div class="card w2">
+            <div class="card-title">
+              <i class="fas fa-archive"></i>
+              <h3>Archived Forums</h3>
+            </div>
+            <div class="topics-list" id="archived-forums-list">
+              <!-- Archived forums will be loaded here -->
             </div>
           </div>
 
@@ -205,6 +227,78 @@
           <button class="btn-primary" onclick="submitTopic()">
             <i class="fas fa-paper-plane"></i> Submit Topic
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Topic Modal -->
+    <div id="edit-topic-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Edit Forum</h2>
+          <button class="modal-close" onclick="closeEditModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="edit-topic-title">Title</label>
+            <input
+              type="text"
+              id="edit-topic-title"
+              placeholder="Enter topic title..."
+              maxlength="200"
+            />
+          </div>
+          <div class="form-group">
+            <label for="edit-topic-content">Description</label>
+            <textarea
+              id="edit-topic-content"
+              placeholder="Describe your topic..."
+              rows="5"
+              maxlength="2000"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="edit-topic-tags">Tags (comma-separated)</label>
+            <input
+              type="text"
+              id="edit-topic-tags"
+              placeholder="e.g. general, questions, resources"
+            />
+          </div>
+          <button class="btn-primary" onclick="saveEdit()">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Request Modal -->
+    <div id="delete-request-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Request Forum Deletion</h2>
+          <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>You are requesting to delete the forum: <strong id="delete-forum-title"></strong></p>
+          <p style="color: rgba(255,255,255,0.7); font-size: 14px;">An admin will review your request and approve or reject it.</p>
+          <div class="form-group">
+            <label for="delete-reason">Reason for deletion</label>
+            <textarea
+              id="delete-reason"
+              placeholder="Please provide a reason for deleting this forum..."
+              rows="4"
+              maxlength="500"
+            ></textarea>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-primary" onclick="submitDeleteRequest()">
+              <i class="fas fa-paper-plane"></i> Submit Request
+            </button>
+            <button class="btn-secondary" onclick="closeDeleteModal()">
+              Cancel
+            </button>
+          </div>
         </div>
       </div>
     </div>

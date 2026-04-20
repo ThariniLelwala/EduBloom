@@ -2,7 +2,9 @@
 // Connected to backend: /api/student/forums/*
 
 let currentForumId = null;
+let currentUserId = null;
 let forumsData = [];
+let myForumsData = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
   if (!isUniversityStudent()) {
@@ -13,6 +15,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   checkAuth();
   await Promise.all([
     loadForums(),
+    loadMyForums(),
     loadStats(),
   ]);
 });
@@ -21,7 +24,9 @@ function checkAuth() {
   const token = localStorage.getItem("authToken");
   if (!token) {
     window.location.href = "../../login.html";
+    return;
   }
+  currentUserId = parseInt(localStorage.getItem("userId")) || null;
 }
 
 // ========== DATA LOADING ==========
@@ -47,9 +52,29 @@ async function loadForums() {
     forumsData = [];
   }
 
-  const forums = forumsData.filter(f => f.published);
+  const forums = forumsData.filter(f => f.published && !f.archived && !f.deletion_requested);
   renderForums(forums);
   updateCategoryCounts(forums);
+}
+
+async function loadMyForums() {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch("/api/student/forums/my", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) throw new Error("Failed to fetch my forums");
+    myForumsData = await response.json();
+    renderMyForums();
+  } catch (error) {
+    console.error("Error loading my forums:", error);
+    myForumsData = [];
+  }
 }
 
 async function loadStats() {
@@ -116,6 +141,95 @@ function renderForums(forums) {
       <div class="topic-preview">${forum.description}</div>
     `;
     card.addEventListener("click", () => openForumDetail(forum.id));
+    container.appendChild(card);
+  });
+}
+
+function renderMyForums() {
+  const container = document.getElementById("my-forums-list");
+  if (!container) return;
+
+  const myForums = myForumsData.filter(f => !f.archived && !f.deletion_requested);
+
+  if (myForums.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 24px; color: rgba(255, 255, 255, 0.6);">
+        <p>You haven't created any forums yet</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = "";
+  myForums.forEach(forum => {
+    const views = forum.views || 0;
+    const card = document.createElement("div");
+    card.className = "topic-item";
+    card.innerHTML = `
+      <div class="topic-header">
+        <span class="topic-title">${forum.title}</span>
+        <span class="topic-category">${forum.tags ? forum.tags.join(", ") : ""}</span>
+      </div>
+      <div class="topic-meta">
+        <span class="topic-stats">
+          <i class="fas fa-eye"></i> ${views} views •
+          <i class="fas fa-reply"></i> ${forum.reply_count || 0}
+        </span>
+      </div>
+      <div class="topic-actions">
+        <button class="btn-icon" onclick="event.stopPropagation(); openEditForum(${forum.id})" title="Edit">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn-icon" onclick="event.stopPropagation(); archiveForum(${forum.id})" title="Archive">
+          <i class="fas fa-archive"></i>
+        </button>
+        <button class="btn-icon" onclick="event.stopPropagation(); openDeleteModal(${forum.id})" title="Request Delete">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    `;
+    card.addEventListener("click", () => openForumDetail(forum.id));
+    container.appendChild(card);
+  });
+
+  renderArchivedForums();
+}
+
+function renderArchivedForums() {
+  const container = document.getElementById("archived-forums-list");
+  if (!container) return;
+
+  const archivedForums = myForumsData.filter(f => f.archived);
+
+  if (archivedForums.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 24px; color: rgba(255, 255, 255, 0.6);">
+        <p>No archived forums</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = "";
+  archivedForums.forEach(forum => {
+    const card = document.createElement("div");
+    card.className = "topic-item archived";
+    card.innerHTML = `
+      <div class="topic-header">
+        <span class="topic-title">${forum.title}</span>
+        <span class="archived-badge">Archived</span>
+      </div>
+      <div class="topic-meta">
+        <span class="topic-stats">
+          <i class="fas fa-reply"></i> ${forum.reply_count || 0} replies
+        </span>
+      </div>
+      <div class="topic-actions">
+        <button class="btn-icon" onclick="event.stopPropagation(); unarchiveForum(${forum.id})" title="Unarchive">
+          <i class="fas fa-folder-open"></i>
+        </button>
+      </div>
+    `;
     container.appendChild(card);
   });
 }
@@ -258,6 +372,16 @@ function closeModal() {
   modal.classList.remove("show");
 }
 
+function closeEditModal() {
+  const modal = document.getElementById("edit-topic-modal");
+  if (modal) modal.classList.remove("show");
+}
+
+function closeDeleteModal() {
+  const modal = document.getElementById("delete-request-modal");
+  if (modal) modal.classList.remove("show");
+}
+
 async function submitTopic() {
   const title = document.getElementById("topic-title").value.trim();
   const content = document.getElementById("topic-content").value.trim();
@@ -289,11 +413,152 @@ async function submitTopic() {
     document.getElementById("topic-content").value = "";
     document.getElementById("topic-tags").value = "";
     closeModal();
-    await Promise.all([loadForums(), loadStats()]);
+    await Promise.all([loadForums(), loadMyForums(), loadStats()]);
     showNotification("Forum created successfully!", "success");
   } catch (error) {
     console.error("Error creating forum:", error);
     showNotification("Failed to create forum", "error");
+  }
+}
+
+// ========== EDIT FORUM ==========
+
+let editingForumId = null;
+
+function openEditForum(forumId) {
+  const forum = myForumsData.find(f => f.id === forumId);
+  if (!forum) return;
+
+  editingForumId = forumId;
+  document.getElementById("edit-topic-title").value = forum.title;
+  document.getElementById("edit-topic-content").value = forum.description;
+  document.getElementById("edit-topic-tags").value = forum.tags ? forum.tags.join(", ") : "";
+  document.getElementById("edit-topic-modal").classList.add("show");
+}
+
+async function saveEdit() {
+  const title = document.getElementById("edit-topic-title").value.trim();
+  const content = document.getElementById("edit-topic-content").value.trim();
+  const tagsInput = document.getElementById("edit-topic-tags").value.trim();
+
+  if (!title || !content) {
+    showNotification("Please fill in title and description", "error");
+    return;
+  }
+
+  const tags = tagsInput
+    ? tagsInput.split(",").map(t => t.trim()).filter(t => t)
+    : [];
+
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(`/api/student/forums/${editingForumId}/edit`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ title, description: content, tags }),
+    });
+
+    if (!response.ok) throw new Error("Failed to update forum");
+
+    closeEditModal();
+    await Promise.all([loadForums(), loadMyForums()]);
+    showNotification("Forum updated successfully!", "success");
+  } catch (error) {
+    console.error("Error updating forum:", error);
+    showNotification("Failed to update forum", "error");
+  }
+}
+
+// ========== ARCHIVE FORUM ==========
+
+async function archiveForum(forumId) {
+  if (!confirm("Are you sure you want to archive this forum?")) return;
+
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(`/api/student/forums/${forumId}/archive`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) throw new Error("Failed to archive forum");
+
+    await Promise.all([loadForums(), loadMyForums()]);
+    showNotification("Forum archived successfully!", "success");
+  } catch (error) {
+    console.error("Error archiving forum:", error);
+    showNotification("Failed to archive forum", "error");
+  }
+}
+
+async function unarchiveForum(forumId) {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(`/api/student/forums/${forumId}/unarchive`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) throw new Error("Failed to unarchive forum");
+
+    await Promise.all([loadForums(), loadMyForums()]);
+    showNotification("Forum restored successfully!", "success");
+  } catch (error) {
+    console.error("Error unarchiving forum:", error);
+    showNotification("Failed to restore forum", "error");
+  }
+}
+
+// ========== DELETE REQUEST ==========
+
+let deletingForumId = null;
+
+function openDeleteModal(forumId) {
+  deletingForumId = forumId;
+  const forum = myForumsData.find(f => f.id === forumId);
+  if (forum) {
+    document.getElementById("delete-forum-title").textContent = forum.title;
+  }
+  document.getElementById("delete-reason").value = "";
+  document.getElementById("delete-request-modal").classList.add("show");
+}
+
+async function submitDeleteRequest() {
+  const reason = document.getElementById("delete-reason").value.trim();
+
+  if (!reason) {
+    showNotification("Please provide a reason for deletion", "error");
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(`/api/student/forums/${deletingForumId}/request-delete`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ reason }),
+    });
+
+    if (!response.ok) throw new Error("Failed to submit deletion request");
+
+    closeDeleteModal();
+    await Promise.all([loadForums(), loadMyForums()]);
+    showNotification("Deletion request submitted. An admin will review it.", "success");
+  } catch (error) {
+    console.error("Error submitting deletion request:", error);
+    showNotification("Failed to submit deletion request", "error");
   }
 }
 
@@ -324,6 +589,28 @@ function closeForumModal() {
   currentForumId = null;
 }
 
+// Close modals on outside click
+document.addEventListener("click", (e) => {
+  const createModal = document.getElementById("create-topic-modal");
+  const editModal = document.getElementById("edit-topic-modal");
+  const deleteModal = document.getElementById("delete-request-modal");
+  const forumModal = document.getElementById("forum-detail-modal");
+  if (e.target === createModal) closeModal();
+  if (e.target === editModal) closeEditModal();
+  if (e.target === deleteModal) closeDeleteModal();
+  if (e.target === forumModal) closeForumModal();
+});
+
+// Close modal on Escape
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeModal();
+    closeEditModal();
+    closeDeleteModal();
+    closeForumModal();
+  }
+});
+
 // ========== UTILITIES ==========
 
 function formatDate(dateString) {
@@ -344,19 +631,3 @@ function showNotification(message, type = "info") {
   document.body.appendChild(notification);
   setTimeout(() => notification.remove(), 3000);
 }
-
-// Close modals on outside click
-document.addEventListener("click", (e) => {
-  const createModal = document.getElementById("create-topic-modal");
-  const forumModal = document.getElementById("forum-detail-modal");
-  if (e.target === createModal) closeModal();
-  if (e.target === forumModal) closeForumModal();
-});
-
-// Close modal on Escape
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    closeModal();
-    closeForumModal();
-  }
-});

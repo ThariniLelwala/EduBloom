@@ -102,6 +102,32 @@
               </table>
             </div>
           </div>
+
+          <!-- Pending Deletion Requests Table -->
+          <div class="card full">
+            <div class="card-header">
+              <h3>
+                <i class="fas fa-trash-alt"></i> Pending Deletion Requests
+                <span id="pending-deletion-badge" style="display: none; background: #ff4757; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin-left: 8px;">0</span>
+              </h3>
+            </div>
+            <div class="admin-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Forum Name</th>
+                    <th>Author</th>
+                    <th>Author Type</th>
+                    <th>Reason</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="pending-deletions-tbody">
+                  <!-- Populated by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </main>
     </div>

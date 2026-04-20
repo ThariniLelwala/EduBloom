@@ -876,6 +876,18 @@ async function initializeDatabase() {
       // Column already exists, ignore error
     }
 
+    try {
+      await db.query(`ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS deletion_requested BOOLEAN DEFAULT FALSE;`);
+    } catch (err) {
+      // Column already exists, ignore error
+    }
+
+    try {
+      await db.query(`ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS deletion_reason TEXT;`);
+    } catch (err) {
+      // Column already exists, ignore error
+    }
+
     // Forum Tags table
     await db.query(`
       CREATE TABLE IF NOT EXISTS forum_tags (

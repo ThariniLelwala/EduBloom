@@ -985,6 +985,54 @@ function handleStudentRoutes(req, res) {
       )(req, res);
     }
 
+    // Get my forums: GET /api/student/forums/my
+    if (method === "GET" && pathname === "/api/student/forums/my") {
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        studentForumController.getMyForums
+      )(req, res);
+    }
+
+    // Update forum: PUT /api/student/forums/:id/edit
+    if (method === "PUT" && pathname.match(/^\/api\/student\/forums\/\d+\/edit$/)) {
+      const forumId = parseInt(pathname.split("/")[4]);
+      req.params = { forumId };
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        studentForumController.updateForum
+      )(req, res);
+    }
+
+    // Archive forum: POST /api/student/forums/:id/archive
+    if (method === "POST" && pathname.match(/^\/api\/student\/forums\/\d+\/archive$/)) {
+      const forumId = parseInt(pathname.split("/")[4]);
+      req.params = { forumId };
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        studentForumController.archiveForum
+      )(req, res);
+    }
+
+    // Unarchive forum: POST /api/student/forums/:id/unarchive
+    if (method === "POST" && pathname.match(/^\/api\/student\/forums\/\d+\/unarchive$/)) {
+      const forumId = parseInt(pathname.split("/")[4]);
+      req.params = { forumId };
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        studentForumController.unarchiveForum
+      )(req, res);
+    }
+
+    // Request deletion: POST /api/student/forums/:id/request-delete
+    if (method === "POST" && pathname.match(/^\/api\/student\/forums\/\d+\/request-delete$/)) {
+      const forumId = parseInt(pathname.split("/")[4]);
+      req.params = { forumId };
+      return applyMiddleware(
+        [verifyToken, requireRole("student")],
+        studentForumController.requestDeletion
+      )(req, res);
+    }
+
     // View count routes for student forums
     // POST /api/student/forums/:id/view
     if (method === "POST" && pathname.match(/^\/api\/student\/forums\/\d+\/view$/)) {
