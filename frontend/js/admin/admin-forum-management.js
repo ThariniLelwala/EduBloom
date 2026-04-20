@@ -1,10 +1,11 @@
 // Forum Management - Connected to Backend API
+let pendingDeletionsData = [];
 
 // Load all forum data
 async function loadForumManagementStats() {
   try {
     const stats = await adminApi.getForumStatistics();
-    
+
     const totalElement = document.getElementById("total-forums-count");
     const adminsElement = document.getElementById("forum-admins-count");
     const activeElement = document.getElementById("most-active-forum");
@@ -39,6 +40,115 @@ async function loadAllForums() {
     console.error("Error loading forums:", error);
     renderAllForumsTable([]);
   }
+}
+
+// Load pending deletion requests
+async function loadPendingDeletions() {
+  try {
+    const requests = await adminApi.getPendingDeletions();
+    pendingDeletionsData = requests;
+    renderPendingDeletionsTable(requests);
+    updateDeletionStats(requests.length);
+  } catch (error) {
+    console.error("Error loading pending deletions:", error);
+    pendingDeletionsData = [];
+    renderPendingDeletionsTable([]);
+    updateDeletionStats(0);
+  }
+}
+
+function updateDeletionStats(count) {
+  const badge = document.getElementById("pending-deletion-badge");
+  if (badge) {
+    badge.textContent = count;
+    badge.style.display = count > 0 ? "inline-block" : "none";
+  }
+}
+
+function renderPendingDeletionsTable(requests) {
+  const tbody = document.getElementById("pending-deletions-tbody");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  if (requests.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: rgba(255,255,255,0.6);">No pending deletion requests</td></tr>`;
+    return;
+  }
+
+  requests.forEach((request) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td class="text-white">${request.title || "Untitled"}</td>
+      <td class="text-muted">${request.author || "Unknown"}</td>
+      <td class="text-muted">${request.author_role || "student"}</td>
+      <td class="text-white" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${request.deletion_reason || ""}">${request.deletion_reason || "No reason provided"}</td>
+      <td class="admin-table-action">
+        <i class="fas fa-check" style="cursor: pointer; color: #2ed573; margin-right: 12px;" title="Approve" data-approve-id="${request.id}"></i>
+        <i class="fas fa-times" style="cursor: pointer; color: #ff4757;" title="Reject" data-reject-id="${request.id}"></i>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  bindDeletionActionButtons();
+}
+
+function bindDeletionActionButtons() {
+  document.querySelectorAll("[data-approve-id]").forEach((icon) => {
+    icon.addEventListener("click", async (e) => {
+      const forumId = parseInt(e.target.getAttribute("data-approve-id"));
+      if (confirm("Are you sure you want to approve this deletion? The forum will be permanently deleted.")) {
+        await approveDeletion(forumId);
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-reject-id]").forEach((icon) => {
+    icon.addEventListener("click", async (e) => {
+      const forumId = parseInt(e.target.getAttribute("data-reject-id"));
+      if (confirm("Are you sure you want to reject this deletion request? The forum will remain active.")) {
+        await rejectDeletion(forumId);
+      }
+    });
+  });
+}
+
+async function approveDeletion(forumId) {
+  try {
+    await adminApi.approveDelete(forumId);
+    showNotification("Forum deleted successfully", "success");
+    await loadPendingDeletions();
+    await loadAllForums();
+  } catch (error) {
+    console.error("Error approving deletion:", error);
+    showNotification("Failed to approve deletion", "error");
+  }
+}
+
+async function rejectDeletion(forumId) {
+  try {
+    await adminApi.rejectDelete(forumId);
+    showNotification("Deletion request rejected", "success");
+    await loadPendingDeletions();
+  } catch (error) {
+    console.error("Error rejecting deletion:", error);
+    showNotification("Failed to reject deletion", "error");
+  }
+}
+
+function showNotification(message, type = "info") {
+  const notification = document.createElement("div");
+  notification.className = `notification ${type}`;
+  notification.textContent = message;
+  notification.style.cssText = `
+    position: fixed; top: 20px; right: 20px;
+    background: ${type === "error" ? "rgba(239,68,68,0.9)" : "rgba(74,222,128,0.9)"};
+    color: white; padding: 12px 20px; border-radius: 8px;
+    font-weight: 500; z-index: 1000;
+  `;
+  document.body.appendChild(notification);
+  setTimeout(() => notification.remove(), 3000);
 }
 
 function renderAllForumsTable(forums) {
@@ -109,6 +219,7 @@ function bindForumsSearch() {
 document.addEventListener("DOMContentLoaded", () => {
   loadForumManagementStats();
   loadAllForums();
+  loadPendingDeletions();
   initializeModalHandlers();
 });
 

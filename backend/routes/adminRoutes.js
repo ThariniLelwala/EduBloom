@@ -116,6 +116,30 @@ function handleAdminRoutes(req, res) {
       )(req, res);
     }
 
+    // Get pending deletion requests: GET /api/admin/forums/pending-deletions
+    if (method === "GET" && pathname === "/api/admin/forums/pending-deletions") {
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
+        forumController.getPendingDeletions
+      )(req, res);
+    }
+
+    // Approve forum deletion: POST /api/admin/forums/:id/approve-delete
+    if (method === "POST" && pathname.match(/^\/api\/admin\/forums\/\d+\/approve-delete$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
+        forumController.approveDelete
+      )(req, res);
+    }
+
+    // Reject forum deletion: POST /api/admin/forums/:id/reject-delete
+    if (method === "POST" && pathname.match(/^\/api\/admin\/forums\/\d+\/reject-delete$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
+        forumController.rejectDelete
+      )(req, res);
+    }
+
 
     // Content moderation routes
     // Get flagged content: GET /api/admin/moderation/flagged

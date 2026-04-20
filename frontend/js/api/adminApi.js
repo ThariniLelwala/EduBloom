@@ -307,6 +307,83 @@ const adminApi = {
     }
   },
 
+  /**
+   * Get pending deletion requests
+   * @returns {Promise<Array>} List of deletion requests
+   */
+  async getPendingDeletions() {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/admin/forums/pending-deletions", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to fetch pending deletions");
+
+      return data.requests || [];
+    } catch (error) {
+      console.error("Error fetching pending deletions:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Approve forum deletion request
+   * @param {number} forumId
+   * @returns {Promise<Object>} Result
+   */
+  async approveDelete(forumId) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/admin/forums/${forumId}/approve-delete`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to approve deletion");
+
+      return data;
+    } catch (error) {
+      console.error("Error approving deletion:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Reject forum deletion request
+   * @param {number} forumId
+   * @returns {Promise<Object>} Result
+   */
+  async rejectDelete(forumId) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/admin/forums/${forumId}/reject-delete`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to reject deletion");
+
+      return data;
+    } catch (error) {
+      console.error("Error rejecting deletion:", error);
+      throw error;
+    }
+  },
+
   // ========== Content Moderation ==========
 
   /**

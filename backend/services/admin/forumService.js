@@ -90,6 +90,60 @@ class AdminForumService {
       description: row.description
     };
   }
+
+  async getPendingDeletions() {
+    const result = await db.query(
+      `SELECT fp.*, u.username as author, u.role as author_role,
+              (SELECT COALESCE(json_agg(tag_name), '[]') FROM forum_tags WHERE post_id = fp.id) as tags,
+              (SELECT COUNT(*) FROM forum_replies WHERE post_id = fp.id) as reply_count
+       FROM forum_posts fp
+       JOIN users u ON fp.author_id = u.id
+       WHERE fp.deletion_requested = TRUE
+       ORDER BY fp.updated_at DESC`
+    );
+    return result.rows.map(row => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      author: row.author,
+      author_role: row.author_role,
+      tags: row.tags,
+      reply_count: parseInt(row.reply_count) || 0,
+      deletion_reason: row.deletion_reason,
+      created_at: row.created_at,
+      updated_at: row.updated_at
+    }));
+  }
+
+  async approveDeletion(forumId) {
+    const forumCheck = await db.query(
+      `SELECT id, title FROM forum_posts WHERE id = $1 AND deletion_requested = TRUE`,
+      [forumId]
+    );
+
+    if (forumCheck.rows.length === 0) {
+      throw new Error("Forum not found or deletion not requested");
+    }
+
+    await db.query(`DELETE FROM forum_replies WHERE post_id = $1`, [forumId]);
+    await db.query(`DELETE FROM forum_tags WHERE post_id = $1`, [forumId]);
+    await db.query(`DELETE FROM forum_posts WHERE id = $1`, [forumId]);
+
+    return { message: "Forum deleted successfully" };
+  }
+
+  async rejectDeletion(forumId) {
+    const result = await db.query(
+      `UPDATE forum_posts SET deletion_requested = FALSE, deletion_reason = NULL, updated_at = NOW() WHERE id = $1 AND deletion_requested = TRUE RETURNING id`,
+      [forumId]
+    );
+
+    if (result.rows.length === 0) {
+      throw new Error("Forum not found or deletion not requested");
+    }
+
+    return { message: "Deletion request rejected" };
+  }
 }
 
 module.exports = new AdminForumService();

@@ -98,6 +98,8 @@
   flex-direction: column;
   gap: 16px;
   margin-top: 12px;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .topic-item {
@@ -161,6 +163,37 @@
 
 .topic-stats i {
   font-size: 0.8rem;
+}
+
+.topic-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.topic-actions .btn-icon {
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.topic-actions .btn-icon:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.archived-badge {
+  background: rgba(164, 176, 190, 0.3);
+  color: #a4b0be;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.topic-item.archived {
+  opacity: 0.7;
 }
 
 .topic-preview {
