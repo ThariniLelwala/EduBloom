@@ -341,6 +341,10 @@ function openAddModal(type) {
   if (dateInput) {
     dateInput.style.display = type === "event" ? "block" : "none";
     dateInput.value = "";
+    
+    // Set min date to today for upcoming events
+    const today = new Date().toISOString().split("T")[0];
+    dateInput.setAttribute("min", today);
   }
 
   document.getElementById("task-input").focus();
@@ -372,9 +376,19 @@ async function saveTask() {
 
   const sanitizedText = text.replace(/<[^>]*>/g, "").trim();
 
-  if (currentAddingType === "event" && !dateValue) {
-    alert("Please select a date for the event");
-    return;
+  if (currentAddingType === "event") {
+    if (!dateValue) {
+      alert("Please select a date for the event");
+      return;
+    }
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(dateValue);
+    if (selectedDate < today) {
+      alert("Event date cannot be in the past");
+      return;
+    }
   }
 
   try {
@@ -406,6 +420,10 @@ function editTask(type, index, isParent = false) {
   const dateInput = document.getElementById("edit-date");
   if (dateInput) {
     dateInput.style.display = type === "event" ? "block" : "none";
+    
+    // Set min date to today for upcoming events
+    const today = new Date().toISOString().split("T")[0];
+    dateInput.setAttribute("min", today);
     if (type === "event" && tasks[type][index].expires_at) {
       const d = new Date(tasks[type][index].expires_at);
       const day = ("0" + d.getDate()).slice(-2);
@@ -446,9 +464,19 @@ async function saveEditedTask() {
 
   const sanitizedText = text.replace(/<[^>]*>/g, "").trim();
 
-  if (currentEditingType === "event" && !dateValue) {
-    alert("Please select a date for the event");
-    return;
+  if (currentEditingType === "event") {
+    if (!dateValue) {
+      alert("Please select a date for the event");
+      return;
+    }
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(dateValue);
+    if (selectedDate < today) {
+      alert("Event date cannot be in the past");
+      return;
+    }
   }
 
   try {

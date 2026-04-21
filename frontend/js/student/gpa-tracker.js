@@ -177,17 +177,17 @@ function populateSemestersList() {
     actions.className = "exam-actions";
 
     const addSubjectBtn = document.createElement("button");
-    addSubjectBtn.className = "btn-small";
+    addSubjectBtn.className = "btn-primary";
     addSubjectBtn.textContent = "Add Subject";
     addSubjectBtn.addEventListener("click", () => openSubjectModal(index));
 
     const editBtn = document.createElement("button");
-    editBtn.className = "btn-small";
+    editBtn.className = "btn-primary";
     editBtn.textContent = "Edit";
     editBtn.addEventListener("click", () => openEditSemesterModal(index));
 
     const deleteBtn = document.createElement("button");
-    deleteBtn.className = "btn-small";
+    deleteBtn.className = "btn-primary";
     deleteBtn.textContent = "Delete";
     deleteBtn.addEventListener("click", () => openDeleteSemesterModal(index));
 

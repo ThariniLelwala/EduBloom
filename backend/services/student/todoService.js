@@ -17,7 +17,7 @@ class TodoService {
        ORDER BY type ASC, created_at DESC`,
       [studentId]
     );
-
+    
     return result.rows;
   }
 

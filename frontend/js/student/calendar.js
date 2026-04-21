@@ -254,6 +254,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     btn.addEventListener("click", () => {
       deadlineInput.value = "";
       deadlineDate.value = "";
+      
+      // Set min date to today
+      const today = new Date().toISOString().split("T")[0];
+      deadlineDate.setAttribute("min", today);
+      
       deadlineModal.classList.add("show");
     });
   });
@@ -262,6 +267,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     .getElementById("modal-save-deadline")
     .addEventListener("click", async () => {
       if (!deadlineInput.value || !deadlineDate.value) return;
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(deadlineDate.value);
+      if (selectedDate < today) {
+        alert("Event date cannot be in the past");
+        return;
+      }
       
       try {
           // Pass the deadline date to the API
@@ -288,6 +301,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const month = ("0" + (d.getMonth() + 1)).slice(-2);
     editInput.value = event.title;
     editDate.value = `${d.getFullYear()}-${month}-${day}`;
+    
+    // Set min date to today
+    const today = new Date().toISOString().split("T")[0];
+    editDate.setAttribute("min", today);
+    
     editModal.classList.add("show");
   }
 
@@ -298,6 +316,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("edit-save").addEventListener("click", async () => {
     if (!currentEditEvent) return;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(editDate.value);
+    if (selectedDate < today) {
+      alert("Event date cannot be in the past");
+      return;
+    }
     
     try {
         await studentTodoApi.updateTodo(currentEditEvent.id, { 

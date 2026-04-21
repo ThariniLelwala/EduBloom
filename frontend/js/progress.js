@@ -1372,11 +1372,10 @@ function generateWeeklyBreakdown() {
   if (weeklyTotalHoursEl) weeklyTotalHoursEl.textContent = `${totalHours.toFixed(2)}h`;
 }
 
-// Initialize monthly chart
-function initializeMonthlyChart() {
+// Initialize monthly chart with period filtering
+function initializeMonthlyChart(period = 'current') {
   let sessions = [];
   
-  // Get sessions from current progress data
   if (currentProgressData && currentProgressData.pomodoro) {
     sessions = currentProgressData.pomodoro.sessions || [];
   }
@@ -1393,13 +1392,40 @@ function initializeMonthlyChart() {
     monthlyChart = null;
   }
 
-  if (!sessions || sessions.length === 0) {
+  // Set up date range based on period
+  const today = new Date();
+  let startDate, endDate;
+
+  if (period === 'current') {
+    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  } else if (period === 'last') {
+    startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+  } else if (period === '3months') {
+    startDate = new Date(today);
+    startDate.setDate(today.getDate() - 90);
+    endDate = new Date(today);
+  } else {
+    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  }
+
+  startDate.setHours(0, 0, 0, 0);
+  endDate.setHours(23, 59, 59, 999);
+
+  const sessionsInRange = sessions.filter(session => {
+    const sessionDate = new Date(session.start_time);
+    return sessionDate >= startDate && sessionDate <= endDate;
+  });
+
+  if (!sessionsInRange || sessionsInRange.length === 0) {
     // Show empty state for monthly chart
     if (!hasEmptyState('monthly-analytics-card')) {
       showChartEmptyState('monthly-analytics-card', {
         icon: 'fa-calendar-alt',
         message: 'No session data for this period',
-        subtext: 'Session data will appear here once your child starts studying'
+        subtext: 'Try selecting a different time period or start a new session'
       });
     }
     
@@ -1416,36 +1442,43 @@ function initializeMonthlyChart() {
   // Clear empty state if it exists
   clearEmptyState('monthly-analytics-card');
 
-  // Calculate daily data for current month
-  const today = new Date();
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-
+  // Calculate daily data
   const dailyData = [];
   const labels = [];
+  const loopDate = new Date(startDate);
 
-  for (let day = 1; day <= daysInMonth; day++) {
-    const date = new Date(today.getFullYear(), today.getMonth(), day);
-    const dayStart = new Date(date);
-    const dayEnd = new Date(date);
+  while (loopDate <= endDate) {
+    const dayStart = new Date(loopDate);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(loopDate);
     dayEnd.setHours(23, 59, 59, 999);
 
-    const daySessions = sessions.filter(session => {
+    const daySessions = sessionsInRange.filter(session => {
       const sessionDate = new Date(session.start_time);
       return sessionDate >= dayStart && sessionDate <= dayEnd;
     });
 
     dailyData.push(daySessions.length);
-    labels.push(`Day ${day}`);
+    
+    if (period === '3months') {
+      labels.push(`${loopDate.toLocaleString('default', { month: 'short' })} ${loopDate.getDate()}`);
+    } else {
+      labels.push(`Day ${loopDate.getDate()}`);
+    }
+
+    loopDate.setDate(loopDate.getDate() + 1);
   }
 
-  const totalSessions = dailyData.reduce((a, b) => a + b, 0);
-  const totalMinutes = sessions.reduce((sum, session) => {
+  const totalSessions = sessionsInRange.length;
+  const totalMinutes = sessionsInRange.reduce((sum, session) => {
     const duration = session.duration_minutes || 25;
     return sum + duration;
   }, 0);
   const totalHours = totalMinutes / 60;
-  const avgPerDay = totalHours / daysInMonth;
+  
+  const diffTime = Math.abs(endDate - startDate);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+  const avgPerDay = totalHours / diffDays;
 
   // Update stats
   const totalSessionsEl = document.getElementById("total-sessions-month");
@@ -1471,7 +1504,7 @@ function initializeMonthlyChart() {
           fill: true,
           pointBackgroundColor: "rgba(255, 255, 255, 0.8)",
           pointBorderColor: "rgba(255, 255, 255, 0.3)",
-          pointRadius: 3,
+          pointRadius: period === '3months' ? 2 : 3,
           pointHoverRadius: 5,
         },
       ],
@@ -1503,7 +1536,7 @@ function initializeMonthlyChart() {
         x: {
           ticks: {
             color: "rgba(255, 255, 255, 0.5)",
-            maxTicksLimit: 10,
+            maxTicksLimit: 12,
           },
           grid: {
             color: "rgba(255, 255, 255, 0.05)",
@@ -1555,8 +1588,11 @@ function setupCustomSelect() {
         // Close dropdown
         optionsContainer.classList.remove("show");
 
-        // Note: Time filtering functionality will be implemented in future updates
-        // For now, the chart shows current month data from the backend
+        // Trigger chart update for Pomodoro Analytics
+        if (hiddenSelect.id === "month-select") {
+          initializeMonthlyChart(value);
+        }
+        
         console.log("Time period selected:", value);
       });
     });

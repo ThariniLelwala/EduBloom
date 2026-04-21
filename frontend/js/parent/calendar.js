@@ -373,6 +373,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
       deadlineInput.value = "";
       deadlineDate.value = "";
+      
+      // Set min date to today
+      const today = new Date().toISOString().split("T")[0];
+      deadlineDate.setAttribute("min", today);
+      
       deadlineModal.classList.add("show");
       deadlineInput.focus();
     });
@@ -382,6 +387,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     .getElementById("modal-save-deadline")
     .addEventListener("click", async () => {
       if (!deadlineInput.value || !deadlineDate.value) return;
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(deadlineDate.value);
+      if (selectedDate < today) {
+        alert("Event date cannot be in the past");
+        return;
+      }
 
       try {
         const newDeadline = await calendarApi.createDeadline(
