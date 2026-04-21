@@ -42,6 +42,12 @@ async function initializeDatabase() {
       // Column already exists, ignore error
     }
 
+    try {
+      await db.query(`ALTER TABLE users ADD COLUMN status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'suspended'));`);
+    } catch (err) {
+      // Column already exists, ignore error
+    }
+
     // Parent-Student Links table
     await db.query(`
       CREATE TABLE IF NOT EXISTS parent_student_links (
