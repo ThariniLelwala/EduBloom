@@ -190,7 +190,7 @@ const updateTodo = async (req, res) => {
     const updatedTodo = await todoService.updateTodo(
       studentId,
       todoId,
-      updates
+      data
     );
 
     res.writeHead(200, { "Content-Type": "application/json" });
