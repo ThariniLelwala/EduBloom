@@ -93,7 +93,7 @@
         let filtered = allAnnouncements;
         
         if (filterRole !== "all") {
-          filtered = allAnnouncements.filter(a => a.targetRole === filterRole || a.targetRole === "all");
+          filtered = allAnnouncements.filter(a => a.targetRole === filterRole);
         }
         
         renderAnnouncements(filtered);
