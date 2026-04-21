@@ -9,7 +9,7 @@ class UserService {
    */
   async getAllUsers(filters = {}) {
     let query = `
-      SELECT id, username, email, role, firstname, lastname, student_type, created_at
+      SELECT id, username, email, role, firstname, lastname, student_type, status, created_at
       FROM users
     `;
     const params = [];
@@ -29,6 +29,13 @@ class UserService {
     if (filters.student_type) {
       conditions.push(`student_type = $${paramIndex}`);
       params.push(filters.student_type);
+      paramIndex++;
+    }
+
+    // Filter by status (active/suspended)
+    if (filters.status) {
+      conditions.push(`status = $${paramIndex}`);
+      params.push(filters.status);
       paramIndex++;
     }
 
@@ -83,6 +90,15 @@ class UserService {
       "SELECT COUNT(*) as count FROM users WHERE DATE(created_at) = CURRENT_DATE"
     );
 
+    // Count active and suspended users
+    const activeResult = await db.query(
+      "SELECT COUNT(*) as count FROM users WHERE status = 'active' OR status IS NULL"
+    );
+
+    const suspendedResult = await db.query(
+      "SELECT COUNT(*) as count FROM users WHERE status = 'suspended'"
+    );
+
     return {
       total: parseInt(totalResult.rows[0].count),
       students: parseInt(studentResult.rows[0].count),
@@ -90,6 +106,8 @@ class UserService {
       parents: parseInt(parentResult.rows[0].count),
       admins: parseInt(adminResult.rows[0].count),
       todayRegistrations: parseInt(todayResult.rows[0].count),
+      active: parseInt(activeResult.rows[0].count),
+      suspended: parseInt(suspendedResult.rows[0].count),
     };
   }
 
@@ -102,7 +120,7 @@ class UserService {
     }
 
     const result = await db.query(
-      `SELECT id, username, email, role, firstname, lastname, birthday, student_type, password, salt, created_at
+      `SELECT id, username, email, role, firstname, lastname, birthday, student_type, status, password, salt, created_at
        FROM users
        WHERE id = $1`,
       [userId]
@@ -157,15 +175,19 @@ class UserService {
 
     const user = userCheck.rows[0];
 
-    // Delete user (cascades delete related data due to ON DELETE CASCADE)
-    // This now allows deleting admins, just not the current admin
+    // Check if user is already suspended
+    if (user.status === 'suspended') {
+      throw new Error("User is already suspended");
+    }
+
+    // Soft delete: update status to suspended instead of deleting
     const result = await db.query(
-      "DELETE FROM users WHERE id = $1 RETURNING id",
+      "UPDATE users SET status = 'suspended' WHERE id = $1 RETURNING id, username",
       [userId]
     );
 
     return {
-      message: `User ${user.username} deleted successfully`,
+      message: `User ${user.username} has been suspended successfully`,
       deletedUserId: result.rows[0].id,
     };
   }
@@ -201,14 +223,14 @@ class UserService {
       throw new Error("You cannot delete your own admin account");
     }
 
-    // Delete multiple users (now allows deleting admins, just not the current admin)
+    // Soft delete multiple users: update status to suspended
     const result = await db.query(
-      "DELETE FROM users WHERE id = ANY($1) RETURNING id",
+      "UPDATE users SET status = 'suspended' WHERE id = ANY($1) AND status != 'suspended' RETURNING id",
       [userIds]
     );
 
     return {
-      message: `${result.rows.length} users deleted successfully`,
+      message: `${result.rows.length} users have been suspended successfully`,
       deletedCount: result.rows.length,
       deletedUserIds: result.rows.map((r) => r.id),
     };

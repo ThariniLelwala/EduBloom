@@ -23,13 +23,12 @@ async function loadStatisticsFromAPI() {
 
     const activeElement = document.getElementById("active-users-count");
     if (activeElement) {
-      activeElement.textContent =
-        stats.students + stats.teachers + stats.parents || 0;
+      activeElement.textContent = stats.active || 0;
     }
 
     const suspendedElement = document.getElementById("suspended-users-count");
     if (suspendedElement) {
-      suspendedElement.textContent = "0"; // Will be implemented with status column
+      suspendedElement.textContent = stats.suspended || 0;
     }
 
     const dailyElement = document.getElementById("daily-registration-count");
@@ -187,28 +186,35 @@ function renderUsersTable() {
     const isSelected = selectedUsers.has(user.id);
     const fullName =
       `${user.firstname || ""} ${user.lastname || ""}`.trim() || user.username;
+    const userStatus = user.status || 'active';
+    const isSuspended = userStatus === 'suspended';
+
+    const statusBadge = isSuspended
+      ? `<span class="status-badge suspended">Suspended</span>`
+      : `<span class="status-badge active">Active</span>`;
+
+    const actionButtons = isSuspended
+      ? `<span class="text-muted"><i class="fas fa-ban"></i></span>`
+      : `
+        <button class="edit-user-btn admin-table-action" data-user-id="${user.id}" title="Edit">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="delete-user-btn admin-table-action" data-user-id="${user.id}" title="Delete">
+          <i class="fas fa-trash"></i>
+        </button>
+      `;
 
     tr.innerHTML = `
       <td>
-        <input type="checkbox" class="user-checkbox admin-table-checkbox" data-user-id="${
-          user.id
-        }" ${isSelected ? "checked" : ""} />
+        <input type="checkbox" class="user-checkbox admin-table-checkbox" data-user-id="${user.id}" ${isSelected ? "checked" : ""} ${isSuspended ? "disabled" : ""} />
       </td>
       <td class="text-white">${fullName}</td>
       <td class="text-muted">${user.username}</td>
       <td class="text-muted">${user.email}</td>
       <td class="text-muted text-capitalize">${user.role}</td>
+      <td>${statusBadge}</td>
       <td style="text-align: center;">
-        <button class="edit-user-btn admin-table-action" data-user-id="${
-          user.id
-        }" title="Edit">
-          <i class="fas fa-edit"></i>
-        </button>
-        <button class="delete-user-btn admin-table-action" data-user-id="${
-          user.id
-        }" title="Delete">
-          <i class="fas fa-trash"></i>
-        </button>
+        ${actionButtons}
       </td>
     `;
 
