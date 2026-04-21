@@ -1,10 +1,10 @@
 // js/api/gpaApi.js
 
-const API_BASE = "/api/student/gpa";
+const GPA_API_BASE = "/api/student/gpa";
 
 class GpaApi {
   constructor() {
-    this.baseUrl = API_BASE;
+    this.baseUrl = GPA_API_BASE;
   }
 
   /**
@@ -130,3 +130,4 @@ class GpaApi {
 
 // Create singleton instance
 const gpaApi = new GpaApi();
+window.gpaApi = gpaApi;

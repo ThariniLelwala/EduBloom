@@ -73,6 +73,94 @@ function getEnergyEmoji(energy) {
   return energyEmojis[energy] || "😃";
 }
 
+// ==================== EMPTY STATE UTILITIES ====================
+
+/**
+ * Check if an element already has an empty state applied.
+ * @param {string} elementId - The id of the target element.
+ * @returns {boolean}
+ */
+function hasEmptyState(elementId) {
+  const el = document.getElementById(elementId);
+  return el ? el.hasAttribute('data-empty-state') : false;
+}
+
+/**
+ * Show an empty-state message inside a container element.
+ * @param {string} elementId - The id of the container.
+ * @param {{ icon: string, message: string, subtext: string }} options
+ */
+function showEmptyState(elementId, options) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+
+  el.setAttribute('data-empty-state', 'true');
+  el.innerHTML = `
+    <div class="empty-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;opacity:0.7;text-align:center;gap:0.5rem;">
+      <i class="fas ${options.icon || 'fa-inbox'}" style="font-size:2rem;margin-bottom:0.25rem;"></i>
+      <p style="margin:0;font-weight:600;">${options.message || 'No data available'}</p>
+      ${options.subtext ? `<p style="margin:0;font-size:0.8rem;opacity:0.8;">${options.subtext}</p>` : ''}
+    </div>
+  `;
+}
+
+/**
+ * Show an empty-state message inside a card that contains a chart canvas.
+ * Hides the canvas and injects the message into the card.
+ * @param {string} cardId - The id of the card container.
+ * @param {{ icon: string, message: string, subtext: string }} options
+ */
+function showChartEmptyState(cardId, options) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+
+  card.setAttribute('data-empty-state', 'true');
+
+  // Hide any canvas inside
+  const canvas = card.querySelector('canvas');
+  if (canvas) canvas.style.display = 'none';
+
+  // Avoid double-inserting
+  if (card.querySelector('.chart-empty-state')) return;
+
+  const div = document.createElement('div');
+  div.className = 'chart-empty-state';
+  div.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;opacity:0.7;text-align:center;gap:0.5rem;';
+  div.innerHTML = `
+    <i class="fas ${options.icon || 'fa-chart-bar'}" style="font-size:2rem;margin-bottom:0.25rem;"></i>
+    <p style="margin:0;font-weight:600;">${options.message || 'No data available'}</p>
+    ${options.subtext ? `<p style="margin:0;font-size:0.8rem;opacity:0.8;">${options.subtext}</p>` : ''}
+  `;
+
+  const chartContainer = card.querySelector('.chart-container');
+  if (chartContainer) {
+    chartContainer.appendChild(div);
+  } else {
+    card.appendChild(div);
+  }
+}
+
+/**
+ * Remove any empty state previously applied to an element.
+ * @param {string} elementId - The id of the target element or card.
+ */
+function clearEmptyState(elementId) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+
+  el.removeAttribute('data-empty-state');
+
+  // Remove chart empty state overlay if present
+  const overlay = el.querySelector('.chart-empty-state');
+  if (overlay) overlay.remove();
+
+  // Restore hidden canvas
+  const canvas = el.querySelector('canvas');
+  if (canvas) canvas.style.display = '';
+}
+
+// ==================== PAGE INITIALISATION ====================
+
 // Initialize page
 async function initializeProgress() {
   await ChildSelector.init();
@@ -91,10 +179,11 @@ async function initializeProgress() {
 async function loadStudentProgressData() {
   try {
     // Load data from student APIs
-    const [pomodoroData, diaryData, todoData] = await Promise.all([
+    const [pomodoroData, diaryData, todoData, gpaData_raw] = await Promise.all([
       window.studentPomodoroApi ? window.studentPomodoroApi.getSessions(50) : Promise.resolve({ sessions: [] }),
       window.studentDiaryApi ? window.studentDiaryApi.getEntries() : Promise.resolve({ entries: [] }),
-      window.studentTodoApi ? window.studentTodoApi.getTodos() : Promise.resolve({ todos: [] })
+      window.studentTodoApi ? window.studentTodoApi.getTodos() : Promise.resolve({ todos: [] }),
+      window.gpaApi ? window.gpaApi.getSemesters() : Promise.resolve([])
     ]);
 
     currentProgressData = {
@@ -107,6 +196,9 @@ async function loadStudentProgressData() {
       },
       todos: {
         items: todoData.todos || []
+      },
+      gpa: {
+        semesters: Array.isArray(gpaData_raw) ? gpaData_raw : []
       }
     };
 
