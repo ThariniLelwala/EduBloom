@@ -355,7 +355,7 @@ function bindActionEvents() {
       const userId = parseInt(
         e.target.closest(".edit-user-btn").dataset.userId
       );
-      alert(`Edit user functionality for user ${userId} - to be implemented`);
+      openEditUserModal(userId);
     }
   });
 }
@@ -394,6 +394,75 @@ function closeDeleteConfirmModal() {
     modal.style.display = "none";
   }
   pendingDeleteUserIds = null;
+}
+
+// Edit User Modal Functions
+async function openEditUserModal(userId) {
+  const modal = document.getElementById("edit-user-modal");
+  const form = document.getElementById("edit-user-form");
+  const errorMsg = document.getElementById("edit-error-msg");
+
+  if (!modal || !form) return;
+
+  try {
+    // Fetch user details from API
+    const user = await adminApi.getUser(userId);
+
+    // Populate form fields
+    document.getElementById("edit-user-id").value = user.id;
+    document.getElementById("edit-firstname").value = user.firstname || "";
+    document.getElementById("edit-lastname").value = user.lastname || "";
+    document.getElementById("edit-username").value = user.username || "";
+    document.getElementById("edit-email").value = user.email || "";
+    document.getElementById("edit-role").value = user.role || "";
+
+    // Format birthday if exists (YYYY-MM-DD)
+    if (user.birthday) {
+      const date = new Date(user.birthday);
+      document.getElementById("edit-birthday").value = date
+        .toISOString()
+        .split("T")[0];
+    }
+
+    modal.style.display = "flex";
+    errorMsg.style.display = "none";
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+    alert("Error fetching user details");
+  }
+}
+
+function closeEditUserModal() {
+  const modal = document.getElementById("edit-user-modal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
+async function handleEditUserSubmit(e) {
+  e.preventDefault();
+
+  const userId = document.getElementById("edit-user-id").value;
+  const errorMsg = document.getElementById("edit-error-msg");
+
+  const userData = {
+    firstname: document.getElementById("edit-firstname").value.trim(),
+    lastname: document.getElementById("edit-lastname").value.trim(),
+    username: document.getElementById("edit-username").value.trim(),
+    email: document.getElementById("edit-email").value.trim(),
+    birthday: document.getElementById("edit-birthday").value,
+    role: document.getElementById("edit-role").value,
+  };
+
+  try {
+    await adminApi.updateUser(userId, userData);
+    closeEditUserModal();
+    await loadAllUsersFromAPI();
+    alert("User updated successfully!");
+  } catch (error) {
+    errorMsg.textContent = error.message || "Error updating user";
+    errorMsg.style.display = "block";
+  }
 }
 
 // Handle delete confirmation form submission
@@ -566,6 +635,32 @@ document.addEventListener("DOMContentLoaded", () => {
     deleteModal.addEventListener("click", (e) => {
       if (e.target === deleteModal) {
         closeDeleteConfirmModal();
+      }
+    });
+  }
+
+  // Edit User Modal event listeners
+  const closeEditBtn = document.getElementById("close-edit-modal");
+  const cancelEditBtn = document.getElementById("cancel-edit-btn");
+  const editForm = document.getElementById("edit-user-form");
+  const editModal = document.getElementById("edit-user-modal");
+
+  if (closeEditBtn) {
+    closeEditBtn.addEventListener("click", closeEditUserModal);
+  }
+
+  if (cancelEditBtn) {
+    cancelEditBtn.addEventListener("click", closeEditUserModal);
+  }
+
+  if (editForm) {
+    editForm.addEventListener("submit", handleEditUserSubmit);
+  }
+
+  if (editModal) {
+    editModal.addEventListener("click", (e) => {
+      if (e.target === editModal) {
+        closeEditUserModal();
       }
     });
   }

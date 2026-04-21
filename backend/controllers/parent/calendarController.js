@@ -36,7 +36,7 @@ class CalendarController {
 
   async updateDeadline(req, res) {
     try {
-      const deadlineId = parseInt(req.url.split("/")[4]);
+      const deadlineId = parseInt(req.url.split("/")[5]);
       const data = await parseRequestBody(req);
       const result = await calendarService.updateDeadline(
         req.user.id,
@@ -54,7 +54,7 @@ class CalendarController {
 
   async deleteDeadline(req, res) {
     try {
-      const deadlineId = parseInt(req.url.split("/")[4]);
+      const deadlineId = parseInt(req.url.split("/")[5]);
       const result = await calendarService.deleteDeadline(req.user.id, deadlineId);
 
       res.writeHead(200, { "Content-Type": "application/json" });
@@ -95,7 +95,7 @@ class CalendarController {
 
   async updateParentTask(req, res) {
     try {
-      const taskId = parseInt(req.url.split("/")[4]);
+      const taskId = parseInt(req.url.split("/")[5]);
       const data = await parseRequestBody(req);
       const result = await calendarService.updateParentOnlyTask(
         req.user.id,
@@ -113,7 +113,7 @@ class CalendarController {
 
   async deleteParentTask(req, res) {
     try {
-      const taskId = parseInt(req.url.split("/")[4]);
+      const taskId = parseInt(req.url.split("/")[5]);
       const result = await calendarService.deleteParentOnlyTask(req.user.id, taskId);
 
       res.writeHead(200, { "Content-Type": "application/json" });

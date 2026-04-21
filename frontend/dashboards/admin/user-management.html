@@ -268,8 +268,92 @@
       </div>
     </div>
 
-    <!-- Modal Styles -->
-    <link rel="stylesheet" href="../../css/admin/user-management.css" />
+    <!-- Edit User Modal -->
+    <div id="edit-user-modal" class="modal" style="display: none">
+      <div class="modal-content admin-modal-content">
+        <div class="modal-header">
+          <h2><i class="fas fa-edit"></i> Edit User</h2>
+          <button class="modal-close" id="close-edit-modal">&times;</button>
+        </div>
+
+        <form id="edit-user-form">
+          <input type="hidden" id="edit-user-id" name="userId" />
+          
+          <div class="form-group">
+            <label for="edit-firstname">First Name *</label>
+            <input
+              type="text"
+              id="edit-firstname"
+              name="firstname"
+              placeholder="First name"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="edit-lastname">Last Name *</label>
+            <input
+              type="text"
+              id="edit-lastname"
+              name="lastname"
+              placeholder="Last name"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="edit-birthday">Birthday *</label>
+            <input type="date" id="edit-birthday" name="birthday" required />
+          </div>
+
+          <div class="form-group">
+            <label for="edit-username">Username *</label>
+            <input
+              type="text"
+              id="edit-username"
+              name="username"
+              placeholder="Username"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="edit-email">Email *</label>
+            <input
+              type="email"
+              id="edit-email"
+              name="email"
+              placeholder="Email address"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="edit-role">Role *</label>
+            <select id="edit-role" name="role" required>
+              <option value="student">Student</option>
+              <option value="teacher">Teacher</option>
+              <option value="parent">Parent</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
+          <div
+            id="edit-error-msg"
+            class="error-message"
+          ></div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="cancel-edit-btn">
+              Cancel
+            </button>
+            <button type="submit" class="btn-primary">
+              <i class="fas fa-save"></i> Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <!-- Delete Confirmation Modal -->
     <div id="delete-confirm-modal" class="modal" style="display: none">
@@ -316,6 +400,9 @@
         </form>
       </div>
     </div>
+
+    <!-- Modal Styles -->
+    <link rel="stylesheet" href="../../css/admin/user-management.css" />
 
     <!-- JS -->
     <script src="../../js/topbar.js"></script>

@@ -221,6 +221,30 @@ class UserController {
       res.end(JSON.stringify({ error: err.message }));
     }
   }
+  /**
+   * Update user details
+   * PUT /api/admin/users/:userId
+   */
+  async updateUser(req, res) {
+    try {
+      const userId = parseInt(req.url.split("/")[4]);
+      const data = await parseRequestBody(req);
+
+      if (isNaN(userId)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ error: "Invalid user ID" }));
+      }
+
+      const user = await userService.updateUser(userId, data);
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ user, message: "User updated successfully" }));
+    } catch (err) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
 }
+
 
 module.exports = new UserController();

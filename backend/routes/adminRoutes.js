@@ -75,6 +75,14 @@ function handleAdminRoutes(req, res) {
       )(req, res);
     }
 
+    // Update specific user: PUT /api/admin/users/:userId
+    if (method === "PUT" && pathname.match(/^\/api\/admin\/users\/\d+$/)) {
+      return applyMiddleware(
+        [verifyToken, requireRole("admin")],
+        userController.updateUser
+      )(req, res);
+    }
+
     // Delete multiple users: DELETE /api/admin/users
     if (method === "DELETE" && pathname === "/api/admin/users") {
       return applyMiddleware(

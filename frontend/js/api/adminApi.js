@@ -91,6 +91,34 @@ const adminApi = {
   },
 
   /**
+   * Update user details
+   * @param {number} userId
+   * @param {Object} userData - {firstname, lastname, username, email, birthday, role}
+   * @returns {Promise<Object>} Updated user object
+   */
+  async updateUser(userId, userData) {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to update user");
+
+      return data.user;
+    } catch (error) {
+      console.error("Error updating user:", error);
+      throw error;
+    }
+  },
+
+  /**
    * Delete a user with password confirmation
    * @param {number} userId
    * @param {string} password - Admin's password for confirmation

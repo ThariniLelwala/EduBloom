@@ -338,6 +338,79 @@ class UserService {
 
     return result.rows[0];
   }
+  /**
+   * Update user details
+   */
+  async updateUser(userId, userData) {
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+
+    const { firstname, lastname, username, email, birthday, role } = userData;
+
+    // Check if user exists
+    const userResult = await db.query("SELECT * FROM users WHERE id = $1", [userId]);
+    if (userResult.rows.length === 0) {
+      throw new Error("User not found");
+    }
+
+    // Check if new email or username is already taken by another user
+    if (email || username) {
+      const existing = await db.query(
+        "SELECT * FROM users WHERE (email = $1 OR username = $2) AND id != $3",
+        [email, username, userId]
+      );
+      if (existing.rows.length > 0) {
+        throw new Error("Email or username already taken by another user");
+      }
+    }
+
+    // Build update query dynamically
+    const updates = [];
+    const params = [];
+    let paramIndex = 1;
+
+    if (firstname !== undefined) {
+      updates.push(`firstname = $${paramIndex++}`);
+      params.push(firstname);
+    }
+    if (lastname !== undefined) {
+      updates.push(`lastname = $${paramIndex++}`);
+      params.push(lastname);
+    }
+    if (username !== undefined) {
+      updates.push(`username = $${paramIndex++}`);
+      params.push(username);
+    }
+    if (email !== undefined) {
+      updates.push(`email = $${paramIndex++}`);
+      params.push(email);
+    }
+    if (birthday !== undefined) {
+      updates.push(`birthday = $${paramIndex++}`);
+      params.push(birthday);
+    }
+    if (role !== undefined) {
+      updates.push(`role = $${paramIndex++}`);
+      params.push(role);
+    }
+
+    if (updates.length === 0) {
+      throw new Error("No data provided for update");
+    }
+
+    params.push(userId);
+    const query = `
+      UPDATE users 
+      SET ${updates.join(", ")}, updated_at = NOW() 
+      WHERE id = $${paramIndex} 
+      RETURNING id, username, email, role, firstname, lastname, birthday
+    `;
+
+    const result = await db.query(query, params);
+    return result.rows[0];
+  }
 }
+
 
 module.exports = new UserService();
